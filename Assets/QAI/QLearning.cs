@@ -14,7 +14,7 @@ class QLearning {
     private readonly QAgent _agent;
     private readonly Random _rng;
 
-    private const string QTablePath = "JOHN.xml";
+    private const string QTablePath = "QData/JOHN.xml";
 
     public QLearning(QAgent agent, QTable table = null) {
         _agent = agent;

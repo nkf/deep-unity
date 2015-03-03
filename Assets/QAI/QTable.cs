@@ -30,16 +30,18 @@ namespace Assets.QAI {
         }
 
         public void Load(string path) {
-            var fileStream = File.Open(path, FileMode.OpenOrCreate);
-            var reader = XmlReader.Create(fileStream);
+            FileStream fileStream = null;
+            XmlReader reader = null;
             try {
+                fileStream = File.Open(path, FileMode.OpenOrCreate);
+                reader = XmlReader.Create(fileStream);
                 _table.ReadXml(reader);
                 Debug.Log("Loaded QTable " + path);
             } catch(Exception e) {
                 Debug.Log(e);
             } finally {
-                fileStream.Close();
-                reader.Close();
+                if (fileStream != null) fileStream.Close();
+                if (reader != null) reader.Close();
             }
         }
 
@@ -47,6 +49,7 @@ namespace Assets.QAI {
             XmlWriter writer = null;
             var xmlSettings = new XmlWriterSettings() {Indent = true};
             try {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
                 writer = XmlWriter.Create(File.Open(path, FileMode.Create), xmlSettings); ;
                 _table.WriteXml(writer);
                 Debug.Log("Saved QTable " + path);
