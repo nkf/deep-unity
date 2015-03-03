@@ -16,11 +16,16 @@ class QLearning {
 
     private const string QTablePath = "JOHN.xml";
 
-    public QLearning(QAgent agent) {
+    public QLearning(QAgent agent, QTable table = null) {
         _agent = agent;
         _rng = new Random();
-        _QTable = new QTable();
-        _QTable.Load(QTablePath);
+        
+        if (table == null) {
+            _QTable = new QTable();
+            _QTable.Load(QTablePath);
+        } else {
+            _QTable = table;
+        }
     }
 
     private double Q(QState s, QAction a) {
@@ -37,7 +42,7 @@ class QLearning {
     }
 
     private const double Discount = 0.5;
-    public IEnumerator Learn() {
+    public IEnumerator Learn(int iteration) {
         var t = 1;
         var s = _agent.GetState();
         while (!s.IsTerminal) {
@@ -51,8 +56,9 @@ class QLearning {
             t++;
             yield return new WaitForEndOfFrame();
         }
-        _QTable.Save(QTablePath);
-        Application.LoadLevel(0);
+        if (iteration%10 == 0)
+            _QTable.Save(QTablePath);
+        QAI.Restart(_QTable);
     }
 
 

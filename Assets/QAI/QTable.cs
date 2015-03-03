@@ -7,7 +7,7 @@ using System.Xml;
 using UnityEngine;
 
 namespace Assets.QAI {
-    class QTable {
+    public class QTable {
         private readonly SerializableDictionary<QState, SerializableDictionary<QAction, double>> _table;
 
         public QTable() {
@@ -37,6 +37,7 @@ namespace Assets.QAI {
             var reader = XmlReader.Create(fileStream);
             try {
                 _table.ReadXml(reader);
+                Debug.Log("Loaded QTable " + path);
             } catch(Exception e) {
                 Debug.Log(e);
             } finally {
@@ -51,6 +52,7 @@ namespace Assets.QAI {
             try {
                 writer = XmlWriter.Create(File.Open(path, FileMode.Create), xmlSettings); ;
                 _table.WriteXml(writer);
+                Debug.Log("Saved QTable " + path);
             } catch(Exception e) {
                 Debug.Log(e);
             } finally {
