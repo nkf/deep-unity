@@ -8,21 +8,21 @@ public class GridWoman : MonoBehaviour, QAgent {
         return Physics.Raycast(transform.position, Vector3.down);
     }
 
+    [QBehavior()]
     private void MoveUp() {
         transform.position += new Vector3(1,0,0);
     }
+    [QBehavior()]
     private void MoveDown() {
         transform.position += new Vector3(-1,0,0);
     }
+    [QBehavior()]
     private void MoveLeft() {
         transform.position += new Vector3(0,0,1);
     }
+    [QBehavior()]
     private void MoveRight() {
         transform.position += new Vector3(0,0,-1);
-    }
-
-    public Action[] GetActions() {
-        return new Action[] {MoveRight, MoveUp, MoveDown, MoveLeft};
     }
 
     private int[] PositionToState(Vector3 p) {

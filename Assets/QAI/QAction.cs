@@ -3,7 +3,7 @@ using System.Xml.Serialization;
 using UnityEngine;
 using System.Collections;
 
-public struct QAction {
+public class QAction {
     public int ActionIndex;
     [XmlIgnore]
     public Action Action;

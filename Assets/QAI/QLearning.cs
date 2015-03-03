@@ -51,11 +51,12 @@ class QLearning {
     public IEnumerator Learn() {
         var t = 1;
         var s = _agent.GetState();
+        var actions = _agent.GetQActions();
         while (!s.IsTerminal) {
-            var a = EpsilonGreedy(s, _agent.GetQActions());
+            var a = EpsilonGreedy(s, actions);
             a.Action.Invoke();
             var s0 = _agent.GetState();
-            var a0max = _agent.GetQActions().Max(a0 => Q(s0, a0));
+            var a0max = actions.Max(a0 => Q(s0, a0));
             var v = Q(s, a) + 1.0/t * (s0.Reward + Discount * a0max - Q(s, a));
             QAdd(s,a,v);
             s = s0;
@@ -98,5 +99,4 @@ class QLearning {
             reader.Close();
         }
     }
-
 }

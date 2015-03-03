@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class QAI : MonoBehaviour {
 
     public const float TimeStep = 1f;
+
     public static void Run(QAgent agent) {
-        _instance.StartCoroutine(RunAgent(agent.GetActions()));
+        //_instance.StartCoroutine(RunAgent(agent.GetActions()));
     }
 
     public static void Learn(QAgent agent) {
@@ -22,7 +23,6 @@ public class QAI : MonoBehaviour {
             yield return new WaitForSeconds(TimeStep);
         }
     }
-
 
     private static QAI _instance;
     void Awake() {
