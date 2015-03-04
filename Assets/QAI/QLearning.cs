@@ -32,7 +32,7 @@ class QLearning {
         return _QTable.Query(s, a);
     }
 
-    private const double Epsilon = 1;
+    private const double Epsilon = 0.8;
     private QAction EpsilonGreedy(QState s, QAction[] actions) {
         if (_rng.NextDouble() > Epsilon) return actions[_rng.Next(actions.Length)];
         var ordered = actions.Select(a => new {A = a, Q = Q(s, a)}).OrderByDescending(x => x.Q);

@@ -8,19 +8,19 @@ public class GridWoman : MonoBehaviour, QAgent {
         return Physics.Raycast(transform.position, Vector3.down);
     }
 
-    [QBehavior()]
+    [QBehavior]
     private void MoveUp() {
         transform.position += new Vector3(1,0,0);
     }
-    [QBehavior()]
+    [QBehavior]
     private void MoveDown() {
         transform.position += new Vector3(-1,0,0);
     }
-    [QBehavior()]
+    [QBehavior]
     private void MoveLeft() {
         transform.position += new Vector3(0,0,1);
     }
-    [QBehavior()]
+    [QBehavior]
     private void MoveRight() {
         transform.position += new Vector3(0,0,-1);
     }
@@ -33,11 +33,27 @@ public class GridWoman : MonoBehaviour, QAgent {
         };
     }
 
-    private readonly int[] GoalState = {0, 1, 5};
+    private int[] VectorToGoal(Vector3 p, Vector3 goal) {
+        var v = goal - p;
+        return PositionToState(v);
+    }
+
+    private int[] PosAndGoal(int[] p, int[] goal) {
+        var a = p;
+        var b = goal;
+        return new[] {a[0], a[1], a[2], b[0], b[1], b[2]};
+    }
+
+    private readonly int[] GoalState = {0, 1, 4};
     public QState GetState() {
-        var state = PositionToState(transform.position);
+        var p = PositionToState(transform.position);
+        var g = GoalState;
+
+        var state = PosAndGoal(p, g);
+        //var state = VectorToGoal(transform.position, new Vector3(GoalState[0], GoalState[1], GoalState[2]));
         var dead = !isAboveGround();
-        var goal = GoalState.SequenceEqual(state);
+        //var goal = state.SequenceEqual(new []{0,0,0});
+        var goal = p.SequenceEqual(g);
         return new QState(
             state,
             dead ? -1 : goal ? 1 : 0,
@@ -51,5 +67,6 @@ public class GridWoman : MonoBehaviour, QAgent {
 
     void Start() {
         QAI.Learn(this);
+
     }
 }
