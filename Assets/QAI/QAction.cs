@@ -3,16 +3,21 @@ using System.Xml.Serialization;
 using UnityEngine;
 using System.Collections;
 
-public class QAction {
-    public int ActionIndex;
+public struct QAction {
+    public readonly string ActionId;
     [XmlIgnore]
-    public Action Action;
+    public readonly Action Action;
+
+    public QAction(string actionId, Action action) : this() {
+        ActionId = actionId;
+        Action = action;
+    }
 
     public override bool Equals(object obj) {
-        return obj is QAction && ActionIndex == ((QAction)obj).ActionIndex;
+        return obj is QAction && ActionId == ((QAction)obj).ActionId;
     }
 
     public override int GetHashCode() {
-        return ActionIndex.GetHashCode();
+        return ActionId.GetHashCode();
     }
 }

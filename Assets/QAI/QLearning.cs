@@ -14,7 +14,7 @@ class QLearning {
     private readonly QAgent _agent;
     private readonly Random _rng;
 
-    private const string QTablePath = "JOHN.xml";
+    private const string QTablePath = "QData/JOHN.xml";
 
     public QLearning(QAgent agent, QTable table = null) {
         _agent = agent;
@@ -32,7 +32,7 @@ class QLearning {
         return _QTable.Query(s, a);
     }
 
-    private const double Epsilon = 1;
+    private const double Epsilon = 0.8;
     private QAction EpsilonGreedy(QState s, QAction[] actions) {
         if (_rng.NextDouble() > Epsilon) return actions[_rng.Next(actions.Length)];
         var ordered = actions.Select(a => new {A = a, Q = Q(s, a)}).OrderByDescending(x => x.Q);
