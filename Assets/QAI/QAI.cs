@@ -25,7 +25,7 @@ public class QAI : MonoBehaviour {
     private static QTable _table = null;
 
     public static void Learn(QAgent agent) {
-        var qlearning = new QLearning(agent, _table);
+        var qlearning = new QLearningQT(agent, _table);
         Iteration++;
         _instance.StartCoroutine(qlearning.Learn(Iteration));
     }

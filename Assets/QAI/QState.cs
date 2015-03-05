@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Linq;
+using JetBrains.Annotations;
 
 public struct QState {
     public readonly int[] State;
     public readonly double Reward;
     public readonly bool IsTerminal;
-    public QState(int[] state, double reward, bool isTerminal) : this() {
+    public readonly double[] Features;
+    public QState(int[] state, double reward, bool isTerminal, double[] features) : this() {
         State = state;
         Reward = reward;
         IsTerminal = isTerminal;
+        Features = features;
     }
 
     public override int GetHashCode() {

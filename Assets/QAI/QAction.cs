@@ -20,4 +20,8 @@ public struct QAction {
     public override int GetHashCode() {
         return ActionId.GetHashCode();
     }
+
+    public void Invoke() {
+        Action.Invoke();
+    }
 }
