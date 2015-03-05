@@ -17,7 +17,7 @@ public struct QAction {
     }
 
     public bool IsValid() {
-        return p != null ? p.Invoke(Action) : true;
+        return p == null || p.Invoke(Action);
     }
 
     public override bool Equals(object obj) {

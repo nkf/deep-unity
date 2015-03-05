@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections;
-using Assets.QAI;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -16,16 +15,16 @@ public class QAI : MonoBehaviour {
     //!!!!!!!!!!ITERATION AND TABLE CACHEING WILL NOT WORK WITH MULTIPLE AGENTS!!!!!!!!!!!
     public static int Iteration { get; private set; }
 
-    public static void Restart(QTable table) {
-        _table = table;
+    private static QMethod _method = null;
+    public static void Restart(QMethod method) {
+        _method = method;
         Debug.Log("Restarting, I: " + Iteration);
         Application.LoadLevel(Application.loadedLevel);
     }
 
-    private static QTable _table = null;
-
     public static void Learn(QAgent agent) {
-        var qlearning = new QLearningQT(agent, _table);
+        //var qlearning = new QLearningQT(agent, _method as QTable);
+        var qlearning = new QLearningFA(agent, _method as QApx);
         Iteration++;
         _instance.StartCoroutine(qlearning.Learn(Iteration));
     }
