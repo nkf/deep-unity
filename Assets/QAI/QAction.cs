@@ -7,10 +7,17 @@ public struct QAction {
     public readonly string ActionId;
     [XmlIgnore]
     public readonly Action Action;
+    [XmlIgnore]
+    private readonly QPredicate.Basic p;
 
-    public QAction(string actionId, Action action) : this() {
+    public QAction(string actionId, Action action, QPredicate.Basic predicate) : this() {
         ActionId = actionId;
         Action = action;
+        p = predicate;
+    }
+
+    public bool IsValid() {
+        return p != null ? p.Invoke(Action) : true;
     }
 
     public override bool Equals(object obj) {

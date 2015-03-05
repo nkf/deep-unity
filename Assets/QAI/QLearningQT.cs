@@ -8,6 +8,7 @@ class QLearningQT : QLearning {
     private readonly QTable _QTable;
     private readonly QAgent _agent;
     private readonly Random _rng;
+    private delegate double Param(int i);
 
     private const string QTablePath = "QData/JOHN.xml";
 
@@ -27,16 +28,17 @@ class QLearningQT : QLearning {
         return _QTable.Query(s, a);
     }
 
-    private const double Epsilon = 0.8;
-    private QAction EpsilonGreedy(QState s, QAction[] actions) {
-        if (_rng.NextDouble() > Epsilon) return actions[_rng.Next(actions.Length)];
-        var ordered = actions.Select(a => new {A = a, Q = Q(s, a)}).OrderByDescending(x => x.Q);
+    private Param eps = t => 0.8;
+    private QAction EpsilonGreedy(QState s, QAction[] actions, int t) {
+        if(_rng.NextDouble() < eps(t)) return actions[_rng.Next(actions.Length)];
+        var ordered = actions.Select(a => new { A = a, Q = Q(s, a) }).OrderByDescending(x => x.Q);
         var highest = ordered.First().Q;
         var highArray = ordered.Where(x => x.Q == highest).ToArray();
         return highArray[_rng.Next(highArray.Length)].A;
     }
 
-    private const double Discount = 0.5;
+    private Param discount = t => 1.0 / t;
+    private Param stepsize = t => 1.0 / t;
     public IEnumerator Learn(int iteration) {
         var t = 1;
         var s = _agent.GetState();
@@ -46,7 +48,7 @@ class QLearningQT : QLearning {
             a.Action.Invoke();
             var s0 = _agent.GetState();
             var a0max = actions.Max(a0 => Q(s0, a0));
-            var v = Q(s, a) + 1.0/t * (s0.Reward + Discount * a0max - Q(s, a));
+            var v = Q(s, a) + stepsize(t) * (s0.Reward + discount(t) * a0max - Q(s, a));
             _QTable.Add(s,a,v);
             s = s0;
             t++;

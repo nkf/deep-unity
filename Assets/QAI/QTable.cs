@@ -6,9 +6,11 @@ using UnityEngine;
 namespace Assets.QAI {
     public class QTable {
         private readonly SerializableDictionary<QState, SerializableDictionary<QAction, double>> _table;
+        private readonly double defr;
 
-        public QTable() {
+        public QTable(double defaultReward) {
             _table = new SerializableDictionary<QState, SerializableDictionary<QAction, double>>();
+            defr = defaultReward;
         }
 
         public void Add(QState s, QAction a, double v) {
@@ -23,9 +25,9 @@ namespace Assets.QAI {
         }
 
         public double Query(QState s, QAction a) {
-            if(!_table.ContainsKey(s)) return 0;
+            if(!_table.ContainsKey(s)) return defr;
             var qa = _table[s];
-            if(!qa.ContainsKey(a)) return 0;
+            if(!qa.ContainsKey(a)) return defr;
             return qa[a];
         }
 
