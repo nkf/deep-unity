@@ -9,7 +9,69 @@ using Assets.QAI;
 using UnityEngine;
 using Random = System.Random;
 
-class QLearning {
+abstract class QLearning {
+    public const double TIE_BREAK = 1e-9;
+
+    protected delegate double param(int i);
+    protected param Epsilon { get { return t => 0.2; } }
+    protected param StepSize { get { return t => 1.0 / t; } }
+    protected param Discount { get { return t => 1.0 / t; } }
+
+    private readonly Random _rng;
+    private QAgent _agent;
+    private IList<QAction> _actions;
+    private int _it = 0;
+
+    public QAgent Agent { get { return _agent; } }
+    public IList<QAction> Actions { get { return _actions; } }
+    public int Iteration { get { return _it; } }
+
+    public QLearning() {
+        _rng = new Random();
+    }
+
+    public IEnumerator<YieldInstruction> RunEpisode(QAgent agent) {
+        _it++;
+        var _agent = agent;
+        var _actions = agent.GetQActions();
+        return Episode();
+    }
+
+    protected virtual IEnumerator<YieldInstruction> Episode() {
+        var s = Agent.GetState();
+        while (!s.IsTerminal) {
+            var a = Policy(s);
+            var q = Q(s, a);
+            a.Action.Invoke();
+            var s0 = Agent.GetState();
+            var a0max = Actions.Max(a0 => Q(s0, a0));
+            var v = q + StepSize(Iteration) * (s0.Reward + Discount(Iteration) * a0max - q);
+            Update(s, a, v);
+            s = s0;
+            yield return new WaitForEndOfFrame();
+        }
+    }
+
+    protected virtual QAction Policy(QState s) {
+        if (Roll() < Epsilon(Iteration)) return Actions[Roll(Actions.Count)];
+        return Actions.Where(a => a.IsValid()).OrderByDescending(a => Q(s, a) + Roll() * TIE_BREAK).First();
+    }
+
+    protected abstract double Q(QState s, QAction a);
+    protected abstract void Update(QState s, QAction a, double v);
+
+    public abstract void SaveModel();
+
+    protected int Roll(int bound) {
+        return _rng.Next(bound);
+    }
+
+    protected double Roll() {
+        return _rng.NextDouble();
+    }
+}
+
+/*class QLearning {
     private delegate double param(int i);
 
     private readonly QTable _QTable;
@@ -33,7 +95,7 @@ class QLearning {
     private double Q(QState s, QAction a) {
         return _QTable.Query(s, a);
     }
-
+    
     private param eps = t => 0.8;
     private QAction EpsilonGreedy(QState s, QAction[] actions, int t) {
         if (_rng.NextDouble() < eps(t)) return actions[_rng.Next(actions.Length)];
@@ -98,3 +160,4 @@ class QLearning {
         }
     }
 }
+*/
