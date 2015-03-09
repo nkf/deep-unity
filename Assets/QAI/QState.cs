@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Linq;
+using JetBrains.Annotations;
 
 public struct QState {
-    public readonly int[] State;
+    public readonly int[] Features;
     public readonly double Reward;
     public readonly bool IsTerminal;
-    public QState(int[] state, double reward, bool isTerminal) : this() {
-        State = state;
+    public QState(int[] features, double reward, bool isTerminal) : this() {
+        Features = features;
         Reward = reward;
         IsTerminal = isTerminal;
     }
 
     public override int GetHashCode() {
         int hash = 23;
-        hash = hash*31 + IntArrayHash(State);
+        hash = hash*31 + IntArrayHash(Features);
         hash = hash*31 + Reward.GetHashCode();
         hash = hash*31 + IsTerminal.GetHashCode();
         return hash;
@@ -23,7 +24,7 @@ public struct QState {
         if (!(obj is QState)) return false;
         var that = (QState) obj;
         var r = true;
-        r &= State.SequenceEqual(that.State);
+        r &= Features.SequenceEqual(that.Features);
         r &= Reward.Equals(that.Reward);
         r &= IsTerminal.Equals(that.IsTerminal);
         return r;

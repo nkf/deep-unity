@@ -3,63 +3,38 @@ using System.IO;
 using System.Xml;
 using UnityEngine;
 
-namespace Assets.QAI {
-    public class QTable {
-        private readonly SerializableDictionary<QState, SerializableDictionary<QAction, double>> _table;
-        private readonly double defr;
+public class QTable : QMethod {
+    private readonly SerializableDictionary<QState, SerializableDictionary<QAction, double>> _table;
+    private readonly double defr;
 
-        public QTable(double defaultReward) {
-            _table = new SerializableDictionary<QState, SerializableDictionary<QAction, double>>();
-            defr = defaultReward;
-        }
+    public QTable(double defaultReward) {
+        _table = new SerializableDictionary<QState, SerializableDictionary<QAction, double>>();
+        defr = defaultReward;
+    }
 
-        public void Add(QState s, QAction a, double v) {
-            SerializableDictionary<QAction, double> qa;
-            if(!_table.ContainsKey(s)) {
-                qa = new SerializableDictionary<QAction, double>();
-                _table.Add(s, qa);
-            } else {
-                qa = _table[s];
-            }
-            qa[a] = v;
+    public void Add(QState s, QAction a, double v) {
+        SerializableDictionary<QAction, double> qa;
+        if(!_table.ContainsKey(s)) {
+            qa = new SerializableDictionary<QAction, double>();
+            _table.Add(s, qa);
+        } else {
+            qa = _table[s];
         }
+        qa[a] = v;
+    }
 
-        public double Query(QState s, QAction a) {
-            if(!_table.ContainsKey(s)) return defr;
-            var qa = _table[s];
-            if(!qa.ContainsKey(a)) return defr;
-            return qa[a];
-        }
+    public double Query(QState s, QAction a) {
+        if(!_table.ContainsKey(s)) return defr;
+        var qa = _table[s];
+        if(!qa.ContainsKey(a)) return defr;
+        return qa[a];
+    }
 
-        public void Load(string path) {
-            FileStream fileStream = null;
-            XmlReader reader = null;
-            try {
-                fileStream = File.Open(path, FileMode.OpenOrCreate);
-                reader = XmlReader.Create(fileStream);
-                _table.ReadXml(reader);
-                Debug.Log("Loaded QTable " + path);
-            } catch(Exception e) {
-                Debug.Log(e);
-            } finally {
-                if (fileStream != null) fileStream.Close();
-                if (reader != null) reader.Close();
-            }
-        }
+    public void Load(string path) {
+        QData.Load(path, _table);
+    }
 
-        public void Save(string path) {
-            XmlWriter writer = null;
-            var xmlSettings = new XmlWriterSettings() {Indent = true};
-            try {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-                writer = XmlWriter.Create(File.Open(path, FileMode.Create), xmlSettings); ;
-                _table.WriteXml(writer);
-                Debug.Log("Saved QTable " + path);
-            } catch(Exception e) {
-                Debug.Log(e);
-            } finally {
-                if(writer != null) writer.Close();
-            }
-        }
+    public void Save(string path) {
+        QData.Save(path, _table);
     }
 }
