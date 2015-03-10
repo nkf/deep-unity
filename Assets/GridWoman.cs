@@ -71,13 +71,4 @@ public class GridWoman : MonoBehaviour, QAgent {
             dead || goal
         );
     }
-
-    void Update() {
-
-    }
-
-    void Start() {
-        QAI.Learn(this);
-
-    }
 }

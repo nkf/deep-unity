@@ -1,50 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections;
+using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class QAI : MonoBehaviour {
+    public delegate void EpisodeCallback();
 
-    public const float TimeStep = 1f;
+    public const float TIME_STEP = 1f;
+    public const bool LEARNING = true; // TODO: User option.
 
-    public static void Run(QAgent agent) {
-        //_instance.StartCoroutine(RunAgent(agent.GetActions()));
-    }
+    public GameObject ActiveAgent;
+
+    private static QAI _instance = null;
+    private QLearning _qlearning;
     
-    //!!!!!!!!!!ITERATION AND TABLE CACHEING WILL NOT WORK WITH MULTIPLE AGENTS!!!!!!!!!!!
-    public static int Iteration { get; private set; }
-
-    private static QMethod _method = null;
-    public static void Restart(QMethod method) {
-        _method = method;
-        Debug.Log("Restarting, I: " + Iteration);
-        Application.LoadLevel(Application.loadedLevel);
-    }
-
-    public static void Learn(QAgent agent) {
-        //var qlearning = new QLearningQT(agent, _method as QTable);
-        var qlearning = new QLearningFA(agent, _method as QApx);
-        Iteration++;
-        _instance.StartCoroutine(qlearning.Learn(Iteration));
-    }
-
-    private static IEnumerator RunAgent(IList<Action> actions) {
-        while (true) {
-            actions[Random.Range(0, actions.Count)].Invoke();
-            yield return new WaitForSeconds(TimeStep);
+    public void EndOfEpisode() {
+        Debug.Log(_qlearning.Iteration);
+        if (_qlearning.Iteration > 200) { // TODO: Termination condition.
+            _qlearning.SaveModel();
+        } else {
+            Application.LoadLevel(Application.loadedLevel);
         }
     }
 
-    private static QAI _instance;
+    private IEnumerator<YieldInstruction> RunAgent(IList<QAction> actions) {
+        _qlearning.LoadModel();
+        while (true) {
+            var legal = actions.Where(a => a.IsValid());
+            legal.ElementAt(Random.Range(0, actions.Count)).Action.Invoke(); // TODO: Not random.
+            yield return new WaitForSeconds(TIME_STEP);
+        }
+    }
+
     void Awake() {
-        var n = GameObject.FindGameObjectsWithTag("QAI").Length;
-        if (n >= 1) {
-            Destroy(gameObject);
-        } else {
-            DontDestroyOnLoad(gameObject);
-            gameObject.tag = "QAI";
+        if (_instance == null) {
             _instance = this;
+            if (LEARNING) {
+                var woman = ActiveAgent.GetComponent<QAgent>();
+                _qlearning = new QLearningQT(woman);
+                _qlearning.RemakeModel();
+                DontDestroyOnLoad(gameObject);
+                StartCoroutine(_qlearning.RunEpisode(woman, EndOfEpisode));
+            } // TODO: If not learning.
+        } else {
+            _instance.ActiveAgent = this.ActiveAgent;
+            var woman = ActiveAgent.GetComponent<QAgent>(); // TODO: Multiple agents.
+            _instance.StartCoroutine(_instance._qlearning.RunEpisode(woman, _instance.EndOfEpisode));
+            Destroy(gameObject);
         }
     }
 }
