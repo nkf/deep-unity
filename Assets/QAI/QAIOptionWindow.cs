@@ -5,6 +5,7 @@ using System.Linq;
 
 public class QAIOptionWindow : EditorWindow {
 	private bool _imitation;
+	private bool _learning;
 	private bool _show = true;
 
 	// Add menu named "My Window" to the Window menu
@@ -12,16 +13,26 @@ public class QAIOptionWindow : EditorWindow {
 	static void Init () {
 		// Get existing open window or if none, make a new one:
 		QAIOptionWindow window = (QAIOptionWindow)EditorWindow.GetWindow (typeof (QAIOptionWindow));
-		window._imitation = GameObject.FindObjectsOfType<QAI>().All(q => q.ImitationProcess);
+		var ais = GameObject.FindObjectsOfType<QAI>();
+		window._imitation = ais.All(q => q.IMITATING);
+		window._learning = ais.All (q => q.LEARNING);
 		window.Show();
 	}
 
 	void OnGUI() {
-		if(_show = EditorGUILayout.Foldout(_show, "Imitation Learning")) {	
-			_imitation = EditorGUILayout.Toggle("Learn on play", _imitation);
+		EditorGUILayout.HelpBox("To train the AI, turn on learning. You can leave this on during play to have the AI adapt over time to the way the user is playing", MessageType.None);
+		_learning = EditorGUILayout.ToggleLeft("Learning", _learning);
+		if(_learning) {	
+			if(_show = EditorGUILayout.Foldout(_show, "Imitation Learning")) {
+				EditorGUI.indentLevel++;
+				EditorGUILayout.HelpBox("It is possible for the developer to teach the AI the first steps of how to play the game. Implement the method GetImitationAction to send input to the AI and QAI.Imitate to tell the AI that new input is available.", MessageType.Info);
+				_imitation = EditorGUILayout.Toggle("Learn from player input", _imitation);
+				EditorGUI.indentLevel--;
+			}
 		}
 		foreach(var ai in GameObject.FindObjectsOfType<QAI>()) {
-			ai.ImitationProcess = _imitation;
+			ai.IMITATING = _imitation;
+			ai.LEARNING = _learning;
 		}
 	}
 }

@@ -17,6 +17,7 @@ public abstract class QLearning {
     public QAgent Agent { get; private set; }
     public IList<QAction> Actions { get; private set; }
     public int Iteration { get; private set; }
+	public bool Imitating { get; set; }
 
     public QLearning(QAgent agent) {
         _rng = new Random();
@@ -33,9 +34,8 @@ public abstract class QLearning {
 
     protected virtual IEnumerator<YieldInstruction> Episode(QAI.EpisodeCallback callback) {
         var s = Agent.GetState();
-        Debug.Log(s.IsTerminal);
         while (!s.IsTerminal) {
-            var a = Policy(s);
+            var a = Imitating ? Agent.ConvertImitationAction() : Policy(s);
             var q = Q(s, a);
             a.Action.Invoke();
             var s0 = Agent.GetState();
