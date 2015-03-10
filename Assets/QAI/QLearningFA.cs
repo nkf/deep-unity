@@ -23,20 +23,20 @@ public class QLearningFA : QLearning {
 
     public IEnumerator Learn(int iteration) {
         var s = _agent.GetState();
-        var apx = _apx.Copy();
         var t = 1;
         while (!s.IsTerminal) {
             var a = _apx.Policy(s, _agent.GetQActions().Where(qa => qa.IsValid()), t);
             a.Invoke();
             var sn = _agent.GetState();
             var r = sn.Reward; 
-            apx.Update(a,r,s, _agent.GetQActions(), sn, t);
+            _apx.SaveUpdate(a,r,s, _agent.GetQActions(), sn, t);
             s = sn;
             t++;
             yield return new WaitForEndOfFrame();
         }
+        _apx.CompleteUpdate();
         if(iteration % 10 == 0)
-            apx.Save(QApxName);
-        QAI.Restart(apx);
+            _apx.Save(QApxName);
+        QAI.Restart(_apx);
     }
 }
