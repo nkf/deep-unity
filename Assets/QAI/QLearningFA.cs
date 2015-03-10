@@ -8,35 +8,45 @@ public class QLearningFA : QLearning {
 
     private const string QApxName = "QApx.xml";
 
-    private readonly QAgent _agent;
-    private readonly QApx _apx;
+    private QApx _apx;
 
-    public QLearningFA(QAgent agent, QApx apx = null) {
-        _agent = agent;
-        if(apx == null) {
-            _apx = new QApx(_agent.GetQActions(), _agent.GetState().Features.Length);
-            _apx.Load(QApxName);
-        } else {
-            _apx = apx;
-        }
+    public QLearningFA(QAgent agent) : base(agent) { }
+
+    public override void LoadModel() {
+        _apx.Load(QApxName);
     }
 
-    public IEnumerator Learn(int iteration) {
-        var s = _agent.GetState();
+    public override void SaveModel() {
+        _apx.Save(QApxName);
+    }
+
+    public override void RemakeModel() {
+        _apx = new QApx(Actions, Agent.GetState().Features.Length);
+    }
+
+    protected override double Q(QState s, QAction a) {
+        throw new NotImplementedException();
+    }
+
+    protected override void Update(QState s, QAction a, double v) {
+        throw new NotImplementedException();
+    }
+
+    protected override IEnumerator<YieldInstruction> Episode(QAI.EpisodeCallback callback) {
+        var s = Agent.GetState();
         var apx = _apx.Copy();
         var t = 1;
         while (!s.IsTerminal) {
-            var a = _apx.Policy(s, _agent.GetQActions().Where(qa => qa.IsValid()), t);
+            var a = _apx.Policy(s, Agent.GetQActions().Where(qa => qa.IsValid()), t);
             a.Invoke();
-            var sn = _agent.GetState();
-            var r = sn.Reward; 
-            apx.Update(a,r,s, _agent.GetQActions(), sn, t);
+            var sn = Agent.GetState();
+            var r = sn.Reward;
+            apx.Update(a, r, s, Agent.GetQActions(), sn, t);
             s = sn;
             t++;
             yield return new WaitForEndOfFrame();
         }
-        if(iteration % 10 == 0)
-            apx.Save(QApxName);
-        QAI.Restart(apx);
+        _apx = apx;
+        callback();
     }
 }
