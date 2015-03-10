@@ -49,10 +49,16 @@ public class GridWoman : MonoBehaviour, QAgent {
         return new[] {a[0], a[1], a[2], b[0], b[1], b[2]};
     }
 
-    private readonly int[] GoalState = {2, 1, 4};
+
+    private readonly Vector3 Min = new Vector3(-1,0,-4);
+    private int[] Offset(Vector3 p) {
+        return PositionToState(p - Min);
+    }
+
+    private readonly Vector3 GoalState = new Vector3(2, 1, 4);
     public QState GetState() {
-        var p = PositionToState(transform.position);
-        var g = GoalState;
+        var p = Offset(transform.position);
+        var g = Offset(GoalState);
 
         var state = PosAndGoal(p, g);
         //var state = VectorToGoal(transform.position, new Vector3(GoalState[0], GoalState[1], GoalState[2]));
