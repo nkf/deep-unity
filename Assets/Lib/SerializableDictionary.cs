@@ -47,17 +47,21 @@ public class SerializableDictionary<TKey, TValue>
     public void WriteXml(System.Xml.XmlWriter writer) {
         XmlSerializer keySerializer = new XmlSerializer(typeof(TKey));
         XmlSerializer valueSerializer = new XmlSerializer(typeof(TValue));
+        
+        var xns = new XmlSerializerNamespaces();
+        xns.Add(string.Empty, string.Empty);
+
         writer.WriteStartElement("root");
         foreach(TKey key in this.Keys) {
             writer.WriteStartElement("item");
 
             writer.WriteStartElement("key");
-            keySerializer.Serialize(writer, key);
+            keySerializer.Serialize(writer, key, xns);
             writer.WriteEndElement();
 
             writer.WriteStartElement("value");
             TValue value = this[key];
-            valueSerializer.Serialize(writer, value);
+            valueSerializer.Serialize(writer, value, xns);
             writer.WriteEndElement();
 
             writer.WriteEndElement();
