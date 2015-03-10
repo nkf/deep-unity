@@ -20,15 +20,7 @@ public class QApx : QMethod {
     }
     private readonly Random _rng = new Random();
     private readonly Func<int, double> _eps = t => 0.0;
-    public QAction Policy(QState s, IEnumerable<QAction> actions, int t) {
-        if(_rng.NextDouble() < _eps(t)) {
-            var qActions = actions.ToArray();
-            return qActions[_rng.Next(qActions.Length)];
-        }
-        return actions
-            .Select(a => new {q = Q(s, a), a })
-            .MaxWithRandomTie(x => x.q).a;
-    }
+    
     private readonly Func<int, double> _discount = t => 0.9;
     private readonly Func<int, double> _stepsize = t => 1.0 / t;
     public void Update(QAction a, double r, QState s, IEnumerable<QAction> ap, QState sn, int t) {

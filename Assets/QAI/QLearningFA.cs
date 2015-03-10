@@ -25,11 +25,21 @@ public class QLearningFA : QLearning {
     }
 
     protected override double Q(QState s, QAction a) {
-        throw new NotImplementedException();
+        return _apx.Q(s, a);
     }
 
     protected override void Update(QState s, QAction a, double v) {
         throw new NotImplementedException();
+    }
+
+    public QAction Policy(QState s, IEnumerable<QAction> actions, int t) {
+        if(Roll() < Epsilon(t)) {
+            var qActions = actions.ToArray();
+            return qActions[Roll(qActions.Length)];
+        }
+        return actions
+            .Select(a => new { q = Q(s, a), a })
+            .MaxWithRandomTie(x => x.q).a;
     }
 
     protected override IEnumerator<YieldInstruction> Episode(QAI.EpisodeCallback callback) {
@@ -37,7 +47,7 @@ public class QLearningFA : QLearning {
         var apx = _apx.Copy();
         var t = 1;
         while (!s.IsTerminal) {
-            var a = _apx.Policy(s, Agent.GetQActions().Where(qa => qa.IsValid()), t);
+            var a = Policy(s, Agent.GetQActions().Where(qa => qa.IsValid()), t);
             a.Invoke();
             var sn = Agent.GetState();
             var r = sn.Reward;
