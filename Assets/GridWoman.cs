@@ -55,11 +55,10 @@ public class GridWoman : MonoBehaviour, QAgent {
         return PositionToState(p - Min);
     }
 
-    private readonly Vector3 GoalState = new Vector3(2, 1, 4);
+    private readonly int[] GoalState;
     public QState GetState() {
-        var p = Offset(transform.position);
-        var g = Offset(GoalState);
-
+        var p = PositionToState(transform.position);
+        var g = Goal.State;
         var state = PosAndGoal(p, g);
         //var state = VectorToGoal(transform.position, new Vector3(GoalState[0], GoalState[1], GoalState[2]));
         var dead = !isAboveGround();
