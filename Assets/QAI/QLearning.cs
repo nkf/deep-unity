@@ -19,7 +19,7 @@ public abstract class QLearning {
     public int Iteration { get; private set; }
 	public bool Imitating { get; set; }
 
-    public QLearning(QAgent agent) {
+    protected QLearning(QAgent agent) {
         _rng = new Random();
         Agent = agent;
         Actions = agent.GetQActions();
@@ -29,7 +29,11 @@ public abstract class QLearning {
         Iteration++;
         Agent = agent;
         Actions = agent.GetQActions();
-        return Episode(callback);
+        yield return new WaitForEndOfFrame();
+        var episode = Episode(callback);
+        while (episode.MoveNext()) {
+            yield return episode.Current;
+        }
     }
 
     protected virtual IEnumerator<YieldInstruction> Episode(QAI.EpisodeCallback callback) {
