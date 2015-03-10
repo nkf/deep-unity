@@ -29,9 +29,9 @@ public class QNetwork : IEnumerable<QNode[]> {
         en.MoveNext();
         var prevLayer = en.Current;
         while (en.MoveNext()) {
-            for (int i = 0; i < en.Current.Length; i++)
-                for (int j = 0; j < prevLayer.Length; j++)
-                    prevLayer[j].ConnectTo(en.Current[i], weights != null ? weights[wi++] : rng.NextDouble());
+            for (int i = 0; i < prevLayer.Length; i++)
+                for (int j = 0; j < en.Current.Length; j++)
+                    prevLayer[i].ConnectTo(en.Current[j], weights != null ? weights[wi++] : rng.NextDouble());
             prevLayer = en.Current;
         }
     }
@@ -75,6 +75,7 @@ public class QNetwork : IEnumerable<QNode[]> {
         try {
             fs = File.Open(Path.Combine("QData", path), FileMode.Create);
             StreamWriter sw = new StreamWriter(fs);
+            sw.AutoFlush = true;
             sw.WriteLine(string.Join(",", new[] {
                 input.Length, output.Length, hidden.Length, hidden[0].Length
             }.Select(i => i.ToString()).ToArray()));

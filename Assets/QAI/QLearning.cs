@@ -59,6 +59,7 @@ public abstract class QLearning {
     public abstract void SaveModel();
     public abstract void LoadModel();
     public abstract void RemakeModel();
+    public abstract QAction BestAction();
 
     protected int Roll(int bound) {
         return _rng.Next(bound);

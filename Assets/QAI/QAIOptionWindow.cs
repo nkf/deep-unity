@@ -7,6 +7,7 @@ public class QAIOptionWindow : EditorWindow {
 	private bool _imitation;
 	private bool _learning;
 	private bool _show = true;
+    private int _term;
 
 	// Add menu named "My Window" to the Window menu
 	[MenuItem ("QAI/Options")]
@@ -22,7 +23,8 @@ public class QAIOptionWindow : EditorWindow {
 	void OnGUI() {
 		EditorGUILayout.HelpBox("To train the AI, turn on learning. You can leave this on during play to have the AI adapt over time to the way the user is playing", MessageType.None);
 		_learning = EditorGUILayout.ToggleLeft("Learning", _learning);
-		if(_learning) {	
+		if(_learning) {
+            _term = EditorGUILayout.IntField("Terminate after # episodes", _term);
 			if(_show = EditorGUILayout.Foldout(_show, "Imitation Learning")) {
 				EditorGUI.indentLevel++;
 				EditorGUILayout.HelpBox("It is possible for the developer to teach the AI the first steps of how to play the game. Implement the method GetImitationAction to send input to the AI and QAI.Imitate to tell the AI that new input is available.", MessageType.Info);
@@ -33,6 +35,7 @@ public class QAIOptionWindow : EditorWindow {
 		foreach(var ai in GameObject.FindObjectsOfType<QAI>()) {
 			ai.IMITATING = _imitation;
 			ai.LEARNING = _learning;
+            ai.TERMINATOR = _term;
 		}
 	}
 }

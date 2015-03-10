@@ -9,10 +9,12 @@ public class QAI : MonoBehaviour {
     public delegate void EpisodeCallback();
 
     public const float TIME_STEP = 1f;
-	[HideInInspector]
-    public bool LEARNING = true; // TODO: User option.
+    [HideInInspector]
+    public bool LEARNING;
 	[HideInInspector]
 	public bool IMITATING;
+    [HideInInspector]
+    public int TERMINATOR;
 
     public GameObject ActiveAgent;
 
@@ -20,18 +22,16 @@ public class QAI : MonoBehaviour {
     private QLearning _qlearning;
     
     public void EndOfEpisode() {
-        if (_qlearning.Iteration > 200) { // TODO: Termination condition.
+        if (_qlearning.Iteration > TERMINATOR) {
             _qlearning.SaveModel();
         } else {
             Application.LoadLevel(Application.loadedLevel);
         }
     }
 
-    private IEnumerator<YieldInstruction> RunAgent(IList<QAction> actions) {
-        _qlearning.LoadModel();
+    private IEnumerator<YieldInstruction> RunAgent() {
         while (true) {
-            var legal = actions.Where(a => a.IsValid());
-            legal.ElementAt(Random.Range(0, actions.Count)).Action.Invoke(); // TODO: Not random.
+            _qlearning.BestAction().Action.Invoke();
             yield return new WaitForSeconds(TIME_STEP);
         }
     }
@@ -48,14 +48,18 @@ public class QAI : MonoBehaviour {
     void Awake() {
         if (_instance == null) {
             _instance = this;
+            var woman = ActiveAgent.GetComponent<QAgent>();
+            //_qlearning = new QLearningQT(woman) { Imitating = IMITATING };
+            _qlearning = new QLearningNN(woman);
             if (LEARNING) {
-                var woman = ActiveAgent.GetComponent<QAgent>();
-                _qlearning = new QLearningQT(woman) {Imitating = IMITATING};
                 _qlearning.RemakeModel();
                 DontDestroyOnLoad(gameObject);
-				if(!IMITATING)
-                	StartCoroutine(_qlearning.RunEpisode(woman, EndOfEpisode));
-            } // TODO: If not learning.
+                if (!IMITATING)
+                    StartCoroutine(_qlearning.RunEpisode(woman, EndOfEpisode));
+            } else {
+                _qlearning.LoadModel();
+                StartCoroutine(RunAgent());
+            }
         } else {
             _instance.ActiveAgent = this.ActiveAgent;
             var woman = ActiveAgent.GetComponent<QAgent>(); // TODO: Multiple agents.

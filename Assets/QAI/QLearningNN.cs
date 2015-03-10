@@ -19,18 +19,23 @@ public class QLearningNN : QLearning {
     }
 
     private QNetwork _net;
-    private bool _updated = true;
     private Dictionary<string, int> _amap;
+    private int[] _cache;
     private double[] _output;
+    private bool _updated = false;
 
     public QLearningNN(QAgent agent) : base(agent) { }
 
     public override void LoadModel() {
-        throw new NotImplementedException();
+        _net = QNetwork.Load(MODEL_PATH);
+        _amap = new Dictionary<string, int>();
+        int ix = 0;
+        foreach (QAction a in Actions)
+            _amap[a.ActionId] = ix++;
     }
 
     public override void SaveModel() {
-        // Woops.
+        _net.Save(MODEL_PATH);
     }
 
     public override void RemakeModel() {
@@ -43,8 +48,9 @@ public class QLearningNN : QLearning {
     }
 
     protected override double Q(QState s, QAction a) {
-        if (_updated) {
+        if (s.Features != _cache || _updated) {
             _net.Feedforward(s.Features.Select(f => (double)f).ToArray());
+            _cache = s.Features;
             _output = _net.Output().ToArray();
             _updated = false;
         }
@@ -55,5 +61,10 @@ public class QLearningNN : QLearning {
         _output[_amap[a.ActionId]] = v;
         _net.Backpropagate(_output);
         _updated = true;
+    }
+
+    public override QAction BestAction() {
+        var s = Agent.GetState();
+        return Actions.Where(a => a.IsValid()).OrderByDescending(a => Q(s, a)).First();
     }
 }

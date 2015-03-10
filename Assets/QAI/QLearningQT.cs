@@ -12,6 +12,10 @@ public class QLearningQT : QLearning {
 
     public QLearningQT(QAgent agent) : base(agent) { }
 
+    public override QAction BestAction() {
+        throw new NotImplementedException();
+    }
+
     public override void LoadModel() {
         _QTable.Load(QTableName);
     }

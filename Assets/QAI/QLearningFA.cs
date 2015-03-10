@@ -12,6 +12,10 @@ public class QLearningFA : QLearning {
 
     public QLearningFA(QAgent agent) : base(agent) { }
 
+    public override QAction BestAction() {
+        throw new NotImplementedException();
+    }
+
     public override void LoadModel() {
         _apx.Load(QApxName);
     }
