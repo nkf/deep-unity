@@ -19,7 +19,7 @@ public class QBehavior : Attribute {
     public QAction ObtainAction(QAgent agent, string name) {
         var p = agent.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             .Where(m => m.Name == predicate).FirstOrDefault();
-        if (p == null)
+        if (p == default(MethodInfo))
             throw new Exception("Predicate method " + predicate + " does not exist.");
         if (p.GetCustomAttributes(typeof(QPredicate), true).Length == 0)
             throw new Exception("Predicate method " + predicate + " is not properly annotated as a QPredicate.");

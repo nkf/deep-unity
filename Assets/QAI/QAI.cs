@@ -16,7 +16,6 @@ public class QAI : MonoBehaviour {
     private QLearning _qlearning;
     
     public void EndOfEpisode() {
-        Debug.Log(_qlearning.Iteration);
         if (_qlearning.Iteration > 200) { // TODO: Termination condition.
             _qlearning.SaveModel();
         } else {
@@ -38,7 +37,7 @@ public class QAI : MonoBehaviour {
             _instance = this;
             if (LEARNING) {
                 var woman = ActiveAgent.GetComponent<QAgent>();
-                _qlearning = new QLearningQT(woman);
+                _qlearning = new QLearningNN(woman);
                 _qlearning.RemakeModel();
                 DontDestroyOnLoad(gameObject);
                 StartCoroutine(_qlearning.RunEpisode(woman, EndOfEpisode));

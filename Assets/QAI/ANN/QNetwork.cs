@@ -1,35 +1,38 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using UnityEngine;
+using Random = System.Random;
 
-public class QNetwork {
+public class QNetwork : IEnumerable<QNode[]> {
     private readonly QNode[] input, output;
     private readonly QNode[][] hidden;
+    private readonly Random rng;
 
-    public QNetwork(int inputSize, int outputSize, int numHiddenLayers, int hiddenLayerSize) {
+    public QNetwork(int inputSize, int outputSize, int numHiddenLayers, int hiddenLayerSize, double[] weights = null) {
+        if (weights == null) rng = new Random();
+        int wi = 0;
+        // Initialize arrays.
         input = new QNode[inputSize];
         output = new QNode[outputSize];
         hidden = new QNode[numHiddenLayers][];
-        // Input layer.
-        for (int i = 0; i < inputSize; i++)
-            input[i] = new QNode();
-        // Hidden layers.
-        QNode[] prevLayer = input;
-        for (int n = 0; n < numHiddenLayers; n++) {
-            hidden[n] = new QNode[hiddenLayerSize];
-            for (int i = 0; i < hiddenLayerSize; i++) {
-                hidden[n][i] = new QNode();
+        for (int i = 0; i < numHiddenLayers; i++)
+            hidden[i] = new QNode[hiddenLayerSize];
+        // Initialize array contents.
+        foreach (var layer in this)
+            for (int i = 0; i < layer.Length; i++)
+                layer[i] = new QNode();
+        // Build the network topology.
+        var en = GetEnumerator();
+        en.MoveNext();
+        var prevLayer = en.Current;
+        while (en.MoveNext()) {
+            for (int i = 0; i < en.Current.Length; i++)
                 for (int j = 0; j < prevLayer.Length; j++)
-                    prevLayer[j].Connect(hidden[n][i]);
-            }
-            prevLayer = hidden[n];
-        }
-        // Output layer.
-        output = new QNode[outputSize];
-        for (int i = 0; i < outputSize; i++) {
-            output[i] = new QNode();
-            for (int j = 0; j < prevLayer.Length; j++)
-                prevLayer[j].Connect(output[i]);
+                    prevLayer[j].ConnectTo(en.Current[i], weights != null ? weights[wi++] : rng.NextDouble());
+            prevLayer = en.Current;
         }
     }
 
@@ -54,5 +57,54 @@ public class QNetwork {
 
     public IEnumerable<double> Output() {
         return output.Select(n => n.Signal);
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() {
+        return GetEnumerator();
+    }
+
+    public IEnumerator<QNode[]> GetEnumerator() {
+        yield return input;
+        foreach (var layer in hidden)
+            yield return layer;
+        yield return output;
+    }
+
+    public void Save(string path) {
+        FileStream fs = null;
+        try {
+            fs = File.Open(Path.Combine("QData", path), FileMode.Create);
+            StreamWriter sw = new StreamWriter(fs);
+            sw.WriteLine(string.Join(",", new[] {
+                input.Length, output.Length, hidden.Length, hidden[0].Length
+            }.Select(i => i.ToString()).ToArray()));
+            sw.WriteLine(string.Join(",",
+                this.SelectMany(l => l).SelectMany(n => n.Weights()).Select(w => w.ToString()).ToArray()
+            ));
+        } catch (IOException e) {
+            Debug.Log(e);
+        } finally {
+            fs.Close();
+        }
+    }
+
+    public static QNetwork Load(string path) {
+        FileStream fs = null;
+        try {
+            fs = File.Open(Path.Combine("QData", path), FileMode.Open);
+            StreamReader sr = new StreamReader(fs);
+            var line = sr.ReadLine().Split(new[] { ',' });
+            int input = int.Parse(line[0]);
+            int output = int.Parse(line[1]);
+            int hlayers = int.Parse(line[2]);
+            int hsize = int.Parse(line[3]);
+            double[] weights = sr.ReadLine().Split(new[] { ',' }).Select(s => double.Parse(s)).ToArray();
+            return new QNetwork(input, output, hlayers, hsize, weights);
+        } catch (IOException e) {
+            Debug.Log(e);
+            throw new Exception("Cannot load network from file " + path);
+        } finally {
+            fs.Close();
+        }
     }
 }

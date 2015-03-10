@@ -33,7 +33,6 @@ public abstract class QLearning {
 
     protected virtual IEnumerator<YieldInstruction> Episode(QAI.EpisodeCallback callback) {
         var s = Agent.GetState();
-        Debug.Log(s.IsTerminal);
         while (!s.IsTerminal) {
             var a = Policy(s);
             var q = Q(s, a);
