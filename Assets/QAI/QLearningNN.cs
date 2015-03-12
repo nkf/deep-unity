@@ -12,7 +12,7 @@ public class QLearningNN {
 
     private QLearning.param Epsilon = t => 25 - t / 4;
     private QLearning.param Discount = t => 0.99;
-    private QLearning.param StepSize = t => 1.0 / t;
+    private QLearning.param StepSize = t => 0.5;
 
     public QAgent Agent { get; private set; }
     public IList<QAction> Actions { get; private set; }

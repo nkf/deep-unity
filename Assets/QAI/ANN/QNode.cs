@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 public class QNode {
-    public readonly List<QNode> outgoing;
+    private readonly List<QNode> outgoing;
     private readonly List<double> weights;
     private double value, error;
-    public int saturation = 0, arity = 0;
+    private int saturation = 0, arity = 0;
 
     public double Signal { get; private set; }
 
