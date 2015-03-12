@@ -9,10 +9,9 @@ using Random = System.Random;
 public class QNetwork : IEnumerable<QNode[]> {
     private readonly QNode[] input, output;
     private readonly QNode[][] hidden;
-    private readonly Random rng;
+    private readonly Random rng = new Random();
 
     public QNetwork(int inputSize, int outputSize, int numHiddenLayers, int hiddenLayerSize, double[] weights = null) {
-        if (weights == null) rng = new Random();
         int wi = 0;
         // Initialize arrays.
         input = new QNode[inputSize];
@@ -41,17 +40,17 @@ public class QNetwork : IEnumerable<QNode[]> {
             input[i].Activate(values[i]);
     }
 
-    public void Backpropagate(double[] targets) {
+    public void Backpropagate(double[] targets, double lrate) {
         for (int i = 0; i < output.Length; i++)
             output[i].CalculateError(targets[i]);
         for (int n = hidden.Length - 1; n >= 0; n--)
             for (int i = 0; i < hidden[n].Length; i++) {
                 hidden[n][i].CalculateError();
-                hidden[n][i].AdjustWeights();
+                hidden[n][i].AdjustWeights(lrate);
             }
         for (int i = 0; i < input.Length; i++) {
             input[i].CalculateError();
-            input[i].AdjustWeights();
+            input[i].AdjustWeights(lrate);
         }
     }
 
@@ -80,7 +79,7 @@ public class QNetwork : IEnumerable<QNode[]> {
                 input.Length, output.Length, hidden.Length, hidden[0].Length
             }.Select(i => i.ToString()).ToArray()));
             sw.WriteLine(string.Join(",",
-                this.SelectMany(l => l).SelectMany(n => n.Weights()).Select(w => w.ToString()).ToArray()
+                this.SelectMany(l => l).SelectMany(n => n.GetWeights()).Select(w => w.ToString()).ToArray()
             ));
         } catch (IOException e) {
             Debug.Log(e);
@@ -94,12 +93,13 @@ public class QNetwork : IEnumerable<QNode[]> {
         try {
             fs = File.Open(Path.Combine("QData", path), FileMode.Open);
             StreamReader sr = new StreamReader(fs);
-            var line = sr.ReadLine().Split(new[] { ',' });
+            var delim = new[] { ',' };
+            var line = sr.ReadLine().Split(delim);
             int input = int.Parse(line[0]);
             int output = int.Parse(line[1]);
             int hlayers = int.Parse(line[2]);
             int hsize = int.Parse(line[3]);
-            double[] weights = sr.ReadLine().Split(new[] { ',' }).Select(s => double.Parse(s)).ToArray();
+            double[] weights = sr.ReadLine().Split(delim).Select(s => double.Parse(s)).ToArray();
             return new QNetwork(input, output, hlayers, hsize, weights);
         } catch (IOException e) {
             Debug.Log(e);

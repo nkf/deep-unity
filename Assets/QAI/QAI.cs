@@ -11,6 +11,8 @@ public class QAI : MonoBehaviour {
     public const float TIME_STEP = 1f;
     [HideInInspector]
     public bool LEARNING;
+    [HideInInspector]
+    public bool REMAKE;
 	[HideInInspector]
 	public bool IMITATING;
     [HideInInspector]
@@ -19,7 +21,7 @@ public class QAI : MonoBehaviour {
     public GameObject ActiveAgent;
 
     private static QAI _instance = null;
-    private QLearning _qlearning;
+    private QLearningNN _qlearning;
     
     public void EndOfEpisode() {
         if (_qlearning.Iteration > TERMINATOR) {
@@ -52,7 +54,10 @@ public class QAI : MonoBehaviour {
             //_qlearning = new QLearningQT(woman) { Imitating = IMITATING };
             _qlearning = new QLearningNN(woman);
             if (LEARNING) {
-                _qlearning.RemakeModel();
+                if (REMAKE)
+                    _qlearning.RemakeModel();
+                else
+                    _qlearning.LoadModel();
                 DontDestroyOnLoad(gameObject);
                 if (!IMITATING)
                     StartCoroutine(_qlearning.RunEpisode(woman, EndOfEpisode));

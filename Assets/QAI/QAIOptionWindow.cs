@@ -6,6 +6,7 @@ using System.Linq;
 public class QAIOptionWindow : EditorWindow {
 	private bool _imitation;
 	private bool _learning;
+    private bool _remake;
 	private bool _show = true;
     private int _term;
 
@@ -16,7 +17,9 @@ public class QAIOptionWindow : EditorWindow {
 		QAIOptionWindow window = (QAIOptionWindow)EditorWindow.GetWindow (typeof (QAIOptionWindow));
 		var ais = GameObject.FindObjectsOfType<QAI>();
 		window._imitation = ais.All(q => q.IMITATING);
-		window._learning = ais.All (q => q.LEARNING);
+		window._learning = ais.All(q => q.LEARNING);
+        window._remake = ais.All(q => q.REMAKE);
+        window._term = ais.First().TERMINATOR;
 		window.Show();
 	}
 
@@ -24,6 +27,7 @@ public class QAIOptionWindow : EditorWindow {
 		EditorGUILayout.HelpBox("To train the AI, turn on learning. You can leave this on during play to have the AI adapt over time to the way the user is playing", MessageType.None);
 		_learning = EditorGUILayout.ToggleLeft("Learning", _learning);
 		if(_learning) {
+            _remake = EditorGUILayout.ToggleLeft("Remake model", _remake);
             _term = EditorGUILayout.IntField("Terminate after # episodes", _term);
 			if(_show = EditorGUILayout.Foldout(_show, "Imitation Learning")) {
 				EditorGUI.indentLevel++;
@@ -35,6 +39,7 @@ public class QAIOptionWindow : EditorWindow {
 		foreach(var ai in GameObject.FindObjectsOfType<QAI>()) {
 			ai.IMITATING = _imitation;
 			ai.LEARNING = _learning;
+            ai.REMAKE = _remake;
             ai.TERMINATOR = _term;
 		}
 	}

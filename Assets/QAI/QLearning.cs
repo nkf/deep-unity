@@ -7,7 +7,7 @@ using Random = System.Random;
 public abstract class QLearning {
     public const double TIE_BREAK = 1e-9;
 
-    protected delegate double param(int i);
+    public delegate double param(int i);
     protected virtual param Epsilon { get { return t => 0.2; } }
     protected virtual param StepSize { get { return t => 1.0 / t; } }
     protected virtual param Discount { get { return t => 1.0 / t; } }
