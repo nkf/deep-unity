@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Linq;
@@ -6,6 +6,7 @@ using System.Linq;
 public class QAIOptionWindow : EditorWindow {
 	private bool _imitation;
 	private bool _learning;
+    private bool _remake;
 	private bool _show = true;
 	private bool _experienceReplay;
     private int _term;
@@ -19,6 +20,9 @@ public class QAIOptionWindow : EditorWindow {
 		window._imitation = ais.All(q => q.IMITATING);
 		window._learning = ais.All (q => q.LEARNING);
 		window._experienceReplay = ais.All (q => q.EXPERIENCE_REPLAY);
+		window._learning = ais.All(q => q.LEARNING);
+        window._remake = ais.All(q => q.REMAKE);
+        window._term = ais.First().TERMINATOR; 
 		window.Show();
 	}
 
@@ -28,13 +32,15 @@ public class QAIOptionWindow : EditorWindow {
 		_learning = EditorGUILayout.ToggleLeft("Learning", _learning);
 		if(_learning) {
 			//PROGRESS BAR
-			var r = EditorGUILayout.BeginVertical();
-			var i = ais.First().Iteration;
-			if(i > 0) {
-				EditorGUI.ProgressBar(r, i / (float)_term, "Progress");
-				GUILayout.Space(18);
+			if(ais.Length > 0) {
+				var r = EditorGUILayout.BeginVertical();
+				var i = ais.First().Iteration;
+				if(i > 0) {
+					EditorGUI.ProgressBar(r, i / (float)_term, "Progress");
+					GUILayout.Space(18);
+				}
+				EditorGUILayout.EndVertical();
 			}
-			EditorGUILayout.EndVertical();
 
 			//EPISODE COUNT
             _term = EditorGUILayout.IntField("Terminate after # episodes", _term);
@@ -53,6 +59,7 @@ public class QAIOptionWindow : EditorWindow {
 		foreach(var ai in ais) {
 			ai.IMITATING = _imitation;
 			ai.LEARNING = _learning;
+            ai.REMAKE = _remake;
             ai.TERMINATOR = _term;
 			ai.EXPERIENCE_REPLAY = _experienceReplay;
 		}

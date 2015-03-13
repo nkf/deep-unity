@@ -1,32 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+using Random = System.Random;
 
-public class QLearningNN : QLearning {
+public class QLearningNN {
+    private delegate double ActionValueFunction(QAction a);
 
-    private const string MODEL_PATH = "JOHN_N.csv";
+    public const double TIE_BREAK = 1e-9;
+    public const string MODEL_PATH = "JOHN_N.csv";
 
-    protected override QLearning.param Epsilon {
-        get {
-            return t => 50 - t;
-        }
-    }
+    private QLearning.param Epsilon = t => 25 - t / 4;
+    private QLearning.param Discount = t => 0.99;
+    private QLearning.param StepSize = t => 0.5;
 
-    protected override QLearning.param Discount {
-        get {
-            return t => 0.9;
-        }
-    }
+    public QAgent Agent { get; private set; }
+    public IList<QAction> Actions { get; private set; }
+    public int Iteration { get; private set; }
 
     private QNetwork _net;
     private Dictionary<string, int> _amap;
-    private int[] _cache;
     private double[] _output;
-    private bool _updated = false;
+    private readonly bool _imit;
+    private readonly Random _rng;
 
-    public QLearningNN(QAgent agent) : base(agent) { }
+    public QLearningNN(QAgent agent, bool imitating = false) {
+        _rng = new Random();
+        _imit = imitating;
+        Agent = agent;
+        Actions = agent.GetQActions();
+    }
 
-    public override void LoadModel() {
+    public void LoadModel() {
         _net = QNetwork.Load(MODEL_PATH);
         _amap = new Dictionary<string, int>();
         int ix = 0;
@@ -34,11 +39,11 @@ public class QLearningNN : QLearning {
             _amap[a.ActionId] = ix++;
     }
 
-    public override void SaveModel() {
+    public void SaveModel() {
         _net.Save(MODEL_PATH);
     }
 
-    public override void RemakeModel() {
+    public void RemakeModel() {
         int size = Agent.GetState().Features.Length;
         _net = new QNetwork(size, Actions.Count, 1, size * 2);
         _amap = new Dictionary<string, int>();
@@ -47,24 +52,51 @@ public class QLearningNN : QLearning {
             _amap[a.ActionId] = ix++;
     }
 
-    protected override double Q(QState s, QAction a) {
-        if (s.Features != _cache || _updated) {
-            _net.Feedforward(s.Features.Select(f => (double)f).ToArray());
-            _cache = s.Features;
-            _output = _net.Output().ToArray();
-            _updated = false;
-        }
-        return _output[_amap[a.ActionId]];
-    }
-
-    protected override void Update(QState s, QAction a, double v) {
-        _output[_amap[a.ActionId]] = v;
-        _net.Backpropagate(_output);
-        _updated = true;
-    }
-
-    public override QAction BestAction() {
+    public IEnumerator<YieldInstruction> RunEpisode(QAgent agent, QAI.EpisodeCallback callback) {
+        Iteration++;
+        Agent = agent;
+        Actions = agent.GetQActions();
         var s = Agent.GetState();
-        return Actions.Where(a => a.IsValid()).OrderByDescending(a => Q(s, a)).First();
+        while (!s.IsTerminal) {
+            var a = _imit ? Agent.ConvertImitationAction() : Policy(s);
+            a.Action.Invoke();
+            var s0 = Agent.GetState();
+            if (!s0.IsTerminal) {
+                var q0 = Q(s0);
+                var a0max = Actions.Max(a0 => q0(a0));
+                var target = s0.Reward + Discount(Iteration) * a0max;
+                Q(s);
+                Update(s, a, target);
+                s = s0;
+            } else {
+                Update(s, a, s0.Reward);
+                break;
+            }
+            yield return new WaitForEndOfFrame();
+        }
+        callback();
+    }
+
+    private ActionValueFunction Q(QState s) {
+        _net.Feedforward(s.Features.Select(f => (double)f).ToArray());
+        _output = _net.Output().ToArray();
+        return a => _output[_amap[a.ActionId]];
+    }
+
+    private void Update(QState s, QAction a, double v) {
+        _output[_amap[a.ActionId]] = v;
+        _net.Backpropagate(_output, StepSize(Iteration));
+    }
+
+    private QAction Policy(QState s) {
+        var q = Q(s);
+        if (_rng.NextDouble() < Epsilon(Iteration)) return Actions[_rng.Next(Actions.Count)];
+        return Actions.Where(a => a.IsValid()).OrderByDescending(a => q(a) + _rng.NextDouble() * TIE_BREAK).First();
+    }
+
+    public QAction BestAction() {
+        var s = Agent.GetState();
+        var q = Q(s);
+        return Actions.Where(a => a.IsValid()).OrderByDescending(a => q(a)).First();
     }
 }

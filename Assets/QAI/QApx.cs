@@ -18,8 +18,8 @@ public class QApx : QMethod {
     public double Q(QState s, QAction a) {
         return s.Features.Select((t, i) => _weights[a][i]*t).Sum();
     }
-    private readonly Random _rng = new Random();
-    private readonly Func<int, double> _eps = t => 0.0;
+    //private readonly Random _rng = new Random();
+    //private readonly Func<int, double> _eps = t => 0.0;
     
     private readonly Func<int, double> _discount = t => 0.9;
     private readonly Func<int, double> _stepsize = t => 1.0 / t;
