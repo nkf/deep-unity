@@ -15,11 +15,13 @@ public class QAI : MonoBehaviour {
 	public bool Imitating;
     [HideInInspector]
     public int Terminator;
-    [HideInInspector] 
+	[HideInInspector]
+	public bool ExperienceReplay;
+    [HideInInspector]
     public List<QStory> Stories; 
-
-
-    public GameObject ActiveAgent;
+	
+	public GameObject ActiveAgent;
+	public int Iteration { get { return _qlearning == null ? 0 : _qlearning.Iteration; }}
 
     private static QAI _instance = null;
     private QLearningNN _qlearning;
@@ -54,7 +56,6 @@ public class QAI : MonoBehaviour {
         if (_instance == null) {
             _instance = this;
             var woman = ActiveAgent.GetComponent<QAgent>();
-            //_qlearning = new QLearningQT(woman) { Imitating = IMITATING };
             _qlearning = new QLearningNN(woman);
             if (Learning) {
                 if (Remake)

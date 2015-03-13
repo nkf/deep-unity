@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -12,6 +12,7 @@ public class QAIOptionWindow : EditorWindow {
     private bool _remake;
 	private bool _show = true;
     private bool _showScenes = false;
+	private bool _experienceReplay;
     private int _term;
 
     private List<QStory> _stories = new List<QStory>();
@@ -28,6 +29,7 @@ public class QAIOptionWindow : EditorWindow {
 		window._learning = ais.All(q => q.Learning);
         window._remake = ais.All(q => q.Remake);
         window._term = ais.First().Terminator;
+		window._experienceReplay = ais.All (q => q.ExperienceReplay);
 
         window._sceneList = window.GetScenes().ToArray();
 
@@ -35,17 +37,34 @@ public class QAIOptionWindow : EditorWindow {
 	}
 
 	void OnGUI() {
+		var ais = GameObject.FindObjectsOfType<QAI>();
 		EditorGUILayout.HelpBox("To train the AI, turn on learning. You can leave this on during play to have the AI adapt over time to the way the user is playing", MessageType.None);
 		_learning = EditorGUILayout.ToggleLeft("Learning", _learning);
 		if(_learning) {
-            _remake = EditorGUILayout.ToggleLeft("Remake model", _remake);
+			//PROGRESS BAR
+			if(ais.Length > 0) {
+				var r = EditorGUILayout.BeginVertical();
+				var i = ais.First().Iteration;
+				if(i > 0) {
+					EditorGUI.ProgressBar(r, i / (float)_term, "Progress");
+					GUILayout.Space(18);
+				}
+				EditorGUILayout.EndVertical();
+			}
+
+			//EPISODE COUNT
             _term = EditorGUILayout.IntField("Terminate after # episodes", _term);
+
+			//IMITATION LEARNING
 			if(_show = EditorGUILayout.Foldout(_show, "Imitation Learning")) {
 				EditorGUI.indentLevel++;
 				EditorGUILayout.HelpBox("It is possible for the developer to teach the AI the first steps of how to play the game. Implement the method GetImitationAction to send input to the AI and QAI.Imitate to tell the AI that new input is available.", MessageType.Info);
 				_imitation = EditorGUILayout.Toggle("Learn from player input", _imitation);
 				EditorGUI.indentLevel--;
 			}
+
+			//EXPERIENCE REPLAY
+			_experienceReplay = EditorGUILayout.Toggle ("Experience Replay", _experienceReplay);
 		}
 
 	    if (_showScenes = EditorGUILayout.Foldout(_showScenes, "Training Scenes")) {
@@ -89,6 +108,7 @@ public class QAIOptionWindow : EditorWindow {
 			ai.Learning = _learning;
             ai.Remake = _remake;
             ai.Terminator = _term;
+		    ai.ExperienceReplay = _experienceReplay;
 		}
 	}
 
@@ -115,5 +135,9 @@ public class QAIOptionWindow : EditorWindow {
         EditorApplication.OpenScene(_stories.First().ScenePath);
         EditorApplication.isPlaying = true;
     }
+
+	void OnInspectorUpdate() {
+		Repaint();
+	}
 }
 
