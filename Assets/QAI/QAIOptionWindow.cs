@@ -24,10 +24,10 @@ public class QAIOptionWindow : EditorWindow {
 		QAIOptionWindow window = (QAIOptionWindow)EditorWindow.GetWindow(typeof (QAIOptionWindow));
 		var ais = GameObject.FindObjectsOfType<QAI>();
 
-		window._imitation = ais.All(q => q.IMITATING);
-		window._learning = ais.All(q => q.LEARNING);
-        window._remake = ais.All(q => q.REMAKE);
-        window._term = ais.First().TERMINATOR;
+		window._imitation = ais.All(q => q.Imitating);
+		window._learning = ais.All(q => q.Learning);
+        window._remake = ais.All(q => q.Remake);
+        window._term = ais.First().Terminator;
 
         window._sceneList = window.GetScenes().ToArray();
 
@@ -62,7 +62,7 @@ public class QAIOptionWindow : EditorWindow {
                 story.Iterations = EditorGUILayout.IntField("Iterations:", story.Iterations);
                 EditorGUILayout.EndVertical();
                 //Index buttons
-	            var hr = EditorGUILayout.BeginHorizontal();
+	            EditorGUILayout.BeginHorizontal();
                 GUILayout.Space(20);
                 GUILayout.Label("Change index");
 	            if (GUILayout.Button("^")) {
@@ -85,10 +85,10 @@ public class QAIOptionWindow : EditorWindow {
 	    }
 
 		foreach(var ai in GameObject.FindObjectsOfType<QAI>()) {
-			ai.IMITATING = _imitation;
-			ai.LEARNING = _learning;
-            ai.REMAKE = _remake;
-            ai.TERMINATOR = _term;
+			ai.Imitating = _imitation;
+			ai.Learning = _learning;
+            ai.Remake = _remake;
+            ai.Terminator = _term;
 		}
 	}
 

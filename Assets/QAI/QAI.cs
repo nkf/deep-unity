@@ -10,7 +10,7 @@ public class QAI : MonoBehaviour {
     [HideInInspector]
     public bool Learning;
     [HideInInspector]
-    public bool REMAKE;
+    public bool Remake;
 	[HideInInspector]
 	public bool Imitating;
     [HideInInspector]
@@ -57,7 +57,7 @@ public class QAI : MonoBehaviour {
             //_qlearning = new QLearningQT(woman) { Imitating = IMITATING };
             _qlearning = new QLearningNN(woman);
             if (Learning) {
-                if (REMAKE)
+                if (Remake)
                     _qlearning.RemakeModel();
                 else
                     _qlearning.LoadModel();
