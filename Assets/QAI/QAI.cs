@@ -1,29 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Random = UnityEngine.Random;
 using System.Collections;
 
 public class QAI : MonoBehaviour {
     public delegate void EpisodeCallback();
 
-    public const float TIME_STEP = 1f;
+    public const float TimeStep = 1f;
     [HideInInspector]
-    public bool LEARNING;
+    public bool Learning;
 	[HideInInspector]
-	public bool IMITATING;
+	public bool Imitating;
     [HideInInspector]
-    public int TERMINATOR;
+    public int Terminator;
+    [HideInInspector] 
+    public List<QStory> Stories; 
+
 
     public GameObject ActiveAgent;
 
     private static QAI _instance = null;
     private QLearning _qlearning;
-    
+
+
     public void EndOfEpisode() {
-        if (_qlearning.Iteration > TERMINATOR) {
+        if (_qlearning.Iteration > Terminator) {
             _qlearning.SaveModel();
+            Application.Quit();
         } else {
             Application.LoadLevel(Application.loadedLevel);
         }
@@ -31,14 +34,14 @@ public class QAI : MonoBehaviour {
 
     private IEnumerator<YieldInstruction> RunAgent() {
         while (true) {
-            _qlearning.BestAction().Action.Invoke();
-            yield return new WaitForSeconds(TIME_STEP);
+            _qlearning.BestAction().Invoke();
+            yield return new WaitForSeconds(TimeStep);
         }
     }
 
 	private IEnumerator _imitationProcess;
 	public static void Imitate(QAgent agent) {
-		if(!_instance.IMITATING) return;
+		if(!_instance.Imitating) return;
 		if(_instance._imitationProcess == null) 
 			_instance._imitationProcess = _instance._qlearning.RunEpisode(agent, _instance.EndOfEpisode);
 		if(!_instance._imitationProcess.MoveNext())
@@ -51,10 +54,10 @@ public class QAI : MonoBehaviour {
             var woman = ActiveAgent.GetComponent<QAgent>();
             //_qlearning = new QLearningQT(woman) { Imitating = IMITATING };
             _qlearning = new QLearningNN(woman);
-            if (LEARNING) {
+            if (Learning) {
                 _qlearning.RemakeModel();
                 DontDestroyOnLoad(gameObject);
-                if (!IMITATING)
+                if (!Imitating)
                     StartCoroutine(_qlearning.RunEpisode(woman, EndOfEpisode));
             } else {
                 _qlearning.LoadModel();
@@ -63,7 +66,7 @@ public class QAI : MonoBehaviour {
         } else {
             _instance.ActiveAgent = this.ActiveAgent;
             var woman = ActiveAgent.GetComponent<QAgent>(); // TODO: Multiple agents.
-			if(!IMITATING)
+			if(!Imitating)
             	_instance.StartCoroutine(_instance._qlearning.RunEpisode(woman, _instance.EndOfEpisode));
             Destroy(gameObject);
         }
