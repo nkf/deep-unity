@@ -20,7 +20,7 @@ public class QExperience : IEnumerable<SARS> {
         }
     }
 
-    public void Learn(SARS sars) {
+    public void Store(SARS sars) {
         _data.Add(sars);
     }
 

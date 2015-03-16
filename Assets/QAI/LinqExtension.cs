@@ -15,6 +15,10 @@ public static class LinqExtension {
             Debug.Log(high);
         return tieies[Rng.Next(tieies.Length)];
     }
-
-    
+    public static IEnumerable<double> Normalize(this IEnumerable<double> source, double domain) {
+        return source.Select(t => t / domain);
+    }
+    public static T Random<T>(this IEnumerable<T> source) {
+        return source.ElementAt(Rng.Next(source.Count() - 1));
+    }
 }

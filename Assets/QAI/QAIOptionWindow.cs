@@ -52,6 +52,9 @@ public class QAIOptionWindow : EditorWindow {
 				EditorGUILayout.EndVertical();
 			}
 
+            // REMAKE MODEL
+            _remake = EditorGUILayout.ToggleLeft("Remake model", _remake);
+
 			//EPISODE COUNT
             _term = EditorGUILayout.IntField("Terminate after # episodes", _term);
 
