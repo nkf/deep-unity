@@ -9,10 +9,11 @@ public class QLearningNN {
 
     public const double TIE_BREAK = 1e-9;
     public const string MODEL_PATH = "JOHN_N.csv";
+    public const double DOMAIN = 5.0;
 
     private QLearning.param Epsilon = t => 25 - t / 4;
     private QLearning.param Discount = t => 0.99;
-    private QLearning.param StepSize = t => 0.5;
+    private QLearning.param StepSize = t => 1.0 / t;
 
     public QAgent Agent { get; private set; }
     public IList<QAction> Actions { get; private set; }
@@ -78,7 +79,7 @@ public class QLearningNN {
     }
 
     private ActionValueFunction Q(QState s) {
-        _net.Feedforward(s.Features.Select(f => (double)f).ToArray());
+        _net.Feedforward(s.Features.Select(f => (double)f).Normalize(DOMAIN).ToArray());
         _output = _net.Output().ToArray();
         return a => _output[_amap[a.ActionId]];
     }
