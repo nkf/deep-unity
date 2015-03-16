@@ -11,7 +11,7 @@ public class QImitation {
         a.Invoke();
         var s0 = agent.GetState();
         var r = s0.Reward;
-        _experience.Learn( new SARS {Action = a, State = s, NextState = s0, Reward = r} );
+        _experience.Store( new SARS {Action = a, State = s, NextState = s0, Reward = r} );
         return s0.IsTerminal;
     }
 

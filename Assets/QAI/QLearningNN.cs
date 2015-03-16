@@ -9,6 +9,7 @@ public class QLearningNN {
 
     public const double TIE_BREAK = 1e-9;
     public const string MODEL_PATH = "JOHN_N.csv";
+    public const string IMITATION_PATH = "QData/Imitation/Assets_main-0.xml";
     public const double DOMAIN = 5.0;
 
     private QLearning.param Epsilon = t => 25 - t / 4;
@@ -20,6 +21,7 @@ public class QLearningNN {
     public int Iteration { get; private set; }
 
     private QNetwork _net;
+    private QExperience _exp;
     private Dictionary<string, int> _amap;
     private double[] _output;
     private readonly bool _imit;
@@ -30,6 +32,7 @@ public class QLearningNN {
         _imit = imitating;
         Agent = agent;
         Actions = agent.GetQActions();
+        _exp = QExperience.Load(IMITATION_PATH);
     }
 
     public void LoadModel() {
@@ -57,24 +60,27 @@ public class QLearningNN {
         Iteration++;
         Agent = agent;
         Actions = agent.GetQActions();
-        var s = Agent.GetState();
-        while (!s.IsTerminal) {
-            var a = _imit ? Agent.ConvertImitationAction() : Policy(s);
-            a.Action.Invoke();
-            var s0 = Agent.GetState();
-            if (!s0.IsTerminal) {
-                var q0 = Q(s0);
-                var a0max = Actions.Max(a0 => q0(a0));
-                var target = s0.Reward + Discount(Iteration) * a0max;
-                Q(s);
-                Update(s, a, target);
-                s = s0;
-            } else {
-                Update(s, a, s0.Reward);
-                break;
+        //var s = Agent.GetState();
+        //while (!sars.State.IsTerminal) {
+        for (int i = 0; i < 1000; i++) {
+            foreach (var sars in _exp) {
+                //var a = _imit ? Agent.ConvertImitationAction() : Policy(s);
+                //sars.Action.Invoke();
+                //var s0 = Agent.GetState();
+                if (!sars.NextState.IsTerminal) {
+                    var q0 = Q(sars.NextState);
+                    var a0max = Actions.Max(a0 => q0(a0));
+                    var target = sars.Reward + Discount(Iteration) * a0max;
+                    Q(sars.State);
+                    Update(sars.State, sars.Action, target);
+                    //s = s0;
+                } else {
+                    Update(sars.State, sars.Action, sars.Reward);
+                    //break;
+                }
             }
-            yield return new WaitForEndOfFrame();
         }
+        yield return new WaitForEndOfFrame();
         callback();
     }
 
