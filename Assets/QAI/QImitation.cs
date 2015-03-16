@@ -19,7 +19,7 @@ public class QImitation {
         Directory.CreateDirectory("QData/Imitation");
         var scene = EditorApplication.currentScene;
         scene = Path.GetDirectoryName(scene).Replace(Path.DirectorySeparatorChar.ToString(), "_") +"_"+ Path.GetFileNameWithoutExtension(scene);
-        var id = nextSaveId("QData", scene);
+        var id = nextSaveId("QData/Imitation", scene);
         _experience.Save( Path.Combine("QData/Imitation", scene+"-"+id+".xml") );
     }
 
