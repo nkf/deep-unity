@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using System.Collections;
 
@@ -26,6 +27,7 @@ public class QAI : MonoBehaviour {
     private static QAI _instance = null;
     private QLearningNN _qlearning;
 
+    private QImitation _imitation;
 
     public void EndOfEpisode() {
         if (_qlearning.Iteration > Terminator) {
@@ -43,13 +45,12 @@ public class QAI : MonoBehaviour {
         }
     }
 
-	private IEnumerator _imitationProcess;
 	public static void Imitate(QAgent agent) {
-		if(!_instance.Imitating) return;
-		if(_instance._imitationProcess == null) 
-			_instance._imitationProcess = _instance._qlearning.RunEpisode(agent, _instance.EndOfEpisode);
-		if(!_instance._imitationProcess.MoveNext())
-			_instance._imitationProcess = null;
+        var terminal = _instance._imitation.Imitate(agent);
+	    if (terminal) {
+	        _instance._imitation.Save();
+	        EditorApplication.isPlaying = false;
+	    }
 	}
 
     void Awake() {
@@ -57,14 +58,15 @@ public class QAI : MonoBehaviour {
             _instance = this;
             var woman = ActiveAgent.GetComponent<QAgent>();
             _qlearning = new QLearningNN(woman);
-            if (Learning) {
+            if (Learning && !Imitating) {
                 if (Remake)
                     _qlearning.RemakeModel();
                 else
                     _qlearning.LoadModel();
                 DontDestroyOnLoad(gameObject);
-                if (!Imitating)
-                    StartCoroutine(_qlearning.RunEpisode(woman, EndOfEpisode));
+                StartCoroutine(_qlearning.RunEpisode(woman, EndOfEpisode));
+            } else if(Imitating) {
+                _imitation = new QImitation();
             } else {
                 _qlearning.LoadModel();
                 StartCoroutine(RunAgent());

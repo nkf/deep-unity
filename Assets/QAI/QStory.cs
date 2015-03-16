@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 public class QStory {
     public string ScenePath { get; set; }
@@ -8,6 +9,5 @@ public class QStory {
         }
     }
     public int Iterations { get; set; }
-
-
+    public List<QExperience> ImitationExperiences;
 }
