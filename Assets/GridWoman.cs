@@ -49,6 +49,12 @@ public class GridWoman : MonoBehaviour, QAgent {
         return new[] {a[0], a[1], a[2], b[0], b[1], b[2]};
     }
 
+	private int[] PosToGoal(Vector3 p, Vector3 goal) {
+		var v = VectorToGoal(p, goal);
+		var s = PositionToState(p);
+		return new[] {v[0], v[2], s[0], s[2]};
+	}
+
 
     private readonly Vector3 Min = new Vector3(-1,0,-4);
     private int[] Offset(Vector3 p) {
@@ -59,14 +65,15 @@ public class GridWoman : MonoBehaviour, QAgent {
     public QState GetState() {
         var p = PositionToState(transform.position);
         var g = Goal.State;
-        var state = PosAndGoal(p, g);
+        //var state = PosAndGoal(p, g);
+		var state = PosToGoal(transform.position, Goal.Position);
         //var state = VectorToGoal(transform.position, new Vector3(GoalState[0], GoalState[1], GoalState[2]));
         var dead = !isAboveGround();
         //var goal = state.SequenceEqual(new []{0,0,0});
         var goal = p.SequenceEqual(g);
         return new QState(
             state.Select(i => (double)i).ToArray(),
-            dead ? -1 : goal ? 1 : 0,
+            dead ? -0.2 : goal ? 1 : 0,
             dead || goal
         );
     }

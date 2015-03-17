@@ -8,19 +8,20 @@ using Encog.Neural.Networks.Layers;
 using Encog.Neural.Networks.Training.Propagation.Resilient;
 using Encog.Engine.Network.Activation;
 using Encog.ML.Data.Basic;
+using UnityEditor;
 using UnityEngine;
 using Random = System.Random;
 
 public class QLearningNN : QLearning {
     public const string MODEL_PATH = "QData/JOHN_N.xml";
-    public const string IMITATION_PATH = "QData/Imitation/Assets_main-0.xml";
     public const double DOMAIN = 5.0;
 
     private Param Epsilon = t => 25 - t / 4;
     private double Discount = 0.99;
 
     private BasicNetwork _net;
-    private QExperience _exp;
+    private List<QExperience> _exps;
+    private QExperience _qexp;
     private Dictionary<string, int> _amap;
     private double[] _output;
     private readonly bool _imit;
@@ -66,7 +67,9 @@ public class QLearningNN : QLearning {
         while (!s.IsTerminal) {
             // Experience step.
             var a = EpsilonGreedy(Epsilon(Iteration));
-            _exp.Store(Agent.MakeSARS(a));
+            var sars = Agent.MakeSARS(a);
+            _qexp.Store(sars, 20);
+            s = sars.NextState;
             // Learning step.
             TrainModel();
             // End of frame.
@@ -81,11 +84,12 @@ public class QLearningNN : QLearning {
     }
 
     public void LoadExperienceDatabase() {
-        _exp = new QExperience(); // TODO
+        _exps = QImitation.GetAllByScene(EditorApplication.currentScene); // TODO
+        _qexp = new QExperience();
     }
 
     public IEnumerable<SARS> SampleBatch() {
-        return _exp.Shuffle(); // TODO
+        return _exps.Random().Concat(_qexp).Shuffle(); // TODO
     }
 
     private void TrainModel() {

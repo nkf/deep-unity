@@ -78,7 +78,7 @@ public class QAI : MonoBehaviour {
         } else {
             _instance.ActiveAgent = this.ActiveAgent;
             var woman = ActiveAgent.GetComponent<QAgent>(); // TODO: Multiple agents.
-            _qlearning.SetAgent(woman);
+            _instance._qlearning.SetAgent(woman);
 			if(!Imitating)
             	_instance.StartCoroutine(_instance._qlearning.RunEpisode(_instance.EndOfEpisode));
             Destroy(gameObject);

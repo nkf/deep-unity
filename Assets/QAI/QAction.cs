@@ -31,4 +31,8 @@ public struct QAction {
     public void Invoke() {
         Action.Invoke();
     }
+
+	public override string ToString ()	{
+		return Action.Method.Name;
+	}
 }

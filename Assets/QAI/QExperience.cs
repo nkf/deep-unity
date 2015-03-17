@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 
 public class QExperience : IEnumerable<SARS> {
     private List<SARS> _data = new List<SARS>();
-    
+
     private static readonly XmlSerializer Serializer = new XmlSerializer(typeof(List<SARS>));
     public void Save(string path) {
         using (var fs = File.Open(path, FileMode.Create)) {
@@ -24,9 +24,16 @@ public class QExperience : IEnumerable<SARS> {
         _data.Add(sars);
     }
 
+    public void Store(SARS sars, int maxSize) {
+        _data.Add(sars);
+        if (_data.Count > maxSize)
+            _data.RemoveAt(0); // TODO: Expensive on List.
+    }
+
     public IEnumerator<SARS> GetEnumerator() {
         return _data.GetEnumerator();
     }
+
     IEnumerator IEnumerable.GetEnumerator() {
         return GetEnumerator();
     }

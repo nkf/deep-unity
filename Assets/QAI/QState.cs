@@ -13,12 +13,11 @@ public struct QState {
     }
 
     public override int GetHashCode() {
-        throw new NotImplementedException();
-        /*int hash = 23;
-        hash = hash*31 + IntArrayHash(Features.Select(d => (int)d).ToArray());
+        int hash = 23;
+        //hash = hash*31 + IntArrayHash(Features.Select(d => (int)d).ToArray());
         hash = hash*31 + Reward.GetHashCode();
         hash = hash*31 + IsTerminal.GetHashCode();
-        return hash;*/
+        return hash;
     }
 
     public override bool Equals(object obj) {
