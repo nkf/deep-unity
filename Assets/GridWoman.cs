@@ -51,8 +51,8 @@ public class GridWoman : MonoBehaviour, QAgent {
 
 	private int[] PosToGoal(Vector3 p, Vector3 goal) {
 		var v = VectorToGoal(p, goal);
-		var s = v.Concat(PositionToState(p)).ToArray();;
-		return s;
+		var s = PositionToState(p);
+		return new[] {v[0], v[2], s[0], s[2]};
 	}
 
 
@@ -73,7 +73,7 @@ public class GridWoman : MonoBehaviour, QAgent {
         var goal = p.SequenceEqual(g);
         return new QState(
             state,
-            dead ? -1 : goal ? 1 : 0,
+            dead ? -0.2 : goal ? 1 : 0,
             dead || goal
         );
     }
