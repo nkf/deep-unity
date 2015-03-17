@@ -22,4 +22,11 @@ public static class QAgentExtension {
 			.Where(m => m.GetCustomAttributes(typeof(QBehavior), true).Length > 0)
 				.Select(m => ((QBehavior)m.GetCustomAttributes(typeof(QBehavior), true).First()).ObtainAction(agent, m.Name)).First();
 	}
+
+    public static SARS MakeSARS(this QAgent agent, QAction move) {
+        var s = agent.GetState();
+        move.Invoke();
+        var s0 = agent.GetState();
+        return new SARS(s, move, s0.Reward, s0);
+    }
 }

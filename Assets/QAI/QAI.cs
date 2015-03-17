@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -40,7 +41,7 @@ public class QAI : MonoBehaviour {
 
     private IEnumerator<YieldInstruction> RunAgent() {
         while (true) {
-            _qlearning.BestAction().Invoke();
+            _qlearning.GreedyPolicy().Invoke();
             yield return new WaitForSeconds(TimeStep);
         }
     }
@@ -60,14 +61,15 @@ public class QAI : MonoBehaviour {
 			if(Imitating) {
 				_imitation = new QImitation();
 			} else {
-				_qlearning = new QLearningNN(woman);
+				_qlearning = new QLearningNN();
+                _qlearning.SetAgent(woman);
 				if (Learning) {
 					if (Remake)
 						_qlearning.RemakeModel();
 					else
 						_qlearning.LoadModel();
 					DontDestroyOnLoad(gameObject);
-					StartCoroutine(_qlearning.RunEpisode(woman, EndOfEpisode));
+					StartCoroutine(_qlearning.RunEpisode(EndOfEpisode));
 				} else {
 					_qlearning.LoadModel();
 					StartCoroutine(RunAgent());
@@ -76,8 +78,9 @@ public class QAI : MonoBehaviour {
         } else {
             _instance.ActiveAgent = this.ActiveAgent;
             var woman = ActiveAgent.GetComponent<QAgent>(); // TODO: Multiple agents.
+            _qlearning.SetAgent(woman);
 			if(!Imitating)
-            	_instance.StartCoroutine(_instance._qlearning.RunEpisode(woman, _instance.EndOfEpisode));
+            	_instance.StartCoroutine(_instance._qlearning.RunEpisode(_instance.EndOfEpisode));
             Destroy(gameObject);
         }
     }

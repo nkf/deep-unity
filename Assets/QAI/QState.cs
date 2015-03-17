@@ -3,21 +3,22 @@ using System.Linq;
 using JetBrains.Annotations;
 
 public struct QState {
-    public readonly int[] Features;
+    public readonly double[] Features;
     public readonly double Reward;
     public readonly bool IsTerminal;
-    public QState(int[] features, double reward, bool isTerminal) : this() {
+    public QState(double[] features, double reward, bool isTerminal) : this() {
         Features = features;
         Reward = reward;
         IsTerminal = isTerminal;
     }
 
     public override int GetHashCode() {
-        int hash = 23;
-        hash = hash*31 + IntArrayHash(Features);
+        throw new NotImplementedException();
+        /*int hash = 23;
+        hash = hash*31 + IntArrayHash(Features.Select(d => (int)d).ToArray());
         hash = hash*31 + Reward.GetHashCode();
         hash = hash*31 + IsTerminal.GetHashCode();
-        return hash;
+        return hash;*/
     }
 
     public override bool Equals(object obj) {

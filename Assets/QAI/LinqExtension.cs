@@ -1,24 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Debug = UnityEngine.Debug;
 using Random = System.Random;
 
 public static class LinqExtension {
     private static readonly Random Rng = new Random();
-    private const double Tolerance = 0.000001;
-    public static T MaxWithRandomTie<T>(this IEnumerable<T> source, Func<T,double> f) {
-        var ordered = source.OrderByDescending(f);
-        var high = f(ordered.First());
-        var tieies = ordered.Where(x => Math.Abs(f(x) - high) < Tolerance).ToArray();
-        if(tieies.Length == 0) 
-            Debug.Log(high);
-        return tieies[Rng.Next(tieies.Length)];
+
+    public static IEnumerable<double> Normalize(this IEnumerable<double> source, double min, double max) {
+        return source.Select(x => (x - min) / (max - min));
     }
-    public static IEnumerable<double> Normalize(this IEnumerable<double> source, double domain) {
-        return source.Select(t => t / domain);
-    }
+
     public static T Random<T>(this IEnumerable<T> source) {
         return source.ElementAt(Rng.Next(source.Count() - 1));
+    }
+
+    public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source) {
+        var buffer = source.ToList();
+        for (int i = 0; i < buffer.Count; i++) {
+            int j = Rng.Next(i, buffer.Count);
+            yield return buffer[j];
+            buffer[j] = buffer[i];
+        }
     }
 }

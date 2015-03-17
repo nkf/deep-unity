@@ -65,7 +65,7 @@ public class GridWoman : MonoBehaviour, QAgent {
         //var goal = state.SequenceEqual(new []{0,0,0});
         var goal = p.SequenceEqual(g);
         return new QState(
-            state,
+            state.Select(i => (double)i).ToArray(),
             dead ? -1 : goal ? 1 : 0,
             dead || goal
         );

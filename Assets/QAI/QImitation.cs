@@ -6,13 +6,10 @@ using UnityEditor;
 public class QImitation {
     private readonly QExperience _experience = new QExperience();
     public bool Imitate(QAgent agent) {
-        var s = agent.GetState();
         var a = agent.ConvertImitationAction();
-        a.Invoke();
-        var s0 = agent.GetState();
-        var r = s0.Reward;
-        _experience.Store( new SARS {Action = a, State = s, NextState = s0, Reward = r} );
-        return s0.IsTerminal;
+        var sars = agent.MakeSARS(a);
+        _experience.Store(sars);
+        return sars.NextState.IsTerminal;
     }
 
     public void Save() {
