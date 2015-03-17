@@ -8,6 +8,7 @@ using Encog.Neural.Networks.Layers;
 using Encog.Neural.Networks.Training.Propagation.Resilient;
 using Encog.Engine.Network.Activation;
 using Encog.ML.Data.Basic;
+using UnityEditor;
 using UnityEngine;
 using Random = System.Random;
 
@@ -28,7 +29,7 @@ public class QLearningNN {
     public int Iteration { get; private set; }
 
     private BasicNetwork _net;
-    private QExperience _exp;
+    private List<QExperience> _exps;
     private Dictionary<string, int> _amap;
     private double[] _output;
     private readonly bool _imit;
@@ -39,7 +40,7 @@ public class QLearningNN {
         _imit = imitating;
         Agent = agent;
         Actions = agent.GetQActions();
-        _exp = QExperience.Load(IMITATION_PATH);
+        _exps = QImitation.GetAllByScene(EditorApplication.currentScene);
     }
 
     public void LoadModel() {
@@ -103,7 +104,7 @@ public class QLearningNN {
         }*/
         Iteration++;
         var dlist = new List<Encog.ML.Data.IMLDataPair>();
-        foreach (var sars in _exp) {
+        foreach (var sars in _exps.SelectMany(e => e)) {
             var inp = new BasicMLData(sars.State.Features.Select(f => (double)f).ToArray());
             var inp0 = new BasicMLData(sars.NextState.Features.Select(f => (double)f).ToArray());
             var ideal = Iter(_net.Compute(inp)).ToArray();
