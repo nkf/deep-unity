@@ -32,7 +32,7 @@ public class QAI : MonoBehaviour {
     public void EndOfEpisode() {
         if (_qlearning.Iteration > Terminator) {
             _qlearning.SaveModel();
-            Application.Quit();
+            EditorApplication.isPlaying = false;
         } else {
             Application.LoadLevel(Application.loadedLevel);
         }
