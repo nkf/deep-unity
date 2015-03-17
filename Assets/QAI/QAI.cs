@@ -57,20 +57,22 @@ public class QAI : MonoBehaviour {
         if (_instance == null) {
             _instance = this;
             var woman = ActiveAgent.GetComponent<QAgent>();
-            _qlearning = new QLearningNN(woman);
-            if (Learning && !Imitating) {
-                if (Remake)
-                    _qlearning.RemakeModel();
-                else
-                    _qlearning.LoadModel();
-                DontDestroyOnLoad(gameObject);
-                StartCoroutine(_qlearning.RunEpisode(woman, EndOfEpisode));
-            } else if(Imitating) {
-                _imitation = new QImitation();
-            } else {
-                _qlearning.LoadModel();
-                StartCoroutine(RunAgent());
-            }
+			if(Imitating) {
+				_imitation = new QImitation();
+			} else {
+				_qlearning = new QLearningNN(woman);
+				if (Learning) {
+					if (Remake)
+						_qlearning.RemakeModel();
+					else
+						_qlearning.LoadModel();
+					DontDestroyOnLoad(gameObject);
+					StartCoroutine(_qlearning.RunEpisode(woman, EndOfEpisode));
+				} else {
+					_qlearning.LoadModel();
+					StartCoroutine(RunAgent());
+				}
+			}
         } else {
             _instance.ActiveAgent = this.ActiveAgent;
             var woman = ActiveAgent.GetComponent<QAgent>(); // TODO: Multiple agents.
