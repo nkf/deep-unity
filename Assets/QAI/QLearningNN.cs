@@ -113,9 +113,7 @@ public class QLearningNN {
             dlist.Add(new BasicMLDataPair(inp, new BasicMLData(ideal)));
         }
         var train = new ResilientPropagation(_net, new BasicMLDataSet(dlist));
-        do {
-            train.Iteration();
-        } while (train.IterationNumber < dlist.Count);
+        train.Iteration(dlist.Count);
         train.FinishTraining();
         yield return new WaitForEndOfFrame();
         callback();
