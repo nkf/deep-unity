@@ -107,7 +107,8 @@ public class QLearningNN {
         foreach (var sars in _exps.SelectMany(e => e)) {
             var inp = new BasicMLData(sars.State.Features.Select(f => (double)f).ToArray());
             var inp0 = new BasicMLData(sars.NextState.Features.Select(f => (double)f).ToArray());
-            var ideal = Iter(_net.Compute(inp)).ToArray();
+            //var ideal = Iter(_net.Compute(inp)).ToArray();
+            var ideal = new double[] {0,0,0,0};
             var a0max = Iter(_net.Compute(inp0)).Max();
             var target = sars.Reward + Discount(Iteration) + a0max;
             ideal[_amap[sars.Action.ActionId]] = target;
