@@ -4,23 +4,23 @@ using System.IO;
 using System.Xml.Serialization;
 
 public class QExperience : IEnumerable<SARS> {
-    private List<SARS> _data = new List<SARS>();
+    public string Name;
+    private readonly List<SARS> _data = new List<SARS>();
     
-    private static readonly XmlSerializer Serializer = new XmlSerializer(typeof(List<SARS>));
+    private static readonly XmlSerializer Serializer = new XmlSerializer(typeof(QExperience));
     public void Save(string path) {
         using (var fs = File.Open(path, FileMode.Create)) {
-            Serializer.Serialize(fs, _data);
+            Serializer.Serialize(fs, this);
         }
     }
 
     public static QExperience Load(string path) {
         using (var fs = File.Open(path, FileMode.Open)) {
-            var data = Serializer.Deserialize(fs);
-            return new QExperience { _data = data as List<SARS>};
+            return (QExperience) Serializer.Deserialize(fs);
         }
     }
 
-    public void Store(SARS sars) {
+    public void Add(SARS sars) {
         _data.Add(sars);
     }
 
@@ -30,4 +30,5 @@ public class QExperience : IEnumerable<SARS> {
     IEnumerator IEnumerable.GetEnumerator() {
         return GetEnumerator();
     }
+
 }

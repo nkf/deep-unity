@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GridWoman : MonoBehaviour, QAgent {
 
-    private bool isAboveGround() {
+    public bool IsAboveGround() {
         return Physics.Raycast(transform.position, Vector3.down);
     }
 
@@ -68,7 +68,7 @@ public class GridWoman : MonoBehaviour, QAgent {
 //        var state = PosAndGoal(p, g);
 		var state = PosToGoal(transform.position, Goal.Position);
         //var state = VectorToGoal(transform.position, new Vector3(GoalState[0], GoalState[1], GoalState[2]));
-        var dead = !isAboveGround();
+        var dead = !IsAboveGround();
         //var goal = state.SequenceEqual(new []{0,0,0});
         var goal = p.SequenceEqual(g);
         return new QState(
