@@ -73,7 +73,7 @@ public class GridWoman : MonoBehaviour, QAgent {
         var goal = p.SequenceEqual(g);
         return new QState(
             state.Select(i => (double)i).ToArray(),
-            dead ? -0.2 : goal ? 1 : 0,
+            dead ? -1 : goal ? 1 : 0.0,
             dead || goal
         );
     }

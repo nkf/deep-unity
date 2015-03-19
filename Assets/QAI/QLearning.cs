@@ -31,7 +31,7 @@ public abstract class QLearning {
     public QAction GreedyPolicy() {
         var s = Agent.GetState();
         var q = Q(s);
-        return ValidActions().OrderByDescending(a => q(a) + TIE_BREAK).First();
+        return ValidActions().Select(a => new { v = q(a) + TIE_BREAK * rng.NextDouble(), a }).OrderByDescending(va => va.v).First().a;
     }
 
     public QAction EpsilonGreedy(double eps) {
