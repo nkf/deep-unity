@@ -12,7 +12,7 @@ public static class QData {
         FileStream fileStream = null;
         XmlReader reader = null;
         try {
-            fileStream = File.Open(path, FileMode.OpenOrCreate);
+            fileStream = File.Open(path, FileMode.Open, FileAccess.Read);
             reader = XmlReader.Create(fileStream);
             dictionary.ReadXml(reader);
             Debug.Log("Loaded QData from: " + path);
@@ -38,6 +38,10 @@ public static class QData {
         } finally {
             if(writer != null) writer.Close();
         }
+    }
+
+    public static string EscapeScenePath(string path) {
+        return Path.GetDirectoryName(path).Replace(Path.DirectorySeparatorChar.ToString(), "_") + "_" + Path.GetFileNameWithoutExtension(path);
     }
 
 }

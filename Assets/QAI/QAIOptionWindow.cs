@@ -12,7 +12,7 @@ public class QAIOptionWindow : EditorWindow {
     private bool _remake;
 	private bool _show = true;
     private bool _showScenes = false;
-	private bool _experienceReplay;
+	private bool _testing;
     private int _term;
 
     private List<QStory> _stories = new List<QStory>();
@@ -29,7 +29,7 @@ public class QAIOptionWindow : EditorWindow {
 		window._learning = ais.All(q => q.Learning);
         window._remake = ais.All(q => q.Remake);
         window._term = ais.First().Terminator;
-		window._experienceReplay = ais.All (q => q.ExperienceReplay);
+		window._testing = ais.All (q => q.Testing);
 
         window._sceneList = window.GetScenes().ToArray();
 
@@ -65,10 +65,11 @@ public class QAIOptionWindow : EditorWindow {
 				_imitation = EditorGUILayout.Toggle("Learn from player input", _imitation);
 				EditorGUI.indentLevel--;
 			}
-
-			//EXPERIENCE REPLAY
-			_experienceReplay = EditorGUILayout.Toggle ("Experience Replay", _experienceReplay);
 		}
+	    if (!_learning) {
+            //TESTER
+            _testing = EditorGUILayout.ToggleLeft("Run Tester", _testing);
+	    }
 
 	    if (_showScenes = EditorGUILayout.Foldout(_showScenes, "Training Scenes")) {
 	        EditorGUI.indentLevel++;
@@ -111,9 +112,16 @@ public class QAIOptionWindow : EditorWindow {
 			ai.Learning = _learning;
             ai.Remake = _remake;
             ai.Terminator = _term;
-		    ai.ExperienceReplay = _experienceReplay;
+		    ai.Testing = _testing;
 		}
 	}
+
+    public void DrawImitationSelectionUI(QStory story) {
+        EditorGUILayout.BeginHorizontal();
+        
+
+        EditorGUILayout.EndHorizontal();
+    }
 
     private IEnumerable<string> GetScenes() {
         var wd = Directory.GetCurrentDirectory();
