@@ -35,7 +35,7 @@ public class GridStateCreator : QTester {
 
     public override void OnActionTaken(QAgent agent, SARS sars) {
         var state = sars.NextState.Features;
-        var distToGoal = new Vector2(state[0], state[1]).magnitude;
+        var distToGoal = new Vector2((float)state[0], (float)state[1]).magnitude;
         _distScores.Add( 1/(distToGoal+1) );
     }
 

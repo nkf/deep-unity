@@ -5,71 +5,44 @@ using UnityEngine;
 using Random = System.Random;
 
 public abstract class QLearning {
-    public const double TIE_BREAK = 1e-9;
 
-    public delegate double param(int i);
-    protected virtual param Epsilon { get { return t => 0.2; } }
-    protected virtual param StepSize { get { return t => 1.0 / t; } }
-    protected virtual param Discount { get { return t => 1.0 / t; } }
+    private const double TIE_BREAK = 1e-9;
+    private Random rng = new Random();
 
-    private readonly Random _rng;
+    protected QAgent Agent { get; private set; }
+    protected IList<QAction> Actions { get; private set; }
+    public int Iteration { get; protected set; }
 
-    public QAgent Agent { get; private set; }
-    public IList<QAction> Actions { get; private set; }
-    public int Iteration { get; private set; }
-	public bool Imitating { get; set; }
-
-    protected QLearning(QAgent agent) {
-        _rng = new Random();
-        Agent = agent;
-        Actions = agent.GetQActions();
-    }
-
-    public IEnumerator<YieldInstruction> RunEpisode(QAgent agent, QAI.EpisodeCallback callback) {
-        Iteration++;
-        Agent = agent;
-        Actions = agent.GetQActions();
-        yield return new WaitForEndOfFrame();
-        var episode = Episode(callback);
-        while (episode.MoveNext()) {
-            yield return episode.Current;
-        }
-    }
-
-    protected virtual IEnumerator<YieldInstruction> Episode(QAI.EpisodeCallback callback) {
-        var s = Agent.GetState();
-        while (!s.IsTerminal) {
-            var a = Imitating ? Agent.ConvertImitationAction() : Policy(s);
-            var q = Q(s, a);
-            a.Action.Invoke();
-            var s0 = Agent.GetState();
-            var a0max = Actions.Max(a0 => Q(s0, a0));
-            var v = q + StepSize(Iteration) * (s0.Reward + Discount(Iteration) * a0max - q);
-            Update(s, a, v);
-            s = s0;
-            yield return new WaitForEndOfFrame();
-        }
-        callback();
-    }
-
-    protected virtual QAction Policy(QState s) {
-        if (Roll() < Epsilon(Iteration)) return Actions[Roll(Actions.Count)];
-        return Actions.Where(a => a.IsValid()).OrderByDescending(a => Q(s, a) + Roll() * TIE_BREAK).First();
-    }
-
-    protected abstract double Q(QState s, QAction a);
-    protected abstract void Update(QState s, QAction a, double v);
+    public delegate double Param(double t);
+    public delegate double ActionValueFunction(QAction a);
 
     public abstract void SaveModel();
     public abstract void LoadModel();
     public abstract void RemakeModel();
-    public abstract QAction BestAction();
 
-    protected int Roll(int bound) {
-        return _rng.Next(bound);
+    public abstract ActionValueFunction Q(QState s);
+    public abstract IEnumerator<YieldInstruction> RunEpisode(QAI.EpisodeCallback callback);
+
+    public void SetAgent(QAgent agent) {
+        Agent = agent;
+        Actions = agent.GetQActions();
     }
 
-    protected double Roll() {
-        return _rng.NextDouble();
+    public QAction GreedyPolicy() {
+        var s = Agent.GetState();
+        var q = Q(s);
+        return ValidActions().OrderByDescending(a => q(a) + TIE_BREAK).First();
+    }
+
+    public QAction EpsilonGreedy(double eps) {
+        if (rng.NextDouble() < eps) {
+            var valid = ValidActions();
+            return valid[rng.Next(valid.Count)];
+        }
+        return GreedyPolicy();
+    }
+
+    protected IList<QAction> ValidActions() {
+        return Actions.Where(a => a.IsValid()).ToList();
     }
 }

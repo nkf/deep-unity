@@ -65,14 +65,14 @@ public class GridWoman : MonoBehaviour, QAgent {
     public QState GetState() {
         var p = PositionToState(transform.position);
         var g = Goal.State;
-//        var state = PosAndGoal(p, g);
+        //var state = PosAndGoal(p, g);
 		var state = PosToGoal(transform.position, Goal.Position);
         //var state = VectorToGoal(transform.position, new Vector3(GoalState[0], GoalState[1], GoalState[2]));
         var dead = !IsAboveGround();
         //var goal = state.SequenceEqual(new []{0,0,0});
         var goal = p.SequenceEqual(g);
         return new QState(
-            state,
+            state.Select(i => (double)i).ToArray(),
             dead ? -0.2 : goal ? 1 : 0,
             dead || goal
         );

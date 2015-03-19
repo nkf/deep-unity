@@ -38,21 +38,17 @@ public class QAI : MonoBehaviour {
         }
     }
 
-    private IEnumerator<YieldInstruction> RunAgent(QAgent agent) {
+    private IEnumerator<YieldInstruction> RunAgent() {
         while (true) {
-            _qlearning.BestAction().Invoke();
+            _qlearning.GreedyPolicy().Invoke();
             yield return new WaitForSeconds(TimeStep);
         }
     }
 
     private IEnumerator<YieldInstruction> RunTester(QAgent agent) {
         while(!agent.GetState().IsTerminal) {
-            var s = agent.GetState();
-            var a = _qlearning.BestAction();
-            a.Invoke();
-            var s0 = agent.GetState();
-            var r = s0.Reward;
-            Tester.OnActionTaken(agent, new SARS(s,a,r,s0));
+            var a = _qlearning.GreedyPolicy();
+            Tester.OnActionTaken(agent, agent.MakeSARS(a));
             yield return new WaitForEndOfFrame();
         }
         Tester.OnRunComplete(agent.GetState().Reward);
@@ -75,14 +71,15 @@ public class QAI : MonoBehaviour {
             if (Imitating) {
                 _imitation = new QImitation();
             } else {
-                _qlearning = new QLearningNN(agent);
+                _qlearning = new QLearningNN();
+                _qlearning.SetAgent(agent);
                 DontDestroyOnLoad(gameObject);
                 if (Learning) {
                     if (Remake)
                         _qlearning.RemakeModel();
                     else
                         _qlearning.LoadModel();
-                    StartCoroutine(_qlearning.RunEpisode(agent, EndOfEpisode));
+                    StartCoroutine(_qlearning.RunEpisode(EndOfEpisode));
                 } else if (Testing) {
                     _qlearning.LoadModel();
                     var sceneSetup = Tester.SetupNextState(agent);
@@ -97,10 +94,10 @@ public class QAI : MonoBehaviour {
             _instance.ActiveAgent = this.ActiveAgent;
             var agent = ActiveAgent.GetComponent<QAgent>(); // TODO: Multiple agents.
             if (!_instance.Imitating && _instance.Learning) {
-                _instance.StartCoroutine(_instance._qlearning.RunEpisode(agent, _instance.EndOfEpisode));
+                _instance.StartCoroutine(_instance._qlearning.RunEpisode(_instance.EndOfEpisode));
             } else if (_instance.Testing) {
                 var sceneSetup = _instance.Tester.SetupNextState(agent);
-                _instance._qlearning = new QLearningNN(agent);
+                _instance._qlearning.SetAgent(agent);
                 _instance._qlearning.LoadModel(); //NEEDS TO NOT HAPPENS
                 if(sceneSetup) _instance.StartCoroutine(_instance.RunTester(agent));
                 else EditorApplication.isPlaying = false;

@@ -4,31 +4,37 @@ using System.IO;
 using System.Xml.Serialization;
 
 public class QExperience : IEnumerable<SARS> {
-    public string Name;
-    private readonly List<SARS> _data = new List<SARS>();
-    
-    private static readonly XmlSerializer Serializer = new XmlSerializer(typeof(QExperience));
+    private List<SARS> _data = new List<SARS>();
+
+    private static readonly XmlSerializer Serializer = new XmlSerializer(typeof(List<SARS>));
     public void Save(string path) {
         using (var fs = File.Open(path, FileMode.Create)) {
-            Serializer.Serialize(fs, this);
+            Serializer.Serialize(fs, _data);
         }
     }
 
     public static QExperience Load(string path) {
         using (var fs = File.Open(path, FileMode.Open)) {
-            return (QExperience) Serializer.Deserialize(fs);
+            var data = Serializer.Deserialize(fs);
+            return new QExperience { _data = data as List<SARS>};
         }
     }
 
-    public void Add(SARS sars) {
+    public void Store(SARS sars) {
         _data.Add(sars);
+    }
+
+    public void Store(SARS sars, int maxSize) {
+        _data.Add(sars);
+        if (_data.Count > maxSize)
+            _data.RemoveAt(0); // TODO: Expensive on List.
     }
 
     public IEnumerator<SARS> GetEnumerator() {
         return _data.GetEnumerator();
     }
+
     IEnumerator IEnumerable.GetEnumerator() {
         return GetEnumerator();
     }
-
 }
