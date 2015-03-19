@@ -87,7 +87,7 @@ public class QAI : MonoBehaviour {
                     else EditorApplication.isPlaying = false;
                 } else {
                     _qlearning.LoadModel();
-                    StartCoroutine(RunAgent(agent));
+                    StartCoroutine(RunAgent());
                 }
             }
         } else {
