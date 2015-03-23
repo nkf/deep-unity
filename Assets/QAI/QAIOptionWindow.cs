@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -14,6 +14,9 @@ public class QAIOptionWindow : EditorWindow {
     private bool _showScenes = false;
 	private bool _testing;
     private int _term;
+
+	private bool starting = false;
+	private bool started = false;
 
     private List<QStory> _stories = new List<QStory>();
     private string[] _sceneList;
@@ -37,6 +40,14 @@ public class QAIOptionWindow : EditorWindow {
 	}
 
 	void OnGUI() {
+		EditorApplication.playmodeStateChanged -= PlayModeChange;
+		EditorApplication.playmodeStateChanged += PlayModeChange;
+
+		if(GUILayout.Button("Start!")) {
+			EditorApplication.isPlaying = true;	
+			starting = true;
+		}
+
 		var ais = GameObject.FindObjectsOfType<QAI>();
 		EditorGUILayout.HelpBox("To train the AI, turn on learning. You can leave this on during play to have the AI adapt over time to the way the user is playing", MessageType.None);
 		_learning = EditorGUILayout.ToggleLeft("Learning", _learning);
@@ -113,6 +124,22 @@ public class QAIOptionWindow : EditorWindow {
             ai.Remake = _remake;
             ai.Terminator = _term;
 		    ai.Testing = _testing;
+		}
+	}
+
+	private void PlayModeChange() {
+		if(started && !EditorApplication.isPlaying) {
+			Debug.Log ("Stopping");
+			started = false;
+
+			// Do something that should happen on stop
+		}
+		if(starting && EditorApplication.isPlaying) {
+			Debug.Log ("Starting");
+			starting = false;
+			started = true;
+
+			// Do something that should happen on start
 		}
 	}
 
