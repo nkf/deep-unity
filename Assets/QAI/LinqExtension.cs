@@ -22,4 +22,11 @@ public static class LinqExtension {
             buffer[j] = buffer[i];
         }
     }
+
+    public static void Swap<T>(this IList<T> l, int a, int b) {
+        if (a < 0 || a >= l.Count || b < 0 || b > l.Count) return;
+        var temp = l[a];
+        l[a] = l[b];
+        l[b] = temp;
+    }
 }

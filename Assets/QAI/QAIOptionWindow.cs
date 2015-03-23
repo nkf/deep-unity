@@ -1,18 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Linq;
+using Object = UnityEngine.Object;
 
 public class QAIOptionWindow : EditorWindow {
+    private bool _init = false;
 	private bool _imitation;
 	private bool _learning;
     private bool _remake;
 	private bool _show = true;
     private bool _showScenes = false;
-	private bool _testing;
+    private bool _testing;
     private int _term;
 
 	private bool starting = false;
@@ -25,17 +27,16 @@ public class QAIOptionWindow : EditorWindow {
 	[MenuItem ("QAI/Options")]
 	static void Init () {
 		// Get existing open window or if none, make a new one:
-		QAIOptionWindow window = (QAIOptionWindow)EditorWindow.GetWindow(typeof (QAIOptionWindow));
-		var ais = GameObject.FindObjectsOfType<QAI>();
+		var window = (QAIOptionWindow)GetWindow(typeof (QAIOptionWindow));
+		var ais = FindObjectsOfType<QAI>();
 
 		window._imitation = ais.All(q => q.Imitating);
 		window._learning = ais.All(q => q.Learning);
         window._remake = ais.All(q => q.Remake);
         window._term = ais.First().Terminator;
-		window._testing = ais.All (q => q.Testing);
 
         window._sceneList = window.GetScenes().ToArray();
-
+        window._init = true;
 		window.Show();
 	}
 
@@ -48,7 +49,7 @@ public class QAIOptionWindow : EditorWindow {
 //			starting = true;
 //		}
 
-		var ais = GameObject.FindObjectsOfType<QAI>();
+		var ais = FindObjectsOfType<QAI>();
 		EditorGUILayout.HelpBox("To train the AI, turn on learning. You can leave this on during play to have the AI adapt over time to the way the user is playing", MessageType.None);
 		_learning = EditorGUILayout.ToggleLeft("Learning", _learning);
 		if(_learning) {
@@ -66,18 +67,20 @@ public class QAIOptionWindow : EditorWindow {
             // REMAKE MODEL
             _remake = EditorGUILayout.ToggleLeft("Remake model", _remake);
 
-			//EPISODE COUNT
+            //EPISODE COUNT
             _term = EditorGUILayout.IntField("Terminate after # episodes", _term);
 
-			//IMITATION LEARNING
-			if(_show = EditorGUILayout.Foldout(_show, "Imitation Learning")) {
-				EditorGUI.indentLevel++;
-				EditorGUILayout.HelpBox("It is possible for the developer to teach the AI the first steps of how to play the game. Implement the method GetImitationAction to send input to the AI and QAI.Imitate to tell the AI that new input is available.", MessageType.Info);
-				_imitation = EditorGUILayout.Toggle("Learn from player input", _imitation);
-				EditorGUI.indentLevel--;
-			}
-		}
-	    if (!_learning) {
+            //IMITATION LEARNING
+            if (_show = EditorGUILayout.Foldout(_show, "Imitation Learning")) {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.HelpBox(
+                    "It is possible for the developer to teach the AI the first steps of how to play the game. Implement the method GetImitationAction to send input to the AI and QAI.Imitate to tell the AI that new input is available.",
+                    MessageType.Info);
+                _imitation = EditorGUILayout.Toggle("Learn from player input", _imitation);
+                EditorGUI.indentLevel--;
+            }
+        }
+        if (!_learning) {
             //TESTER
 //            _testing = EditorGUILayout.ToggleLeft("Run Tester", _testing);
 			if(GUILayout.Button("Run Tester")) {
@@ -86,32 +89,38 @@ public class QAIOptionWindow : EditorWindow {
 			}
 	    }
 
-	    if (_showScenes = EditorGUILayout.Foldout(_showScenes, "Training Scenes")) {
+	            //EditorApplication.playmodeStateChanged += PlayModeChanged;
+                EditorApplication.isPlaying = !EditorApplication.isPlaying;
+	        }
+        }
+
+        if (_showScenes = EditorGUILayout.Foldout(_showScenes, "Training Scenes")) {
 	        EditorGUI.indentLevel++;
-	        foreach (var story in _stories) {
+            for (int i = 0; i < _stories.Count; i++) {
+                var story = _stories[i];
                 var index = _sceneList.ToList().IndexOf(story.ScenePath);
                 var r = EditorGUILayout.BeginVertical();
                 //Scene selection
-	            GUILayout.Space(15);
-	            index = EditorGUI.Popup(r, "Scene:", index == -1 ? 0 : index, _sceneList);
-	            story.ScenePath = _sceneList[index];
-	            
+                GUILayout.Space(15);
+                index = EditorGUI.Popup(r, " Scene:", index == -1 ? 0 : index, _sceneList);
+                story.ScenePath = _sceneList[index];
+                EditorGUILayout.EndVertical();
                 //Iteration field
                 story.Iterations = EditorGUILayout.IntField("Iterations:", story.Iterations);
-                EditorGUILayout.EndVertical();
+
                 //Index buttons
-	            EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.BeginHorizontal();
                 GUILayout.Space(20);
                 GUILayout.Label("Change index");
-	            if (GUILayout.Button("^")) {
-	                Debug.Log("move up");
-	            }
-	            if (GUILayout.Button("v")) {
-                    Debug.Log("move down");
-	            }
+                if (GUILayout.Button("^")) {
+                    _stories.Swap(i - 1, i);
+                }
+                if (GUILayout.Button("v")) {
+                    _stories.Swap(i + 1, i);
+                }
                 EditorGUILayout.EndHorizontal();
-	        }
-	        EditorGUI.indentLevel--;
+            }
+            EditorGUI.indentLevel--;
 	        var style = new GUIStyle(GUI.skin.button) {margin = new RectOffset(50, 50, 0, 0)};
 	        if (GUILayout.Button("New training story", style)) {
 	            _stories.Add(new QStory());
@@ -122,7 +131,7 @@ public class QAIOptionWindow : EditorWindow {
 	        LearnIt();
 	    }
 
-		foreach(var ai in GameObject.FindObjectsOfType<QAI>()) {
+		foreach(var ai in FindObjectsOfType<QAI>()) {
 			ai.Imitating = _imitation;
 			ai.Learning = _learning;
             ai.Remake = _remake;
@@ -188,5 +197,6 @@ public class QAIOptionWindow : EditorWindow {
 	void OnInspectorUpdate() {
 		Repaint();
 	}
+
 }
 
