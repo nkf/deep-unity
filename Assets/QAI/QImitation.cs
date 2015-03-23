@@ -19,7 +19,7 @@ public class QImitation {
         var scene = EditorApplication.currentScene;
         scene = EscapeScenePath(scene);
         var id = nextSaveId("QData/Imitation", scene);
-        _experience.Save( Path.Combine("QData/Imitation", scene+"-"+id+".xml") );
+        new QImitationStorage(id+"", _experience).Save(Path.Combine("QData/Imitation", scene + "-" + id + ".xml"));
     }
 
     private static string EscapeScenePath(string path) {
@@ -40,8 +40,8 @@ public class QImitation {
     }
 
 
-    public static List<QExperience> GetAllByScene(string scene) {
-        return Directory.GetFiles(ImitationDataPath, EscapeScenePath(scene) + "-*").Select(path => QExperience.Load(path)).ToList();
+    public static List<QImitationStorage> GetAllByScene(string scene) {
+        return Directory.GetFiles(ImitationDataPath, EscapeScenePath(scene) + "-*").Select(path => QImitationStorage.Load(path)).ToList();
     }
 
 }
