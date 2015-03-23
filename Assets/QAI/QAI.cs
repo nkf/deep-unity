@@ -93,12 +93,11 @@ public class QAI : MonoBehaviour {
         } else {
             _instance.ActiveAgent = this.ActiveAgent;
             var agent = ActiveAgent.GetComponent<QAgent>(); // TODO: Multiple agents.
+            _instance._qlearning.SetAgent(agent);
             if (!_instance.Imitating && _instance.Learning) {
                 _instance.StartCoroutine(_instance._qlearning.RunEpisode(_instance.EndOfEpisode));
             } else if (_instance.Testing) {
                 var sceneSetup = _instance.Tester.SetupNextState(agent);
-                _instance._qlearning.SetAgent(agent);
-                _instance._qlearning.LoadModel(); //NEEDS TO NOT HAPPENS
                 if(sceneSetup) _instance.StartCoroutine(_instance.RunTester(agent));
                 else EditorApplication.isPlaying = false;
             }
