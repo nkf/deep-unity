@@ -83,7 +83,7 @@ public class QLearningNN : QLearning {
     }
 
     public void LoadExperienceDatabase() {
-        _exps = QImitation.GetAllByScene(EditorApplication.currentScene); // TODO
+        _exps = QImitation.GetAllByScene(EditorApplication.currentScene).Select(store => store.Experience).ToList(); // TODO
         _qexp = new QExperience();
     }
 
