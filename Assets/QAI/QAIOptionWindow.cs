@@ -43,10 +43,10 @@ public class QAIOptionWindow : EditorWindow {
 		EditorApplication.playmodeStateChanged -= PlayModeChange;
 		EditorApplication.playmodeStateChanged += PlayModeChange;
 
-		if(GUILayout.Button("Start!")) {
-			EditorApplication.isPlaying = true;	
-			starting = true;
-		}
+//		if(GUILayout.Button("Start!",)) {
+//			EditorApplication.isPlaying = true;	
+//			starting = true;
+//		}
 
 		var ais = GameObject.FindObjectsOfType<QAI>();
 		EditorGUILayout.HelpBox("To train the AI, turn on learning. You can leave this on during play to have the AI adapt over time to the way the user is playing", MessageType.None);
@@ -79,7 +79,11 @@ public class QAIOptionWindow : EditorWindow {
 		}
 	    if (!_learning) {
             //TESTER
-            _testing = EditorGUILayout.ToggleLeft("Run Tester", _testing);
+//            _testing = EditorGUILayout.ToggleLeft("Run Tester", _testing);
+			if(GUILayout.Button("Run Tester")) {
+				_testing = true;
+				ChangePlayMode();
+			}
 	    }
 
 	    if (_showScenes = EditorGUILayout.Foldout(_showScenes, "Training Scenes")) {
@@ -127,12 +131,19 @@ public class QAIOptionWindow : EditorWindow {
 		}
 	}
 
+	private void ChangePlayMode() {
+		if(!EditorApplication.isPlaying)
+			starting = true;
+		EditorApplication.isPlaying = !EditorApplication.isPlaying;
+	}
+
 	private void PlayModeChange() {
 		if(started && !EditorApplication.isPlaying) {
 			Debug.Log ("Stopping");
 			started = false;
 
 			// Do something that should happen on stop
+			_testing = false;
 		}
 		if(starting && EditorApplication.isPlaying) {
 			Debug.Log ("Starting");
