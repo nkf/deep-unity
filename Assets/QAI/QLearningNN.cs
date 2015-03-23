@@ -65,8 +65,6 @@ public class QLearningNN : QLearning {
         var s = Agent.GetState();
         while (!s.IsTerminal) {
             // Experience step.
-            //var q = Q(s);
-            //Debug.Log(string.Join(";", Actions.Select(a2 => q(a2).ToString()).ToArray()));
             var a = EpsilonGreedy(Epsilon(Iteration));
             var sars = Agent.MakeSARS(a);
             _qexp.Store(sars, 20);
@@ -98,7 +96,6 @@ public class QLearningNN : QLearning {
         foreach (var sars in SampleBatch()) {
             var inp = new BasicMLData(sars.State.Features);
             var ideal = _net.Compute(inp).ToEnumerable().ToArray();
-            //var ideal = new[] { 0.0, 0.0, 0.0, 0.0 };
             double target;
             if (!sars.NextState.IsTerminal) {
                 var inp0 = new BasicMLData(sars.NextState.Features);
