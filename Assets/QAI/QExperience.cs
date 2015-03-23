@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections;
-using System.IO;
-using System.Xml.Serialization;
 
 public class QExperience : IEnumerable<SARS> {
-    private List<SARS> _data = new List<SARS>();
+    private readonly List<SARS> _data = new List<SARS>();
 
     public void Store(SARS sars, int maxSize) {
         _data.Add(sars);
@@ -13,6 +11,10 @@ public class QExperience : IEnumerable<SARS> {
     }
 
     public void Store(SARS sars) {
+        _data.Add(sars);
+    }
+
+    public void Add(SARS sars) {
         _data.Add(sars);
     }
 

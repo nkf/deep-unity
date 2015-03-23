@@ -1,27 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
 
 public class QImitationStorage {
-    public readonly QExperience Experience;
     public readonly String Name;
+    public readonly QExperience Experience;
 
-    private static readonly XmlSerializer Serializer = new XmlSerializer(typeof(QImitationStorage));
+
     public QImitationStorage(string name, QExperience experience) {
-        Experience = experience;
         Name = name;
+        Experience = experience;
     }
+
+    private QImitationStorage() {}
 
     public void Save(string path) {
         using(var fs = File.Open(path, FileMode.Create)) {
-            Serializer.Serialize(fs, this);
+            new XmlSerializer(typeof(QImitationStorage)).Serialize(fs, this);
         }
     }
 
     public static QImitationStorage Load(string path) {
         using(var fs = File.Open(path, FileMode.Open)) {
-            return Serializer.Deserialize(fs) as QImitationStorage;
+            return new XmlSerializer(typeof(QImitationStorage)).Deserialize(fs) as QImitationStorage;
         }
     }
 }
