@@ -18,7 +18,7 @@ public class QImitation {
         Directory.CreateDirectory("QData/Imitation");
         var scene = EditorApplication.currentScene;
         scene = EscapeScenePath(scene);
-        var id = nextSaveId("QData/Imitation", scene);
+        var id = NextSaveId("QData/Imitation", scene);
         new QImitationStorage(id+"", _experience).Save(Path.Combine("QData/Imitation", scene + "-" + id + ".xml"));
     }
 
@@ -26,7 +26,7 @@ public class QImitation {
         return Path.GetDirectoryName(path).Replace(Path.DirectorySeparatorChar.ToString(), "_") + "_" + Path.GetFileNameWithoutExtension(path);
     }
 
-    private int nextSaveId(string directory, string prefix) {
+    private int NextSaveId(string directory, string prefix) {
         var files = Directory.GetFiles(directory);
         var idList = new List<int>();
         foreach (var file in files) {
