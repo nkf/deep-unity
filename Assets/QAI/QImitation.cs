@@ -14,12 +14,16 @@ public class QImitation {
         return sars.NextState.IsTerminal;
     }
 
+	public QImitationStorage CreateStorageItem(string id) {
+		return new QImitationStorage(id, _experience);
+	}
+
     public void Save() {
-        Directory.CreateDirectory("QData/Imitation");
-        var scene = EditorApplication.currentScene;
-        scene = EscapeScenePath(scene);
-        var id = NextSaveId("QData/Imitation", scene);
-        new QImitationStorage(id+"", _experience).Save(Path.Combine("QData/Imitation", scene + "-" + id + ".xml"));
+		Directory.CreateDirectory("QData/Imitation");
+		var scene = EditorApplication.currentScene;
+		scene = EscapeScenePath(scene);
+		var id = NextSaveId("QData/Imitation", scene);
+		CreateStorageItem(id.ToString()).Save(Path.Combine("QData/Imitation", scene + "-" + id + ".xml"));
     }
 
     private static string EscapeScenePath(string path) {

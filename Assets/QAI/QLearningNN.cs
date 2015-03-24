@@ -15,7 +15,7 @@ using Random = System.Random;
 public class QLearningNN : QLearning {
     public const string MODEL_PATH = "QData/JOHN_N.xml";
 
-    private Param Epsilon = t => 0.5;
+    private Param Epsilon = t => 0.8 - (t/1.5f) / 500f;
     private double Discount = 0.9;
 
     private BasicNetwork _net;
@@ -83,12 +83,15 @@ public class QLearningNN : QLearning {
     }
 
     public void LoadExperienceDatabase() {
-        _exps = QImitation.GetAllByScene(EditorApplication.currentScene).Select(store => store.Experience).ToList(); // TODO
+//        _exps = QImitation.GetAllByScene(EditorApplication.currentScene).Select(store => store.Experience).ToList(); // TODO
+		_exps = QStory.LoadAll("QData/Story").Where(qs => qs.ScenePath == EditorApplication.currentScene).SelectMany(qs => qs.ImitationExperiences.Select(qi => qi.Experience)).ToList();
+		Debug.Log ("Loading " + _exps.Count + " imitation experiences");
         _qexp = new QExperience();
     }
 
     public IEnumerable<SARS> SampleBatch() {
-        return _exps.First().Concat(_qexp).Shuffle().Take(20); // TODO
+		IEnumerable<SARS> all = _exps.Count > 0 ? _exps.First().Concat(_qexp) : _qexp;
+        return all.Shuffle().Take(20); // TODO
     }
 
     private void TrainModel() {
