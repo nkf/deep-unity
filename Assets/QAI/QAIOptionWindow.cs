@@ -20,11 +20,14 @@ public class QAIOptionWindow : EditorWindow {
 
 	private bool _starting = false;
 	private bool _started = false;
+	private bool _forceStart = false; 
 	private Vector2 _scrollPosition;
 
 	private List<QStory> _stories;
 	private string[] _sceneList;
 	private QStory _currentStory;
+	private bool _learnAllStories;
+	private int _learningStory;
 
         // Add menu named "My Window" to the Window menu
 	[MenuItem ("QAI/Options")]
@@ -100,80 +103,89 @@ public class QAIOptionWindow : EditorWindow {
 				_testing = true;
 				ChangePlayMode();
 			}
-	    }
+	    } else {
 
-        if (_showScenes = EditorGUILayout.Foldout(_showScenes, "Stories")) {
-	        EditorGUI.indentLevel++;
-			for (int i = 0; i < _stories.Count; i++) {
-				var story = _stories[i];
-				GUILayout.Label("Story " + story.Id);
+	        if (_showScenes = EditorGUILayout.Foldout(_showScenes, "Stories")) {
+		        EditorGUI.indentLevel++;
+				for (int i = 0; i < _stories.Count; i++) {
+					var story = _stories[i];
+					GUILayout.Label("Story " + story.Id);
 
-                var index = Array.IndexOf(_sceneList,story.ScenePath);
-                var r = EditorGUILayout.BeginVertical();
-                //Scene selection
-                GUILayout.Space(15);
-                index = EditorGUI.Popup(r, " Scene:", index == -1 ? 0 : index, _sceneList);
-				if(_sceneList[index] != story.ScenePath) {
-					story.ImitationExperiences.Clear(); // Huehuehue
-                	story.ScenePath = _sceneList[index];
-					story.Save(STORY_PATH);
-				}
-                EditorGUILayout.EndVertical();
-                //Iteration field
-				var itt = EditorGUILayout.IntField("Iterations:", story.Iterations);
-				if(itt != story.Iterations) {
-                	story.Iterations = itt;
-					story.Save(STORY_PATH);
-				}
-
-				//Imitation training
-				r = EditorGUILayout.BeginHorizontal();
-				GUILayout.Space(17);
-				GUILayout.Label("Imitation learning");
-				if(GUILayout.Button("Record")) {
-					_imitation = true;
-					_currentStory = story;
-					EditorApplication.OpenScene(story.ScenePath);
-					ChangePlayMode();
-				}
-				EditorGUILayout.EndHorizontal();
-				foreach(var exp in story.ImitationExperiences) {
-					r = EditorGUILayout.BeginHorizontal();
-					GUILayout.Space(35);
-					GUILayout.Label(exp.Name);
-					if(GUILayout.Button("Delete")) {
-						story.ImitationExperiences.Remove(exp);
+	                var index = Array.IndexOf(_sceneList,story.ScenePath);
+	                var r = EditorGUILayout.BeginVertical();
+	                //Scene selection
+	                GUILayout.Space(15);
+	                index = EditorGUI.Popup(r, " Scene:", index == -1 ? 0 : index, _sceneList);
+					if(_sceneList[index] != story.ScenePath) {
+						story.ImitationExperiences.Clear(); // Huehuehue
+	                	story.ScenePath = _sceneList[index];
 						story.Save(STORY_PATH);
-						return;
+					}
+	                EditorGUILayout.EndVertical();
+	                //Iteration field
+					var itt = EditorGUILayout.IntField("Iterations:", story.Iterations);
+					if(itt != story.Iterations) {
+	                	story.Iterations = itt;
+						story.Save(STORY_PATH);
+					}
+
+					//Imitation training
+					r = EditorGUILayout.BeginHorizontal();
+					GUILayout.Space(17);
+					GUILayout.Label("Imitation learning");
+					if(GUILayout.Button("Record")) {
+						_imitation = true;
+						_currentStory = story;
+						EditorApplication.OpenScene(story.ScenePath);
+						ChangePlayMode();
 					}
 					EditorGUILayout.EndHorizontal();
+					foreach(var exp in story.ImitationExperiences) {
+						r = EditorGUILayout.BeginHorizontal();
+						GUILayout.Space(35);
+						GUILayout.Label(exp.Name);
+						if(GUILayout.Button("Delete")) {
+							story.ImitationExperiences.Remove(exp);
+							story.Save(STORY_PATH);
+							return;
+						}
+						EditorGUILayout.EndHorizontal();
+					}
+
+	                //Index buttons
+	//                EditorGUILayout.BeginHorizontal();
+	//                GUILayout.Space(20);
+	//                GUILayout.Label("Change index");
+	//                if (GUILayout.Button("^")) {
+	//                    _stories.Swap(i - 1, i);
+	//                }
+	//                if (GUILayout.Button("v")) {
+	//                    _stories.Swap(i + 1, i);
+	//                }
+	//                EditorGUILayout.EndHorizontal();
+	            }
+	            EditorGUI.indentLevel--;
+		        var style = new GUIStyle(GUI.skin.button) {margin = new RectOffset(50, 50, 0, 0)};
+		        if (GUILayout.Button("New training story", style)) {
+					var story = new QStory();
+					story.Save(STORY_PATH);
+		            _stories.Add(story);
+		        }
+				EditorGUILayout.Space();
+		    }
+
+			if(!_learnAllStories) {
+			    if (GUILayout.Button("Learn all stories")) {
+			        _learnAllStories = true;
+					ChangePlayMode();
+			    }
+			} else {
+				if (GUILayout.Button("ABORT!")) {
+					_learnAllStories = false;
+					ChangePlayMode();
 				}
-
-                //Index buttons
-//                EditorGUILayout.BeginHorizontal();
-//                GUILayout.Space(20);
-//                GUILayout.Label("Change index");
-//                if (GUILayout.Button("^")) {
-//                    _stories.Swap(i - 1, i);
-//                }
-//                if (GUILayout.Button("v")) {
-//                    _stories.Swap(i + 1, i);
-//                }
-//                EditorGUILayout.EndHorizontal();
-            }
-            EditorGUI.indentLevel--;
-	        var style = new GUIStyle(GUI.skin.button) {margin = new RectOffset(50, 50, 0, 0)};
-	        if (GUILayout.Button("New training story", style)) {
-				var story = new QStory();
-				story.Save(STORY_PATH);
-	            _stories.Add(story);
-	        }
-			EditorGUILayout.Space();
-	    }
-
-	    if (GUILayout.Button("LearnIT huehuehue")) {
-	        LearnIt();
-	    }
+			}
+		}
 		EditorGUILayout.EndScrollView();
 
 		foreach(var ai in FindObjectsOfType<QAI>()) {
@@ -183,11 +195,19 @@ public class QAIOptionWindow : EditorWindow {
             ai.Terminator = _term;
 		    ai.Testing = _testing;
 		}
+
+		if(_forceStart) {
+			_forceStart = false;
+			ChangePlayMode();
+		}
 	}
 
 	private void ChangePlayMode() {
 		if(!EditorApplication.isPlaying)
 			_starting = true;
+		if(_learnAllStories) {
+			EditorApplication.OpenScene(_stories[_learningStory].ScenePath);
+		}
 		EditorApplication.isPlaying = !EditorApplication.isPlaying;
 	}
 
@@ -210,26 +230,27 @@ public class QAIOptionWindow : EditorWindow {
 			// Do something that should happen on stop
 			_testing = false;
 			_imitation = false;
-
-			Debug.Log (GameObject.FindObjectOfType<QAI>().Imitation);
+			
+			_learningStory++;
+			if(_learnAllStories && _learningStory < _stories.Count) {
+				Debug.Log ("Continuing on to next story");
+				EditorApplication.OpenScene(_stories[_learningStory].ScenePath);
+				_forceStart = true;
+			} else {
+				Debug.Log ("Exiting full learning");
+				_learnAllStories = false;
+				_learningStory = 0;
+			}
 		}
 		if(_starting && EditorApplication.isPlaying) {
 			// Start is called within the playmode scene
 			Debug.Log ("Starting");
-			Debug.Log (GameObject.FindObjectOfType<QAI>().Imitation);
 			_starting = false;
 			_started = true;
 
 			// Do something that should happen on start
 		}
 	}
-
-    public void DrawImitationSelectionUI(QStory story) {
-        EditorGUILayout.BeginHorizontal();
-        
-
-        EditorGUILayout.EndHorizontal();
-    }
 
     private IEnumerable<string> GetScenes() {
         var wd = Directory.GetCurrentDirectory();
@@ -248,11 +269,6 @@ public class QAIOptionWindow : EditorWindow {
         }
         Uri folderUri = new Uri(folder);
         return Uri.UnescapeDataString(folderUri.MakeRelativeUri(pathUri).ToString());
-    }
-
-    private void LearnIt() {
-        EditorApplication.OpenScene(_stories.First().ScenePath);
-        ChangePlayMode();
     }
 
 	void OnInspectorUpdate() {
