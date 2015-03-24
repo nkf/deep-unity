@@ -206,7 +206,7 @@ public class QAIOptionWindow : EditorWindow {
 		if(!EditorApplication.isPlaying)
 			_starting = true;
 		if(_learnAllStories) {
-			EditorApplication.OpenScene(_stories[_learningStory].ScenePath);
+			LoadNextStory();
 		}
 		EditorApplication.isPlaying = !EditorApplication.isPlaying;
 	}
@@ -233,8 +233,7 @@ public class QAIOptionWindow : EditorWindow {
 			
 			_learningStory++;
 			if(_learnAllStories && _learningStory < _stories.Count) {
-				Debug.Log ("Continuing on to next story");
-				EditorApplication.OpenScene(_stories[_learningStory].ScenePath);
+				LoadNextStory();
 				_forceStart = true;
 			} else {
 				Debug.Log ("Exiting full learning");
@@ -250,6 +249,13 @@ public class QAIOptionWindow : EditorWindow {
 
 			// Do something that should happen on start
 		}
+	}
+
+	private void LoadNextStory() {
+		Debug.Log ("Continuing on to next story");
+		var story = _stories[_learningStory];
+		EditorApplication.OpenScene(story.ScenePath);
+		_term = story.Iterations;
 	}
 
     private IEnumerable<string> GetScenes() {
