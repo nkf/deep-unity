@@ -85,12 +85,16 @@ public class QLearningNN : QLearning {
     }
 
     public void LoadExperienceDatabase() {
-        _exps = QImitation.GetAllByScene(EditorApplication.currentScene); // TODO
+		_exps = QStory.LoadAll("QData/Story")
+            .Where(qs => qs.ScenePath == EditorApplication.currentScene)
+            .SelectMany(qs => qs.ImitationExperiences.Select(qi => qi.Experience)).ToList();
+		Debug.Log ("Loading " + _exps.Count + " imitation experiences");
         _qexp = new QExperience();
     }
 
     public IEnumerable<SARS> SampleBatch() {
-        return _exps.SelectMany(e => e).Concat(_qexp).Shuffle().Take(1); // TODO
+        // TODO: This line has a huge impact on learning ability. Change as needed.
+        return _exps.SelectMany(e => e).Concat(_qexp).Shuffle().Take(1);
     }
 
     private void PreTrain() {

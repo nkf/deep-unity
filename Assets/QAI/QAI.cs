@@ -6,7 +6,7 @@ using UnityEngine;
 public class QAI : MonoBehaviour {
     public delegate void EpisodeCallback();
 
-    public const float TimeStep = 1f;
+    public const float TimeStep = 0.3f;
     [HideInInspector]
     public bool Learning;
     [HideInInspector]
@@ -59,14 +59,19 @@ public class QAI : MonoBehaviour {
         Application.LoadLevel(Application.loadedLevel);
     }
 
-	public static void Imitate(QAgent agent) {
+	public static void Imitate(QAgent agent, Action a) {
 	    if (!_instance.Imitating) return;
-        var terminal = _instance._imitation.Imitate(agent);
+        var terminal = _instance._imitation.Imitate(agent, agent.ToQAction(a));
 	    if (terminal) {
-	        _instance._imitation.Save();
+//	        _instance._imitation.Save(); // Saving is now done in the Option Window, where the learning is started.
 	        EditorApplication.isPlaying = false;
 	    }
 	}
+
+    internal static QImitationStorage SaveImitation(string name) {
+        return _instance._imitation.CreateStorageItem(name);
+    }
+
 
     void Awake() {
         if (_instance == null) {
