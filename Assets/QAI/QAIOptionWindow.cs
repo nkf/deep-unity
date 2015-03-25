@@ -233,10 +233,11 @@ public class QAIOptionWindow : EditorWindow {
 			
 			_learningStory++;
 			if(_learnAllStories && _learningStory < _stories.Count) {
+				Debug.Log ("Starting next learning story");
 				LoadNextStory();
+				_remake = false;
 				_forceStart = true;
 			} else {
-				Debug.Log ("Exiting full learning");
 				_learnAllStories = false;
 				_learningStory = 0;
 			}
