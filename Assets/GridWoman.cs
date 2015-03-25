@@ -9,10 +9,6 @@ public class GridWoman : MonoBehaviour, QAgent {
     }
 
     [QBehavior("NoLeft")]
-    private void NoMove() {
-        // Do nothing.
-    }
-    [QBehavior("NoLeft")]
     private void MoveUp() {
         transform.position += new Vector3(1,0,0);
     }
