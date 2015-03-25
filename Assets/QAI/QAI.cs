@@ -55,9 +55,9 @@ public class QAI : MonoBehaviour {
         Application.LoadLevel(Application.loadedLevel);
     }
 
-	public static void Imitate(QAgent agent) {
+	public static void Imitate(QAgent agent, Action a) {
 	    if (!_instance.Imitating) return;
-        var terminal = _instance._imitation.Imitate(agent);
+        var terminal = _instance._imitation.Imitate(agent, agent.ToQAction(a));
 	    if (terminal) {
 //	        _instance._imitation.Save(); // Saving is now done in the Option Window, where the learning is started.
 	        EditorApplication.isPlaying = false;

@@ -78,22 +78,14 @@ public class GridWoman : MonoBehaviour, QAgent {
         );
     }
 
-	private Action _currentAction;
-	public Action GetImitationAction() {
-		return _currentAction;
-	}
 
 	public void Update() {
-		_currentAction = null;
-		if(Input.GetKeyDown(KeyCode.UpArrow))
-			_currentAction = MoveUp;
-		if(Input.GetKeyDown(KeyCode.DownArrow))
-			_currentAction = MoveDown;
-		if(Input.GetKeyDown(KeyCode.RightArrow))
-			_currentAction = MoveRight;
-		if(Input.GetKeyDown(KeyCode.LeftArrow))
-			_currentAction = MoveLeft;
-		if(_currentAction != null)
-			QAI.Imitate(this);
+		Action currentAction = null;
+		if(Input.GetKeyDown(KeyCode.UpArrow))   currentAction = MoveUp;
+		if(Input.GetKeyDown(KeyCode.DownArrow)) currentAction = MoveDown;
+		if(Input.GetKeyDown(KeyCode.RightArrow))currentAction = MoveRight;
+		if(Input.GetKeyDown(KeyCode.LeftArrow)) currentAction = MoveLeft;
+		if(currentAction != null)
+			QAI.Imitate(this, currentAction);
 	}
 }
