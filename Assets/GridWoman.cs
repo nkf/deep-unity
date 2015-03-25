@@ -9,6 +9,10 @@ public class GridWoman : MonoBehaviour, QAgent {
     }
 
     [QBehavior("NoLeft")]
+    private void NoMove() {
+        // Do nothing.
+    }
+    [QBehavior("NoLeft")]
     private void MoveUp() {
         transform.position += new Vector3(1,0,0);
     }
@@ -50,9 +54,10 @@ public class GridWoman : MonoBehaviour, QAgent {
     }
 
 	private int[] PosToGoal(Vector3 p, Vector3 goal) {
-		var v = VectorToGoal(p, goal);
+		//var v = VectorToGoal(p, goal);
 		var s = PositionToState(p);
-		return new[] {v[0], v[2], s[0], s[2]};
+        var g = PositionToState(goal);
+		return new[] {s[0], s[2], g[0], g[2]};
 	}
 
 
@@ -66,14 +71,33 @@ public class GridWoman : MonoBehaviour, QAgent {
         var p = PositionToState(transform.position);
         var g = Goal.State;
         //var state = PosAndGoal(p, g);
-		var state = PosToGoal(transform.position, Goal.Position);
+		//var state = PosToGoal(transform.position, Goal.Position);
         //var state = VectorToGoal(transform.position, new Vector3(GoalState[0], GoalState[1], GoalState[2]));
+        double[, ,] grids = new double[2, 9, 9];
+        for (int n = 0; n < 2; n++) {
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    var x = i + p[0] - 4;
+                    var z = j + p[2] - 4;
+                    var ray = new Ray(new Vector3(x, 2, z), Vector3.down);
+                    RaycastHit hit;
+                    if (Physics.Raycast(ray, out hit, 3.0f)) {
+                        if (n == 0) {
+                            if (hit.collider.gameObject == Goal.Instance.gameObject)
+                                grids[n, i, j] = 10.0;
+                        } else {
+                            if (hit.collider.gameObject != this.gameObject)
+                                grids[n, i, j] = 1.0;
+                        }
+                    }
+                }
+            }
+        }
         var dead = !IsAboveGround();
-        //var goal = state.SequenceEqual(new []{0,0,0});
         var goal = p.SequenceEqual(g);
         return new QState(
-            state.Select(i => (double)i).ToArray(),
-            dead ? -1 : goal ? 1 : 0.0,
+            grids.Cast<double>().ToArray(),
+            dead ? 0 : goal ? 1 : 0,
             dead || goal
         );
     }

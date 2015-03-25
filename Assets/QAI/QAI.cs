@@ -29,6 +29,10 @@ public class QAI : MonoBehaviour {
     private QLearningNN _qlearning;
     private QImitation _imitation;
 
+    public static int NumIterations() {
+        return _instance == null ? 1 : _instance.Terminator;
+    }
+
     private void EndOfEpisode() {
         if (_qlearning.Iteration > Terminator) {
             _qlearning.SaveModel();

@@ -3,61 +3,62 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
-using Encog.Neural.Networks;
-using Encog.Neural.Networks.Layers;
-using Encog.Neural.Networks.Training.Propagation.Back;
-using Encog.Engine.Network.Activation;
-using Encog.ML.Data.Basic;
+using Accord.Math;
+using Accord.Neuro;
+using Accord.Neuro.ActivationFunctions;
+using Accord.Neuro.Learning;
+using Accord.Neuro.Networks;
+using AForge.Neuro;
+using AForge.Neuro.Learning;
 using UnityEditor;
 using UnityEngine;
 using Random = System.Random;
 
 public class QLearningNN : QLearning {
-    public const string MODEL_PATH = "QData/JOHN_N.xml";
+    public const string MODEL_PATH = "QData/JOHN_N";
 
-    private Param Epsilon = t => 0.5;
+    private Param Epsilon = t => 0.5 - (0.5 / QAI.NumIterations()) * t;
     private double Discount = 0.9;
 
-    private BasicNetwork _net;
+    private const int complexity = 1;
+    private int size;
+    private DeepBeliefNetwork[] _nets = new DeepBeliefNetwork[complexity];
     private List<QExperience> _exps;
     private QExperience _qexp;
     private Dictionary<string, int> _amap;
     private double[] _output;
     private readonly bool _imit;
 
-    public override void LoadModel() {
-        RemakeModel();
-        var xml = new XmlSerializer(typeof(double[]));
-        using (var fs = File.Open(MODEL_PATH, FileMode.Open)) {
-            var data = (double[])xml.Deserialize(fs);
-            _net.DecodeFromArray(data);
-        }
-    }
-
-    public override void SaveModel() {
-        var xml = new XmlSerializer(typeof(double[]));
-        using (var fs = File.Open(MODEL_PATH, FileMode.Create)) {
-            double[] data = new double[_net.EncodedArrayLength()];
-            _net.EncodeToArray(data);
-            xml.Serialize(fs, data);
-        }
-    }
-
-    public override void RemakeModel() {
+    private void Initialize() {
         LoadExperienceDatabase();
         // Action-index mapping.
         _amap = new Dictionary<string, int>();
         int ix = 0;
         foreach (QAction a in Actions)
             _amap[a.ActionId] = ix++;
-        // Network architecture.
-        int size = Agent.GetState().Features.Length;
-        _net = new BasicNetwork();
-        _net.AddLayer(new BasicLayer(null, true, size));
-        _net.AddLayer(new BasicLayer(new ActivationSigmoid(), true, size));
-        _net.AddLayer(new BasicLayer(new ActivationSigmoid(), false, Actions.Count));
-        _net.Structure.FinalizeStructure();
-        _net.Reset();
+    }
+
+    public override void LoadModel() {
+        Initialize();
+        for (int n = 0; n < _nets.Length; n++)
+            _nets[n] = DeepBeliefNetwork.Load(MODEL_PATH + "" + n);
+    }
+
+    public override void SaveModel() {
+        for (int n = 0; n < _nets.Length; n++)
+            _nets[n].Save(MODEL_PATH + "" + n);
+    }
+
+    public override void RemakeModel() {
+        Initialize();
+        // Deep belief network.
+        size = Agent.GetState().Features.Length / complexity;
+        for (int n = 0; n < _nets.Length; n++) {
+            _nets[n] = new DeepBeliefNetwork(size, size / 2, size * 3, Actions.Count);
+            new GaussianWeights(_nets[n]).Randomize();
+            _nets[n].UpdateVisibleWeights();
+        }
+        PreTrain();
     }
 
     public override IEnumerator<YieldInstruction> RunEpisode(QAI.EpisodeCallback callback) {
@@ -78,7 +79,8 @@ public class QLearningNN : QLearning {
     }
 
     public override ActionValueFunction Q(QState s) {
-        _output = _net.Compute(new BasicMLData(s.Features)).ToEnumerable().ToArray();
+        _output = _nets[0].Compute(s.Features);
+        //Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()));
         return a => _output[_amap[a.ActionId]];
     }
 
@@ -88,27 +90,45 @@ public class QLearningNN : QLearning {
     }
 
     public IEnumerable<SARS> SampleBatch() {
-        return _exps.First().Concat(_qexp).Shuffle().Take(20); // TODO
+        return _exps.SelectMany(e => e).Concat(_qexp).Shuffle().Take(1); // TODO
+    }
+
+    private void PreTrain() {
+        for (int n = 0; n < _nets.Length; n++) {
+            var inp = _exps.SelectMany(e => e).Concat(_qexp).Shuffle().Select(
+                s => s.State.Features.Skip(n * size).Take(size).ToArray()
+            ).ToArray();
+            var trainer = new DeepBeliefNetworkLearning(_nets[n]);
+            trainer.Algorithm = (h, v, j) => new ContrastiveDivergenceLearning(h, v);
+            for (int i = 0; i < _nets[n].Machines.Count - 1; i++) {
+                trainer.LayerIndex = i;
+                var data = trainer.GetLayerInput(inp);
+                trainer.RunEpoch(data);
+            }
+        }
     }
 
     private void TrainModel() {
-        var dlist = new List<Encog.ML.Data.IMLDataPair>();
-        foreach (var sars in SampleBatch()) {
-            var inp = new BasicMLData(sars.State.Features);
-            var ideal = _net.Compute(inp).ToEnumerable().ToArray();
-            double target;
-            if (!sars.NextState.IsTerminal) {
-                var inp0 = new BasicMLData(sars.NextState.Features);
-                var a0max = _net.Compute(inp0).ToEnumerable().Max();
-                target = sars.Reward + Discount * a0max;
-            } else {
-                target = sars.Reward;
+        var batch = SampleBatch().ToList();
+        var inp = new double[batch.Count][];
+        var outp = new double[batch.Count][];
+        int i = 0;
+        for (int n = 0; n < _nets.Length; n++) {
+            foreach (var sars in batch) {
+                inp[i] = sars.State.Features;
+                var ideal = _nets[n].Compute(inp[i]);
+                double target;
+                if (!sars.NextState.IsTerminal) {
+                    var a0max = _nets[n].Compute(sars.NextState.Features).Max();
+                    target = sars.Reward + Discount * a0max;
+                } else {
+                    target = sars.Reward;
+                }
+                ideal[_amap[sars.Action.ActionId]] = target;
+                outp[i++] = ideal;
             }
-            ideal[_amap[sars.Action.ActionId]] = target;
-            dlist.Add(new BasicMLDataPair(inp, new BasicMLData(ideal)));
+            var backprop = new BackPropagationLearning(_nets[n]);
+            backprop.RunEpoch(inp, outp);
         }
-        var train = new Backpropagation(_net, new BasicMLDataSet(dlist));
-        train.Iteration(dlist.Count);
-        train.FinishTraining();
     }
 }
