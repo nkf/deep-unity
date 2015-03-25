@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -7,8 +6,7 @@ using UnityEditor;
 public class QImitation {
     public const string ImitationDataPath = "QData/Imitation";
     private readonly QExperience _experience = new QExperience();
-    public bool Imitate(QAgent agent) {
-        var a = agent.ConvertImitationAction();
+    public bool Imitate(QAgent agent, QAction a) {
         var sars = agent.MakeSARS(a);
         _experience.Store(sars);
         return sars.NextState.IsTerminal;

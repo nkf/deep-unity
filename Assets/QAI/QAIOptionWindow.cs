@@ -217,7 +217,8 @@ public class QAIOptionWindow : EditorWindow {
 			Debug.Log ("Stopping in playmode");
 
 			if(_currentStory != null) {
-				_currentStory.ImitationExperiences.Add(GameObject.FindObjectOfType<QAI>().Imitation.CreateStorageItem("Imitation set " + (_currentStory.ImitationExperiences.Count+1)));
+			    var imitation = QAI.SaveImitation("Imitation set " + (_currentStory.ImitationExperiences.Count + 1));
+				_currentStory.ImitationExperiences.Add(imitation);
 				_currentStory.Save(STORY_PATH);
 			}
 			_currentStory = null;
