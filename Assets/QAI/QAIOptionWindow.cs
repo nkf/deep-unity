@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
-using System.Collections;
 using System.Linq;
-using Object = UnityEngine.Object;
 
 public class QAIOptionWindow : EditorWindow {
-    private bool _init = false;
 	private bool _imitation;
 	private bool _learning;
     private bool _remake;
@@ -36,7 +33,6 @@ public class QAIOptionWindow : EditorWindow {
         window._term = ais.First().Terminator;
 
         window._sceneList = window.GetScenes().ToArray();
-        window._init = true;
 		window.Show();
 	}
 
