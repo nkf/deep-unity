@@ -64,9 +64,10 @@ public class QAI : MonoBehaviour {
 	    }
 	}
 
-	public QImitation Imitation { get {
-			return _imitation;
-		}}
+    internal static QImitationStorage SaveImitation(string name) {
+        return _instance._imitation.CreateStorageItem(name);
+    }
+
 
     void Awake() {
         if (_instance == null) {
