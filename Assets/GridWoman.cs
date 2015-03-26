@@ -69,8 +69,8 @@ public class GridWoman : MonoBehaviour, QAgent {
         //var state = PosAndGoal(p, g);
 		//var state = PosToGoal(transform.position, Goal.Position);
         //var state = VectorToGoal(transform.position, new Vector3(GoalState[0], GoalState[1], GoalState[2]));
-        double[, ,] grids = new double[2, 9, 9];
-        for (int n = 0; n < 2; n++) {
+        double[, ,] grids = new double[1, 9, 9];
+        for (int n = 0; n < 1; n++) {
             for (int i = 0; i < 9; i++) {
                 for (int j = 0; j < 9; j++) {
                     var x = i + p[0] - 4;
@@ -81,6 +81,8 @@ public class GridWoman : MonoBehaviour, QAgent {
                         if (n == 0) {
                             if (hit.collider.gameObject == Goal.Instance.gameObject)
                                 grids[n, i, j] = 10.0;
+                            else if (hit.collider.gameObject != this.gameObject)
+                                grids[n, i, j] = 1.0;
                         } else {
                             if (hit.collider.gameObject != this.gameObject)
                                 grids[n, i, j] = 1.0;
@@ -91,8 +93,9 @@ public class GridWoman : MonoBehaviour, QAgent {
         }
         var dead = !IsAboveGround();
         var goal = p.SequenceEqual(g);
+        var v = VectorToGoal(transform.position, Goal.Position);
         return new QState(
-            grids.Cast<double>().ToArray(),
+            grids.Cast<double>().Concat(new double[] { v[0], v[2] }).ToArray(),
             dead ? 0 : goal ? 1 : 0,
             dead || goal
         );

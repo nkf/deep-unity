@@ -54,7 +54,7 @@ public class QLearningNN : QLearning {
         // Deep belief network.
         size = Agent.GetState().Features.Length / complexity;
         for (int n = 0; n < _nets.Length; n++) {
-            _nets[n] = new DeepBeliefNetwork(size, size / 2, size * 3, Actions.Count);
+            _nets[n] = new DeepBeliefNetwork(size, size * 3, Actions.Count);
             new GaussianWeights(_nets[n]).Randomize();
             _nets[n].UpdateVisibleWeights();
         }
@@ -94,7 +94,7 @@ public class QLearningNN : QLearning {
 
     public IEnumerable<SARS> SampleBatch() {
         // TODO: This line has a huge impact on learning ability. Change as needed.
-        return _exps.SelectMany(e => e).Concat(_qexp).Shuffle().Take(1);
+        return _exps.SelectMany(e => e).Concat(_qexp).Shuffle().Take(20);
     }
 
     private void PreTrain() {
