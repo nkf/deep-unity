@@ -1,35 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 public class GridStateCreator : QTester {
-    public int MinX, MinZ, MaxX, MaxZ;
-    private int _x, _z;
+
+    private static List<Vector3> Positions;
 
     private readonly SerializableDictionary<Vector3, ResultPair> _results = new SerializableDictionary<Vector3, ResultPair>();
     private readonly List<double> _distScores = new List<double>();
-    void Awake() {
-        _x = MinX-1;
-        _z = MinZ;
-    }
-    //TODO: RECONSIDER THIS DESIGN (mainly that agent is passed, what if multiple agent, what if other factors are relevant to state?)
+
+    private Vector3 RunPosistion;
+    private readonly LinkedList<SARS> _history = new LinkedList<SARS>();
+    const int HistorySize = 10;
+    
+
     public override bool SetupNextState(QAgent agent) {
-        var woman = agent as GridWoman;
-        do {
-            _x++;
-            woman.transform.position = new Vector3(_x, 1, _z);
-            if (_x > MaxX) {
-                _x = MinX;
-                _z++;
-                if (_z > MaxZ) {
-                    //WriteResults();
-                    return false;
-                }
-            }
-        } while (!woman.IsAboveGround());
+        FindObjectOfType<GridResultsVisualizer>().enabled = true;
+        if (Positions == null) Positions = Goal.AllValidPositions();
+        if (Positions.Count == 0) return false;
+        RunPosistion = Positions[0];
+        RunPosistion.y = 1;
+        ((GridWoman)agent).transform.position = RunPosistion;
+        Positions.RemoveAt(0);
         return true;
     }
 
@@ -37,10 +31,17 @@ public class GridStateCreator : QTester {
         var state = sars.NextState.Features;
         var distToGoal = new Vector2((float)state[0], (float)state[1]).magnitude;
         _distScores.Add( 1/(distToGoal+1) );
+        _history.AddFirst(sars);
+        if (_history.Count > HistorySize) {
+            if (DetectCycle(_history)) {
+                QAI.EndTestRun();
+            }
+            _history.RemoveLast();
+        }
     }
 
     public override void OnRunComplete(double reward) {
-        _results[new Vector3(_x, 1, _z)] = new ResultPair{ Reward = reward, DistScore = _distScores.DefaultIfEmpty().Max() };
+        _results[RunPosistion] = new ResultPair{ Reward = reward, DistScore = _distScores.DefaultIfEmpty().Max() };
         _distScores.Clear();
         WriteResults();
     }
@@ -48,6 +49,11 @@ public class GridStateCreator : QTester {
     private void WriteResults() {
         var path = Path.Combine("TestResults", QData.EscapeScenePath(EditorApplication.currentScene))+".xml";
         QData.Save(path, _results);
+    }
+
+    //TODO: we might need a better method for this.
+    private bool DetectCycle(ICollection<SARS> sarss) {
+        return sarss.Distinct().Count() == 2;
     }
 
 }

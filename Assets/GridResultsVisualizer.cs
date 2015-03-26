@@ -21,7 +21,7 @@ public class GridResultsVisualizer : MonoBehaviour {
 
 	    foreach (var result in results) {
             AddMarker((float)result.Value.Reward, result.Key, rewardLayer);
-            AddMarker((float)result.Value.DistScore, result.Key, distLayer);
+            //AddMarker((float)result.Value.DistScore, result.Key, distLayer);
 	    }
 	}
 

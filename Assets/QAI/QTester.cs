@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 
 public abstract class QTester : MonoBehaviour {
+    //TODO: RECONSIDER THIS DESIGN (mainly that agent is passed, what if multiple agent, what if other factors are relevant to state?)
     public abstract bool SetupNextState(QAgent agent);
 
     public abstract void OnActionTaken(QAgent agent, SARS sars);

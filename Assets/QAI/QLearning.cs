@@ -34,6 +34,19 @@ public abstract class QLearning {
         return ValidActions().Select(a => new { v = q(a) + TIE_BREAK * rng.NextDouble(), a }).OrderByDescending(va => va.v).First().a;
     }
 
+    public QAction PropabalisticPolicy() {
+        var s = Agent.GetState();
+        var q = Q(s);
+        var vas = ValidActions().Select(a => new {v = (int)(q(a) * 100), a}).ToList();
+        var roll = rng.Next(vas.Sum(va => va.v));
+        var n = 0;
+        foreach (var va in vas) {
+            if (roll >= n && roll < n + va.v) return va.a;
+            n += va.v;
+        }
+        throw new Exception("falsted failed at math.");
+    }
+
     public QAction EpsilonGreedy(double eps) {
         if (rng.NextDouble() < eps) {
             var valid = ValidActions();

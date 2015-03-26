@@ -24,6 +24,7 @@ public class QAI : MonoBehaviour {
 	public int Iteration { get { return _qlearning == null ? 0 : _qlearning.Iteration; }}
 
     public QTester Tester;
+    private bool _abortTestRun = false;
 
     private static QAI _instance = null;
     private QLearningNN _qlearning;
@@ -50,13 +51,19 @@ public class QAI : MonoBehaviour {
     }
 
     private IEnumerator<YieldInstruction> RunTester(QAgent agent) {
+        _abortTestRun = false;
         while(!agent.GetState().IsTerminal) {
             var a = _qlearning.GreedyPolicy();
             Tester.OnActionTaken(agent, agent.MakeSARS(a));
             yield return new WaitForEndOfFrame();
+            if (_abortTestRun) break;
         }
         Tester.OnRunComplete(agent.GetState().Reward);
         Application.LoadLevel(Application.loadedLevel);
+    }
+
+    public static void EndTestRun() {
+        _instance._abortTestRun = true;
     }
 
 	public static void Imitate(QAgent agent, Action a) {
