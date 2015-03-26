@@ -48,6 +48,7 @@ public class QAIOptionWindow : EditorWindow {
 		_remake = ais.All(q => q.Remake);
 		_term = ais.First().Terminator;
 		_sceneList = GetScenes().ToArray();
+	    Directory.CreateDirectory(STORY_PATH);
 		_stories = QStory.LoadAll(STORY_PATH); // Should read this when serialization works
 		_currentStory = _currentStory == null ? null : _stories.Find(s => s.Id == _currentStory.Id);
 	}
