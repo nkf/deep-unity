@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Encog.ML.Bayesian.Training.Estimator;
 using UnityEngine;
 using System.Collections;
 
@@ -68,5 +69,16 @@ class PongBall : MonoBehaviour {
         transform.position = Vector3.zero;
         _speed = 5f;
         _velocity = new Vector3(direction, Random.Range(-1f,1f)).normalized * _speed;
+    }
+
+    public Player? IsTerminal() {
+        var ball = PongGame.RectFromTransform(transform);
+        if (ball.xMin < _game.Border.xMin) return Player.Player1;
+        if (ball.xMax > _game.Border.xMax) return Player.Player2;
+        return null;
+    }
+
+    public Vector3 Velocity {
+        get { return _velocity; }
     }
 }
