@@ -41,10 +41,10 @@ public class QGrid {
 
     public void DebugDraw(Vector2 center, Func<double, Color> colorFunc = null) {
         Iterate(center, (x, y, p) => {
-            var nw = new Vector3(p.x - ResolutionX, p.y - ResolutionY);
-            var ne = new Vector3(p.x + ResolutionX, p.y - ResolutionY);
-            var sw = new Vector3(p.x - ResolutionX, p.y + ResolutionY);
-            var se = new Vector3(p.x + ResolutionX, p.y + ResolutionY);
+            var nw = new Vector3(p.x - ResolutionX/2, p.y - ResolutionY/2);
+            var ne = new Vector3(p.x + ResolutionX/2, p.y - ResolutionY/2);
+            var sw = new Vector3(p.x - ResolutionX/2, p.y + ResolutionY/2);
+            var se = new Vector3(p.x + ResolutionX/2, p.y + ResolutionY/2);
             var c = colorFunc == null ? Color.white : colorFunc(this[x,y]);
             Debug.DrawLine(nw, ne, c);
             Debug.DrawLine(ne, se, c);
@@ -55,8 +55,8 @@ public class QGrid {
 
 
     private void Iterate(Vector2 center, Action<int,int,Vector2> f) {
-        var left = center.x - ((Width/2f)*ResolutionX);
-        var top = center.y - ((Height/2f)*ResolutionY);
+        var left = center.x - ((Width/2f)*ResolutionX - ResolutionX/2);
+        var top = center.y - ((Height/2f)*ResolutionY - ResolutionY/2);
         for (var x = 0; x < Width; x++) {
             for (var y = 0; y < Height; y++) {
                 f(x, y, new Vector2(left + x * ResolutionX, top + y * ResolutionY));
