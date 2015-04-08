@@ -110,7 +110,18 @@ public class QAIOptionWindow : EditorWindow {
 		        EditorGUI.indentLevel++;
 				for (int i = 0; i < _stories.Count; i++) {
 					var story = _stories[i];
-					GUILayout.Label("Story " + story.Id);
+					var dr = EditorGUILayout.BeginHorizontal();
+					dr.height = 16;
+					GUI.Label(dr, "Story " + story.Id);
+					var w = dr.width;
+					dr.width = 20;
+					dr.x = w - 23;
+					if(GUI.Button(dr, "X")) {
+						story.Delete();
+						_init = false;
+					}
+					EditorGUILayout.EndHorizontal();
+					GUILayout.Space(20);
 
 	                var index = Array.IndexOf(_sceneList,story.ScenePath);
 	                var r = EditorGUILayout.BeginVertical();
