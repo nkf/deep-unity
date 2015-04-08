@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using JetBrains.Annotations;
 
 public struct QState {
     public readonly double[] Features;
@@ -13,8 +12,8 @@ public struct QState {
     }
 
     public override int GetHashCode() {
+        throw new NotImplementedException();
         int hash = 23;
-        //hash = hash*31 + IntArrayHash(Features.Select(d => (int)d).ToArray());
         hash = hash*31 + Reward.GetHashCode();
         hash = hash*31 + IsTerminal.GetHashCode();
         return hash;
@@ -28,9 +27,5 @@ public struct QState {
         r &= Reward.Equals(that.Reward);
         r &= IsTerminal.Equals(that.IsTerminal);
         return r;
-    }
-
-    private int IntArrayHash(int[] array) {
-        return array.Aggregate(array.Length, (current, t) => unchecked(current*314159 + t));
     }
 }
