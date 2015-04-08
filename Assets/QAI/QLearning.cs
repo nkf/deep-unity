@@ -34,7 +34,7 @@ public abstract class QLearning {
         return ValidActions().Select(a => new { v = q(a) + TIE_BREAK * rng.NextDouble(), a }).OrderByDescending(va => va.v).First().a;
     }
 
-    public QAction PropabalisticPolicy() {
+    public QAction ProbabilisticPolicy() {
         var s = Agent.GetState();
         var q = Q(s);
         var vas = ValidActions().Select(a => new {v = (int)(q(a) * 100), a}).ToList();
@@ -55,7 +55,14 @@ public abstract class QLearning {
         return GreedyPolicy();
     }
 
+    /// <summary>
+    /// Always returns a non-empty list. Contains the NullAction if no valid actions are available.
+    /// </summary>
+    /// <returns>List of valid actions.</returns>
     protected IList<QAction> ValidActions() {
-        return Actions.Where(a => a.IsValid()).ToList();
+        var actions = Actions.Where(a => a.IsValid()).ToList();
+        if (actions.Count == 0)
+            actions.Add(QAction.NullAction);
+        return actions;
     }
 }

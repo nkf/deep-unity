@@ -4,6 +4,9 @@ using UnityEngine;
 using System.Collections;
 
 public struct QAction {
+
+    public static readonly QAction NullAction = new QAction("0", () => { }, null);
+
     public readonly string ActionId;
     [XmlIgnore]
     public readonly Action Action;
