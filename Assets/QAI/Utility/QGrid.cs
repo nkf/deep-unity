@@ -29,21 +29,13 @@ public class QGrid {
 
 
     public double this[int x, int y, int z] {
-        get {
-            return Grid[x + Width * (y + Height * z)];
-        }
-        set {
-            Grid[x + Width * (y + Height * z)] = value;
-        }
+        get { return Grid[x + Width * (y + Height * z)]; }
+        set { Grid[x + Width * (y + Height * z)] = value; }
     }
 
     public double this[Coordinates c] {
-        get {
-            return this[c.X, c.Y, c.Z];
-        }
-        set {
-            this[c.X, c.Y, c.Z] = value;
-        }
+        get { return this[c.X, c.Y, c.Z]; }
+        set { this[c.X, c.Y, c.Z] = value; }
     }
 
     public QGrid(int width, int height, int depth, Transform transform, float resolution) {

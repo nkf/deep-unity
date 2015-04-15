@@ -45,17 +45,23 @@ public class QAI : MonoBehaviour {
 
     private IEnumerator<YieldInstruction> RunAgent() {
         while (true) {
-            _qlearning.GreedyPolicy().Invoke();
-            yield return new WaitForSeconds(TimeStep);
+            var a = _qlearning.GreedyPolicy();
+            Debug.Log(a);
+            a.Invoke();
+            //yield return new WaitForSeconds(TimeStep);
+            yield return new WaitForFixedUpdate();
         }
     }
 
     private IEnumerator<YieldInstruction> RunTester(QAgent agent) {
         _abortTestRun = false;
         while(!agent.GetState().IsTerminal) {
-            var a = _qlearning.GreedyPolicy();
+            //var a = _qlearning.GreedyPolicy();
+            var a = _qlearning.EpsilonGreedy(0.1f);
+            //var a = _qlearning.PropabalisticPolicy();
             Tester.OnActionTaken(agent, agent.MakeSARS(a));
-            yield return new WaitForEndOfFrame();
+            //yield return new WaitForEndOfFrame();
+            yield return new WaitForSeconds(0.1f);
             if (_abortTestRun) break;
         }
         Tester.OnRunComplete(agent.GetState().Reward);
@@ -67,7 +73,7 @@ public class QAI : MonoBehaviour {
     }
 
 	public static void Imitate(QAgent agent, Action a) {
-	    if (!_instance.Imitating) return;
+	    if (_instance == null || !_instance.Imitating) return;
         var terminal = _instance._imitation.Imitate(agent, agent.ToQAction(a));
 	    if (terminal) {
 //	        _instance._imitation.Save(); // Saving is now done in the Option Window, where the learning is started.
@@ -80,7 +86,7 @@ public class QAI : MonoBehaviour {
     }
 
 
-    void Awake() {
+    void Start() {
         if (_instance == null) {
             _instance = this;
             var agent = ActiveAgent.GetComponent<QAgent>();
@@ -91,6 +97,7 @@ public class QAI : MonoBehaviour {
                 _qlearning.SetAgent(agent);
                 DontDestroyOnLoad(gameObject);
                 if (Learning) {
+                    Time.timeScale = 2;
                     if (Remake)
                         _qlearning.RemakeModel();
                     else
