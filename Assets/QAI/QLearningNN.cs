@@ -73,7 +73,7 @@ public class QLearningNN : QLearning {
             // Learning step.
             TrainModel();
             // End of frame.
-            yield return new WaitForEndOfFrame();
+            yield return new WaitForFixedUpdate();
         }
         callback();
     }
@@ -94,7 +94,7 @@ public class QLearningNN : QLearning {
 
     public IEnumerable<SARS> SampleBatch() {
         // TODO: This line has a huge impact on learning ability. Change as needed.
-        return _exps.SelectMany(e => e).Concat(_qexp).Shuffle().Take(20);
+        return _exps.SelectMany(e => e).Concat(_qexp).Shuffle().Take(100);
     }
 
     private void PreTrain() {

@@ -10,10 +10,10 @@ public class SimplePongAI : MonoBehaviour {
 	    _ball = FindObjectOfType<PongBall>();
 	}
 	
-	void Update () {
-	    var bPos = _ball.transform.position;
-	    var cPos = transform.position;
-        if(bPos.y > cPos.y) _controller.MoveUp();
-        if(bPos.y < cPos.y) _controller.MoveDown();
+	void FixedUpdate () {
+	    var b = _ball.transform.position.y;
+	    var c = transform.position.y;
+        if(b > c) _controller.MoveUp();
+        if(b < c) _controller.MoveDown();
 	}
 }

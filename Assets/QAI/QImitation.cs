@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -8,9 +9,18 @@ public class QImitation {
     private readonly QExperience _experience = new QExperience();
     public bool Imitate(QAgent agent, QAction a) {
         var sars = agent.MakeSARS(a);
+        ModLastExp(sars.State);
         _experience.Store(sars);
         return sars.NextState.IsTerminal;
     }
+    //Take the current state and set it as the last's state "next state"
+    private void ModLastExp(QState state) {
+        var c = _experience.Count;
+        if (c > 0) {
+            var sars = _experience[c-1];
+            _experience[c-1] = new SARS(sars.State, sars.Action, sars.Reward, state);
+        }
+    } 
 
 	public QImitationStorage CreateStorageItem(string id) {
 		return new QImitationStorage(id, _experience);
