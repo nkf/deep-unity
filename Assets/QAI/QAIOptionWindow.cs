@@ -98,104 +98,106 @@ public class QAIOptionWindow : EditorWindow {
 //                _imitation = EditorGUILayout.Toggle("Learn from player input", _imitation);
 //                EditorGUI.indentLevel--;
 //            }
-        }
-        //TESTER
-        if (GUILayout.Button("Run Tester")) {
-            _testing = true;
-            ChangePlayMode();
-        }
-        if (_showScenes = EditorGUILayout.Foldout(_showScenes, "Stories")) {
-            EditorGUI.indentLevel++;
-            for (int i = 0; i < _stories.Count; i++) {
-                var story = _stories[i];
-                var dr = EditorGUILayout.BeginHorizontal();
-                dr.height = 16;
-                GUI.Label(dr, "Story " + story.Id);
-                var w = dr.width;
-                dr.width = 20;
-                dr.x = w - 23;
-                if (GUI.Button(dr, "X")) {
-                    story.Delete();
-                    _init = false;
-                }
-                EditorGUILayout.EndHorizontal();
-                GUILayout.Space(20);
-
-                var index = Array.IndexOf(_sceneList, story.ScenePath);
-                var r = EditorGUILayout.BeginVertical();
-                //Scene selection
-                GUILayout.Space(15);
-                index = EditorGUI.Popup(r, " Scene:", index == -1 ? 0 : index, _sceneList);
-                if (_sceneList[index] != story.ScenePath) {
-                    story.ImitationExperiences.Clear(); // Huehuehue
-                    story.ScenePath = _sceneList[index];
-                    story.Save(STORY_PATH);
-                }
-                EditorGUILayout.EndVertical();
-                //Iteration field
-                var itt = EditorGUILayout.IntField("Iterations:", story.Iterations);
-                if (itt != story.Iterations) {
-                    story.Iterations = itt;
-                    story.Save(STORY_PATH);
-                }
-
-                //Imitation training
-                r = EditorGUILayout.BeginHorizontal();
-                GUILayout.Space(17);
-                GUILayout.Label("Imitation learning");
-                if (GUILayout.Button("Record")) {
-                    _imitation = true;
-                    _currentStory = story;
-                    EditorApplication.OpenScene(story.ScenePath);
-                    ChangePlayMode();
-                }
-                EditorGUILayout.EndHorizontal();
-                foreach (var exp in story.ImitationExperiences) {
-                    r = EditorGUILayout.BeginHorizontal();
-                    GUILayout.Space(35);
-                    GUILayout.Label(exp.Name);
-                    if (GUILayout.Button("Delete")) {
-                        story.ImitationExperiences.Remove(exp);
-                        story.Save(STORY_PATH);
-                        return;
+            if (_showScenes = EditorGUILayout.Foldout(_showScenes, "Stories")) {
+                EditorGUI.indentLevel++;
+                for (int i = 0; i < _stories.Count; i++) {
+                    var story = _stories[i];
+                    var dr = EditorGUILayout.BeginHorizontal();
+                    dr.height = 16;
+                    GUI.Label(dr, "Story " + story.Id);
+                    var w = dr.width;
+                    dr.width = 20;
+                    dr.x = w - 23;
+                    if (GUI.Button(dr, "X")) {
+                        story.Delete();
+                        _init = false;
                     }
                     EditorGUILayout.EndHorizontal();
+                    GUILayout.Space(20);
+
+                    var index = Array.IndexOf(_sceneList, story.ScenePath);
+                    var r = EditorGUILayout.BeginVertical();
+                    //Scene selection
+                    GUILayout.Space(15);
+                    index = EditorGUI.Popup(r, " Scene:", index == -1 ? 0 : index, _sceneList);
+                    if (_sceneList[index] != story.ScenePath) {
+                        story.ImitationExperiences.Clear(); // Huehuehue
+                        story.ScenePath = _sceneList[index];
+                        story.Save(STORY_PATH);
+                    }
+                    EditorGUILayout.EndVertical();
+                    //Iteration field
+                    var itt = EditorGUILayout.IntField("Iterations:", story.Iterations);
+                    if (itt != story.Iterations) {
+                        story.Iterations = itt;
+                        story.Save(STORY_PATH);
+                    }
+
+                    //Imitation training
+                    r = EditorGUILayout.BeginHorizontal();
+                    GUILayout.Space(17);
+                    GUILayout.Label("Imitation learning");
+                    if (GUILayout.Button("Record")) {
+                        _imitation = true;
+                        _currentStory = story;
+                        EditorApplication.OpenScene(story.ScenePath);
+                        ChangePlayMode();
+                    }
+                    EditorGUILayout.EndHorizontal();
+                    foreach (var exp in story.ImitationExperiences) {
+                        r = EditorGUILayout.BeginHorizontal();
+                        GUILayout.Space(35);
+                        GUILayout.Label(exp.Name);
+                        if (GUILayout.Button("Delete")) {
+                            story.ImitationExperiences.Remove(exp);
+                            story.Save(STORY_PATH);
+                            return;
+                        }
+                        EditorGUILayout.EndHorizontal();
+                    }
+
+                    //Index buttons
+                    //                EditorGUILayout.BeginHorizontal();
+                    //                GUILayout.Space(20);
+                    //                GUILayout.Label("Change index");
+                    //                if (GUILayout.Button("^")) {
+                    //                    _stories.Swap(i - 1, i);
+                    //                }
+                    //                if (GUILayout.Button("v")) {
+                    //                    _stories.Swap(i + 1, i);
+                    //                }
+                    //                EditorGUILayout.EndHorizontal();
                 }
+                EditorGUI.indentLevel--;
+                var style = new GUIStyle(GUI.skin.button) {margin = new RectOffset(50, 50, 0, 0)};
+                if (GUILayout.Button("New training story", style)) {
+                    var story = new QStory();
+                    story.Save(STORY_PATH);
+                    _stories.Add(story);
+                }
+                EditorGUILayout.Space();
+            }
 
-                //Index buttons
-                //                EditorGUILayout.BeginHorizontal();
-                //                GUILayout.Space(20);
-                //                GUILayout.Label("Change index");
-                //                if (GUILayout.Button("^")) {
-                //                    _stories.Swap(i - 1, i);
-                //                }
-                //                if (GUILayout.Button("v")) {
-                //                    _stories.Swap(i + 1, i);
-                //                }
-                //                EditorGUILayout.EndHorizontal();
+            if (!_learnAllStories) {
+                if (GUILayout.Button("Learn all stories")) {
+                    _learnAllStories = true;
+                    ChangePlayMode();
+                }
             }
-            EditorGUI.indentLevel--;
-            var style = new GUIStyle(GUI.skin.button) {margin = new RectOffset(50, 50, 0, 0)};
-            if (GUILayout.Button("New training story", style)) {
-                var story = new QStory();
-                story.Save(STORY_PATH);
-                _stories.Add(story);
+            else {
+                if (GUILayout.Button("ABORT!")) {
+                    _learnAllStories = false;
+                    ChangePlayMode();
+                }
             }
-            EditorGUILayout.Space();
+        }
+        //TESTER
+        if(GUILayout.Button("Run Tester")) {
+            _testing = true;
+            _learning = false;
+            ChangePlayMode();
         }
 
-        if (!_learnAllStories) {
-            if (GUILayout.Button("Learn all stories")) {
-                _learnAllStories = true;
-                ChangePlayMode();
-            }
-        }
-        else {
-            if (GUILayout.Button("ABORT!")) {
-                _learnAllStories = false;
-                ChangePlayMode();
-            }
-        }
         EditorGUILayout.EndScrollView();
 
         foreach (var ai in FindObjectsOfType<QAI>()) {
