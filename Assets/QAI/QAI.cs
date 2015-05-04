@@ -61,10 +61,10 @@ public class QAI : MonoBehaviour {
             //var a = _qlearning.PropabalisticPolicy();
             Tester.OnActionTaken(agent, agent.MakeSARS(a));
             //yield return new WaitForEndOfFrame();
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForFixedUpdate();
             if (_abortTestRun) break;
         }
-        Tester.OnRunComplete(agent.GetState().Reward);
+        Tester.OnTestComplete(agent.GetState().Reward);
         Application.LoadLevel(Application.loadedLevel);
     }
 
@@ -105,24 +105,30 @@ public class QAI : MonoBehaviour {
                     StartCoroutine(_qlearning.RunEpisode(EndOfEpisode));
                 } else if (Testing) {
                     _qlearning.LoadModel();
-                    var sceneSetup = Tester.SetupNextState(agent);
+                    var sceneSetup = Tester.SetupNextTest(agent);
                     if (sceneSetup) StartCoroutine(RunTester(agent));
-                    else EditorApplication.isPlaying = false;
+                    else {
+                        _instance.Tester.OnRunComplete();
+                        EditorApplication.isPlaying = false;
+                    }
                 } else {
                     _qlearning.LoadModel();
                     StartCoroutine(RunAgent());
                 }
             }
         } else {
-            _instance.ActiveAgent = this.ActiveAgent;
+            _instance.ActiveAgent = ActiveAgent;
             var agent = ActiveAgent.GetComponent<QAgent>(); // TODO: Multiple agents.
             _instance._qlearning.SetAgent(agent);
             if (!_instance.Imitating && _instance.Learning) {
                 _instance.StartCoroutine(_instance._qlearning.RunEpisode(_instance.EndOfEpisode));
             } else if (_instance.Testing) {
-                var sceneSetup = _instance.Tester.SetupNextState(agent);
-                if(sceneSetup) _instance.StartCoroutine(_instance.RunTester(agent));
-                else EditorApplication.isPlaying = false;
+                var sceneSetup = _instance.Tester.SetupNextTest(agent);
+                if (sceneSetup) _instance.StartCoroutine(_instance.RunTester(agent));
+                else {
+                    _instance.Tester.OnRunComplete();
+                    EditorApplication.isPlaying = false;
+                }
             }
             Destroy(gameObject);
         }
