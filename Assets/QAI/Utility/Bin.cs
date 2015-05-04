@@ -1,8 +1,8 @@
 ﻿using System;
 
-public class ContValue {
+public class Bin {
     private readonly float[] _intervals;
-    public ContValue(params float[] intervals) {
+    public Bin(params float[] intervals) {
         if(intervals.Length < 1) throw new ArgumentException("At least 1 interval values must be declared");
         _intervals = intervals;
     }
