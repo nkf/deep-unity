@@ -59,8 +59,8 @@ class PongController : MonoBehaviour, QAgent {
         //Stay within game border
         var pos = transform.position;
         var h = transform.localScale.y/2f;
-        pos.y = Mathf.Max(pos.y-h, _game.Border.yMax) + h;
-        pos.y = Mathf.Min(pos.y+h, _game.Border.yMin) - h;
+        pos.y = Mathf.Min(pos.y+h, _game.Border.yMax) - h;
+        pos.y = Mathf.Max(pos.y-h, _game.Border.yMin) + h;
         transform.position = pos;
     }
 
