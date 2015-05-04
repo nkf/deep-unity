@@ -10,8 +10,10 @@ public static class LinqExtension {
         return source.Select(x => (x - min) / (max - min));
     }
 
-    public static T Random<T>(this IEnumerable<T> source) {
-        return source.ElementAt(Rng.Next(source.Count() - 1));
+    public static IEnumerable<T> Random<T>(this IEnumerable<T> source) {
+        if (!source.Any()) yield break;
+        var n = Rng.Next(source.Count() - 1);
+        yield return source.ElementAt(n);
     }
 
     public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source) {
