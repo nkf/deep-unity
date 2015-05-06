@@ -74,7 +74,7 @@ public class QGrid {
         if (Bounds.Contains(p)) {
             var d = p - Center;
             d = new Vector3(d.x/ResolutionX, d.y/ResolutionY, d.z/ResolutionZ);
-            var c = new Vector3(Mathf.RoundToInt(Width/2), Mathf.RoundToInt(Height/2), Mathf.RoundToInt(Depth/2));
+            var c = new Vector3((int)(Width/2f), (int)(Height/2f), (int)(Depth/2f));
             var r = c + d;
             return new Coordinates(Mathf.RoundToInt(r.x), Mathf.RoundToInt(r.y), Mathf.RoundToInt(r.z));
         }
@@ -88,7 +88,10 @@ public class QGrid {
     public void DebugDraw(Func<double, Color> colorFunc = null) {
         Iterate((coor, b) => {
             var c = b.center;
-            var rX = ResolutionX/2; var rY = ResolutionY/2; var rZ = ResolutionZ/2;
+            const float skin = 0.02f; //in order to avoid drawing over the previous cell wall
+            var rX = ResolutionX/2 - skin; 
+            var rY = ResolutionY/2 - skin; 
+            var rZ = ResolutionZ/2 - skin;
             var aaa = new Vector3(c.x - rX, c.y - rY, c.z - rZ);
             var baa = new Vector3(c.x + rX, c.y - rY, c.z - rZ);
             var aba = new Vector3(c.x - rX, c.y + rY, c.z - rZ);
