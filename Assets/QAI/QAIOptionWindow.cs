@@ -77,7 +77,7 @@ public class QAIOptionWindow : EditorWindow {
                 var r = EditorGUILayout.BeginVertical();
                 var i = ais.First().Iteration;
                 if (i > 0) {
-                    EditorGUI.ProgressBar(r, i/(float) _term, "Progress");
+                    EditorGUI.ProgressBar(r, i/(float) _term, "Progress ("+i+"/"+_term+")");
                     GUILayout.Space(18);
                 }
                 EditorGUILayout.EndVertical();
