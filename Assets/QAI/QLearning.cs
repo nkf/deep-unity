@@ -52,7 +52,7 @@ public abstract class QLearning {
     }
 
     public QAction EpsilonPropabalistic(double eps) {
-        return EpsilonPolicy(eps, PropabalisticPolicy);
+        return EpsilonPolicy(eps, ProbabilisticPolicy);
     }
 
     public QAction EpsilonPolicy(double eps, Func<QAction> policy) {
