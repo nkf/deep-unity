@@ -29,4 +29,26 @@ public static class LinqExtension {
         l[a] = l[b];
         l[b] = temp;
     }
+
+    public static void ForEach<T>(this IEnumerable<T> source, Action<T> action) {
+        foreach (T t in source)
+            action(t);
+    }
+
+    public static void ForEach<T>(this IEnumerable<T> source, Action<T, int> action) {
+        int i = 0;
+        foreach (T t in source)
+            action(t, i++);
+    }
+
+    public static IEnumerable<IEnumerable<T>> Split<T>(this IEnumerable<T> source, int parts) {
+        int i = 0;
+        return from item in source
+               group item by i++ % parts into part
+               select part.AsEnumerable();
+    }
+
+    public static IEnumerable<T> Singleton<T>(this T item) {
+        yield return item;
+    }
 }
