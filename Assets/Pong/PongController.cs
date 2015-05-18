@@ -1,23 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using C5;
 using UnityEngine;
 using System.Collections;
 
 class PongController : MonoBehaviour, QAgent {
+    public Vector3 StartPosistion { get; private set; }
+
     PongGame _game;
     PongBall _ball;
 
     QGrid _grid;
-    //Ballposition x, y
-    ContValue _bpx;
-    ContValue _bpy;
-    //Ballvelocity x, y
-    ContValue _bvx;
-    ContValue _bvy;
+
+
+    public int Hits { get; set; } //Set by pongball
 
     //Set in editor
-    public Player Side;
+    public Player Side = 0;
     readonly KeyCode[][] _keys = {
         new[] {KeyCode.W, KeyCode.S},
         new[] {KeyCode.UpArrow, KeyCode.DownArrow}
@@ -25,19 +24,15 @@ class PongController : MonoBehaviour, QAgent {
 
     void Awake() {
         StartCoroutine(Movement());
+        StartPosistion = transform.position;
         _game = FindObjectOfType<PongGame>();
         _ball = FindObjectOfType<PongBall>();
-        _grid = new QGrid(5, 5, 1, transform, new Vector3(5,0,0), 2f);
-        var interval = new float[]{-7, -4, -1, 1, 4, 7};
-        _bpx = new ContValue(interval);
-        _bpy = new ContValue(interval);
-        _bvx = new ContValue(interval);
-        _bvy = new ContValue(interval);
+        _grid = new QGrid(4, 10, 1, transform, new Vector3(10,0,0), 6f, 1.5f, 6f);
     }
 
 
-    void Update() {
-        //_grid.DebugDraw(v => v == 1 ? Color.blue : Color.magenta);
+    void FixedUpdate() {
+        if(Side == Player.Player1) _grid.DebugDraw(v => v == 1 ? Color.yellow : Color.magenta);
     }
 
     IEnumerator Movement() {
@@ -46,7 +41,7 @@ class PongController : MonoBehaviour, QAgent {
             Action action = Idle;
             if (Input.GetKey(keys[0])) action = MoveUp;
             if (Input.GetKey(keys[1])) action = MoveDown;
-            QAI.Imitate(this, action);
+            if(Side == Player.Player1) QAI.Imitate(this, action);
             yield return new WaitForFixedUpdate();
         }
     }
@@ -75,30 +70,70 @@ class PongController : MonoBehaviour, QAgent {
     [QBehavior]
     public void Idle() { }
 
-    private Coordinates? _prevBallPos = null;
+    private List<Coordinates?> _prevPositions = new List<Coordinates?>(); 
     public QState GetState() {
         var winner = _ball.IsTerminal();
-        var terminal = winner.HasValue;
-        var reward = terminal ? (winner.Value == Side ? 1 : 0) : 0;
-        //var reward = Vector3.Distance(_ball.transform.position, transform.position) < 1.25 ? 1 : 0;
+        double reward;
+        bool terminal;
+        //var terminal = winner.HasValue;
+        //var reward = terminal ? (winner.Value == Side ? 1 : 0) : 0;
+        var b = PongGame.RectFromTransform(_ball.transform);
+        var controller = PongGame.RectFromTransform(transform);
+        controller.width += 0.2f;
+        if (b.Overlaps(controller)) {
+            reward = 1;
+            terminal = winner.HasValue;
+            //terminal = true;
+        } else {
+            terminal = winner.HasValue;
+            reward = terminal ? (winner.Value == Side ? 1 : -1) : 0;
+        }
+        
 
-
+        //Calculate distance to top and bottom
+        var topDist = _game.Border.yMax - controller.yMax;
+        var botDist = controller.yMin - _game.Border.yMin;
+        
         var bp = _ball.transform.position;
-        var bpc = _grid.Locate(bp);
-        if(_prevBallPos.HasValue) _grid[_prevBallPos.Value] = 0;
-        if(bpc.HasValue) _grid[bpc.Value] = 1;
-        _prevBallPos = bpc;
         var rbp = bp - transform.position;
-        var bv = _ball.Velocity;
-        var state = 
-            //_grid.Grid
-            //.Concat(_bpx[rbp.x]
-            _bpx[rbp.x]
-            .Concat(_bpy[rbp.y])
-            .Concat(_bvx[bv.x])
-            .Concat(_bvy[bv.y])
+
+        var nbp = bp + _ball.Velocity * 0.5f;
+
+        var positions = new List<Coordinates?> { _grid.Locate(bp), _grid.Locate(nbp) };
+
+        SetGridValues(_grid, _prevPositions, 0);
+        SetGridValues(_grid, positions, 1);
+        _prevPositions = positions;
+
+        var state = _grid.Grid
+            .Concat(new double[]{rbp.x, rbp.y, topDist, botDist})
             .ToArray();
-        return new QState(state, reward, terminal || reward == 1);
+        
+        
+        
+//        var bv = _ball.Velocity;
+//
+//        var rbpn = rbp.normalized;
+//        var rbpm = rbp.magnitude;
+//
+//        var bvn = bv.normalized;
+//        var bvm = bv.magnitude;
+//        var state =
+//            _nv[rbpn.x]
+//            .Concat(_nv[rbpn.y])
+//            .Concat(_vm[rbpm])
+//            .Concat(_nv[bvn.x])
+//            .Concat(_nv[bvn.y])
+//            .Concat(_vm[bvm])
+//            .ToArray();
+//            new double[] {rbpn.x, rbpn.y, rbpm/10, bvn.x, bvn.y, bvm/5};
+        return new QState(state, reward, terminal);
+    }
+
+    private void SetGridValues(QGrid grid, IEnumerable<Coordinates?> coords, double value) {
+        foreach (var coord in coords.Where(c => c.HasValue).Select(c => c.Value)) {
+            grid[coord] = value;
+        }
     }
 }
 internal enum Player {

@@ -18,7 +18,7 @@ class PongGame : MonoBehaviour {
 
 
 	void Update () {
-	    DebugDrawRect(Border);
+	    DebugDrawRect(Border, Color.yellow);
 	}
 
     public static void DebugDrawRect(Rect r, Color c) {
@@ -39,7 +39,7 @@ class PongGame : MonoBehaviour {
     public static Rect RectFromTransform(Transform t) {
         var s = t.localScale;
         var p = t.position;
-        return new Rect(p.x - s.x / 2f, p.y - s.y / 2, s.x, s.y);
+        return new Rect(p.x - s.x / 2, p.y - s.y / 2, s.x, s.y);
     }
 
     public static Rect Encapsulate(Rect r, Vector3 p) {
