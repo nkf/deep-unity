@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Goal : MonoBehaviour {
@@ -41,7 +42,7 @@ public class Goal : MonoBehaviour {
     }
 
     private void PickPlaceRemove(List<Vector3> list, Transform target) {
-        var pos = list.Random();
+        var pos = list.Random().First();
         target.position = pos;
         list.Remove(pos);
     }

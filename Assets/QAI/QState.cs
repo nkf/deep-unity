@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using JetBrains.Annotations;
 
 public struct QState {
     public readonly double[] Features;
@@ -12,25 +11,30 @@ public struct QState {
         IsTerminal = isTerminal;
     }
 
-    public override int GetHashCode() {
-        int hash = 23;
-        //hash = hash*31 + IntArrayHash(Features.Select(d => (int)d).ToArray());
-        hash = hash*31 + Reward.GetHashCode();
-        hash = hash*31 + IsTerminal.GetHashCode();
-        return hash;
+    public bool Equals(QState other) {
+        return Equals(Features, other.Features) && Reward.Equals(other.Reward) && IsTerminal.Equals(other.IsTerminal);
     }
 
     public override bool Equals(object obj) {
-        if (!(obj is QState)) return false;
-        var that = (QState) obj;
-        var r = true;
-        r &= Features.SequenceEqual(that.Features);
-        r &= Reward.Equals(that.Reward);
-        r &= IsTerminal.Equals(that.IsTerminal);
-        return r;
+        if(ReferenceEquals(null, obj)) return false;
+        return obj is QState && Equals((QState)obj);
     }
 
-    private int IntArrayHash(int[] array) {
-        return array.Aggregate(array.Length, (current, t) => unchecked(current*314159 + t));
+    public override int GetHashCode() {
+        unchecked {
+            var hashCode = (Features != null ? Hash(Features) : 0);
+            hashCode = (hashCode * 397) ^ Reward.GetHashCode();
+            hashCode = (hashCode * 397) ^ IsTerminal.GetHashCode();
+            return hashCode;
+        }
+    }
+
+    private static int Hash(double[] a) {
+        return a.Aggregate(a.Length, (current, t) => current*31 + Hash(t));
+    }
+
+    private static int Hash(double d) {
+        var bits = BitConverter.DoubleToInt64Bits(d);
+        return unchecked( (int)(bits ^ (bits >> 32)) );
     }
 }

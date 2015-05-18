@@ -48,11 +48,19 @@ public abstract class QLearning {
     }
 
     public QAction EpsilonGreedy(double eps) {
-        if (rng.NextDouble() < eps) {
+        return EpsilonPolicy(eps, GreedyPolicy);
+    }
+
+    public QAction EpsilonPropabalistic(double eps) {
+        return EpsilonPolicy(eps, PropabalisticPolicy);
+    }
+
+    public QAction EpsilonPolicy(double eps, Func<QAction> policy) {
+        if(rng.NextDouble() < eps) {
             var valid = ValidActions();
             return valid[rng.Next(valid.Count)];
         }
-        return GreedyPolicy();
+        return policy();
     }
 
     /// <summary>

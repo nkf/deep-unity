@@ -15,6 +15,8 @@ public class QStory {
     public int Iterations { get; set; }
     public List<QImitationStorage> ImitationExperiences = new List<QImitationStorage>();
 
+	public string FilePath { get; private set; }
+
 	public QStory() {
 		Id = -1;
 	}
@@ -23,10 +25,15 @@ public class QStory {
 		Directory.CreateDirectory(directory);
         var serializer = new XmlSerializer(typeof(QStory));
 		Id = Id == -1 ? NextSaveId(directory, filename) : Id;
-		using(var fs = File.Open(Path.Combine(directory, filename + "-" + Id + ".xml"), FileMode.Create)) {
+		FilePath = Path.Combine(directory, filename + "-" + Id + ".xml");
+		using(var fs = File.Open(FilePath, FileMode.Create)) {
             serializer.Serialize(fs, this);
         }
     }
+
+	public void Delete() {
+		File.Delete(FilePath);
+	}
 
 	private int NextSaveId(string directory, string prefix) {
 		var files = Directory.GetFiles(directory);
@@ -43,7 +50,9 @@ public class QStory {
     public static QStory Load(string path) {
         var serializer = new XmlSerializer(typeof(QStory));
         using(var fs = File.Open(path, FileMode.Open)) {
-            return (QStory) serializer.Deserialize(fs);
+			var qs = (QStory) serializer.Deserialize(fs);
+			qs.FilePath = path;
+            return qs;
         }
     }
 

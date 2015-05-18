@@ -18,6 +18,13 @@ public class QExperience : IEnumerable<SARS> {
         _data.Add(sars);
     }
 
+    public int Count { get { return _data.Count; }}
+
+    public SARS this[int i] {
+        get { return _data[i]; } 
+        set { _data[i] = value; }
+    }
+
     public IEnumerator<SARS> GetEnumerator() {
         return _data.GetEnumerator();
     }

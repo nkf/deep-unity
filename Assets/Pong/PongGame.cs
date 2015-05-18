@@ -41,4 +41,13 @@ class PongGame : MonoBehaviour {
         var p = t.position;
         return new Rect(p.x - s.x / 2f, p.y - s.y / 2, s.x, s.y);
     }
+
+    public static Rect Encapsulate(Rect r, Vector3 p) {
+        var x = Mathf.Min(r.x, p.x);
+        var y = Mathf.Max(r.y, p.y);
+        var d = new Vector3(r.x, r.y) - p;
+        var w = Mathf.Max(r.width,  Mathf.Abs(d.x));
+        var h = Mathf.Max(r.height, Mathf.Abs(d.y));
+        return new Rect(x,y,w,h);
+    }
 }

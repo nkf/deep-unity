@@ -45,20 +45,26 @@ public class QAI : MonoBehaviour {
 
     private IEnumerator<YieldInstruction> RunAgent() {
         while (true) {
-            _qlearning.GreedyPolicy().Invoke();
-            yield return new WaitForSeconds(TimeStep);
+            var a = _qlearning.GreedyPolicy();
+            Debug.Log(a);
+            a.Invoke();
+            //yield return new WaitForSeconds(TimeStep);
+            yield return new WaitForFixedUpdate();
         }
     }
 
     private IEnumerator<YieldInstruction> RunTester(QAgent agent) {
         _abortTestRun = false;
         while(!agent.GetState().IsTerminal) {
-            var a = _qlearning.GreedyPolicy();
+            //var a = _qlearning.GreedyPolicy();
+            var a = _qlearning.EpsilonGreedy(0.1f);
+            //var a = _qlearning.PropabalisticPolicy();
             Tester.OnActionTaken(agent, agent.MakeSARS(a));
-            yield return new WaitForEndOfFrame();
+            //yield return new WaitForEndOfFrame();
+            yield return new WaitForFixedUpdate();
             if (_abortTestRun) break;
         }
-        Tester.OnRunComplete(agent.GetState().Reward);
+        Tester.OnTestComplete(agent.GetState().Reward);
         Application.LoadLevel(Application.loadedLevel);
     }
 
@@ -67,7 +73,7 @@ public class QAI : MonoBehaviour {
     }
 
 	public static void Imitate(QAgent agent, Action a) {
-	    if (!_instance.Imitating) return;
+	    if (_instance == null || !_instance.Imitating) return;
         var terminal = _instance._imitation.Imitate(agent, agent.ToQAction(a));
 	    if (terminal) {
 //	        _instance._imitation.Save(); // Saving is now done in the Option Window, where the learning is started.
@@ -80,7 +86,7 @@ public class QAI : MonoBehaviour {
     }
 
 
-    void Awake() {
+    void Start() {
         if (_instance == null) {
             _instance = this;
             var agent = ActiveAgent.GetComponent<QAgent>();
@@ -91,6 +97,7 @@ public class QAI : MonoBehaviour {
                 _qlearning.SetAgent(agent);
                 DontDestroyOnLoad(gameObject);
                 if (Learning) {
+                    Time.timeScale = 2;
                     if (Remake)
                         _qlearning.RemakeModel();
                     else
@@ -98,24 +105,30 @@ public class QAI : MonoBehaviour {
                     StartCoroutine(_qlearning.RunEpisode(EndOfEpisode));
                 } else if (Testing) {
                     _qlearning.LoadModel();
-                    var sceneSetup = Tester.SetupNextState(agent);
+                    var sceneSetup = Tester.SetupNextTest(agent);
                     if (sceneSetup) StartCoroutine(RunTester(agent));
-                    else EditorApplication.isPlaying = false;
+                    else {
+                        _instance.Tester.OnRunComplete();
+                        EditorApplication.isPlaying = false;
+                    }
                 } else {
                     _qlearning.LoadModel();
                     StartCoroutine(RunAgent());
                 }
             }
         } else {
-            _instance.ActiveAgent = this.ActiveAgent;
+            _instance.ActiveAgent = ActiveAgent;
             var agent = ActiveAgent.GetComponent<QAgent>(); // TODO: Multiple agents.
             _instance._qlearning.SetAgent(agent);
             if (!_instance.Imitating && _instance.Learning) {
                 _instance.StartCoroutine(_instance._qlearning.RunEpisode(_instance.EndOfEpisode));
             } else if (_instance.Testing) {
-                var sceneSetup = _instance.Tester.SetupNextState(agent);
-                if(sceneSetup) _instance.StartCoroutine(_instance.RunTester(agent));
-                else EditorApplication.isPlaying = false;
+                var sceneSetup = _instance.Tester.SetupNextTest(agent);
+                if (sceneSetup) _instance.StartCoroutine(_instance.RunTester(agent));
+                else {
+                    _instance.Tester.OnRunComplete();
+                    EditorApplication.isPlaying = false;
+                }
             }
             Destroy(gameObject);
         }

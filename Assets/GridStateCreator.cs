@@ -13,10 +13,10 @@ public class GridStateCreator : QTester {
 
     private Vector3 RunPosistion;
     private readonly LinkedList<SARS> _history = new LinkedList<SARS>();
-    const int HistorySize = 10;
+    const int HistorySize = 20;
     
 
-    public override bool SetupNextState(QAgent agent) {
+    public override bool SetupNextTest(QAgent agent) {
         FindObjectOfType<GridResultsVisualizer>().enabled = true;
         if (Positions == null) Positions = Goal.AllValidPositions();
         if (Positions.Count == 0) return false;
@@ -40,11 +40,13 @@ public class GridStateCreator : QTester {
         }
     }
 
-    public override void OnRunComplete(double reward) {
+    public override void OnTestComplete(double reward) {
         _results[RunPosistion] = new ResultPair{ Reward = reward, DistScore = _distScores.DefaultIfEmpty().Max() };
         _distScores.Clear();
         WriteResults();
     }
+
+    public override void OnRunComplete() {}
 
     private void WriteResults() {
         var path = Path.Combine("TestResults", QData.EscapeScenePath(EditorApplication.currentScene))+".xml";
