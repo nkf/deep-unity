@@ -13,7 +13,7 @@ public class GridStateCreator : QTester {
 
     private Vector3 RunPosistion;
     private readonly LinkedList<SARS> _history = new LinkedList<SARS>();
-    const int HistorySize = 20;
+    const int HistorySize = 30;
     
 
     public override bool SetupNextTest(QAgent agent) {
@@ -24,6 +24,7 @@ public class GridStateCreator : QTester {
         RunPosistion.y = 1;
         ((GridWoman)agent).transform.position = RunPosistion;
         Positions.RemoveAt(0);
+        _history.Clear();
         return true;
     }
 
@@ -32,7 +33,7 @@ public class GridStateCreator : QTester {
         var distToGoal = new Vector2((float)state[0], (float)state[1]).magnitude;
         _distScores.Add( 1/(distToGoal+1) );
         _history.AddFirst(sars);
-        if (_history.Count > HistorySize) {
+        if (_history.Count >= HistorySize) {
             if (DetectCycle(_history)) {
                 QAI.EndTestRun();
             }
@@ -41,12 +42,16 @@ public class GridStateCreator : QTester {
     }
 
     public override void OnTestComplete(double reward) {
+        if (reward == 0) reward = 0.5;
         _results[RunPosistion] = new ResultPair{ Reward = reward, DistScore = _distScores.DefaultIfEmpty().Max() };
         _distScores.Clear();
         WriteResults();
     }
 
-    public override void OnRunComplete() {}
+    public override void OnRunComplete() {
+        var accuracy = _results.Select(p => p.Value.Reward > 0.9 ? 1 : 0).Average();
+        Debug.Log(string.Format("{0:P} accuracy, {1:D} samples",accuracy, _results.Count));
+    }
 
     private void WriteResults() {
         var path = Path.Combine("TestResults", QData.EscapeScenePath(EditorApplication.currentScene))+".xml";
@@ -55,7 +60,7 @@ public class GridStateCreator : QTester {
 
     //TODO: we might need a better method for this.
     private bool DetectCycle(ICollection<SARS> sarss) {
-        return sarss.Distinct().Count() == 2;
+        return sarss.Distinct().Count() <= HistorySize/3f;
     }
 
 }

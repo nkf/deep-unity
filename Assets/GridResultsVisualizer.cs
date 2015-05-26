@@ -13,7 +13,7 @@ public class GridResultsVisualizer : MonoBehaviour {
 	    
         var rewardLayer = new GameObject{name = "Reward"};
 	    rewardLayer.transform.parent = transform;
-        rewardLayer.transform.position = new Vector3(0,0.25f,0);
+        rewardLayer.transform.position = new Vector3(0,-0.49f,0);
 
         var distLayer = new GameObject{name = "DistanceScore"};
         distLayer.transform.parent = transform;
