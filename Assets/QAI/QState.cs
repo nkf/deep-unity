@@ -12,7 +12,7 @@ public struct QState {
     }
 
     public bool Equals(QState other) {
-        return Equals(Features, other.Features) && Reward.Equals(other.Reward) && IsTerminal.Equals(other.IsTerminal);
+        return Features.SequenceEqual(other.Features) && Reward.Equals(other.Reward) && IsTerminal.Equals(other.IsTerminal);
     }
 
     public override bool Equals(object obj) {
@@ -30,7 +30,7 @@ public struct QState {
     }
 
     private static int Hash(double[] a) {
-        return a.Aggregate(a.Length, (current, t) => current*31 + Hash(t));
+        return a.Aggregate(a.Length, (current, t) => unchecked( current*31 + Hash(t) ));
     }
 
     private static int Hash(double d) {
