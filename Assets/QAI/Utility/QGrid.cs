@@ -23,14 +23,11 @@ public class QGrid {
     public Vector3 Size { get; private set; }
     public Bounds Bounds { get { return new Bounds(Center, Size);}}
 
-
-
-    public readonly double[] Grid;
-
+    public readonly double[] State;
 
     public double this[int x, int y, int z] {
-        get { return Grid[x + Width * (y + Height * z)]; }
-        set { Grid[x + Width * (y + Height * z)] = value; }
+        get { return State[x + Width * (y + Height * z)]; }
+        set { State[x + Width * (y + Height * z)] = value; }
     }
 
     public double this[Coordinates c] {
@@ -40,17 +37,17 @@ public class QGrid {
 
     public QGrid(int width, int height, int depth, Transform transform, float resolution) {
         Init(width, height, depth, transform, Vector3.zero, resolution, resolution, resolution);
-        Grid = new double[Width * Height * Depth];
+        State = new double[Width * Height * Depth];
     }
 
     public QGrid(int width, int height, int depth, Transform transform, Vector3 offset, float resolution) {
         Init(width, height, depth, transform, offset, resolution, resolution, resolution);
-        Grid = new double[Width * Height * Depth];
+        State = new double[Width * Height * Depth];
     }
 
     public QGrid(int width, int height, int depth, Transform transform, Vector3 offset, float resolutionX, float resolutionY, float resolutionZ) {
         Init(width, height, depth, transform, offset, resolutionX, resolutionY, resolutionZ);
-        Grid = new double[Width * Height * Depth];
+        State = new double[Width * Height * Depth];
     }
 
     private void Init(int width, int height, int depth, Transform transform, Vector3 offset, float resolutionX, float resolutionY, float resolutionZ) {
@@ -71,10 +68,13 @@ public class QGrid {
     /// <param name="p">The point, which position will be located in the grid</param>
     /// <returns>If the point is within the bounds of the grid the coordinates to the grid cell where in the point is located will be returned</returns>
     public Coordinates? Locate(Vector3 p) {
-        if (Bounds.Contains(p)) {
+        var b = Bounds;
+        //Since lower bound is exclusive we subtract a small amount to make the upper bound exclusive aswell. 
+        b.size -= new Vector3(0.01f, 0.01f, 0.01f);
+        if (b.Contains(p)) {
             var d = p - Center;
             d = new Vector3(d.x/ResolutionX, d.y/ResolutionY, d.z/ResolutionZ);
-            var c = new Vector3((int)(Width/2f), (int)(Height/2f), (int)(Depth/2f));
+            var c = new Vector3(((Width-1)/2f), ((Height-1)/2f), ((Depth-1)/2f));
             var r = c + d;
             return new Coordinates(Mathf.RoundToInt(r.x), Mathf.RoundToInt(r.y), Mathf.RoundToInt(r.z));
         }
