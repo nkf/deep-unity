@@ -37,7 +37,7 @@ public class QGridTest : MonoBehaviour {
             while (test.MoveNext()) yield return test.Current;
         }
 
-        foreach (var d in _grid.Grid) {
+        foreach (var d in _grid.State) {
             Debug.Log(d);
         }
         EditorApplication.isPlaying = false;

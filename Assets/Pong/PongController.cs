@@ -105,7 +105,7 @@ class PongController : MonoBehaviour, QAgent {
         SetGridValues(_grid, positions, 1);
         _prevPositions = positions;
 
-        var state = _grid.Grid
+        var state = _grid.State
             .Concat(new double[]{rbp.x, rbp.y, topDist, botDist})
             .ToArray();
         
