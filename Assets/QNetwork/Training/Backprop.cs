@@ -14,9 +14,9 @@ namespace QNetwork.Training {
 	public class Backprop : Trainer<BackpropState> {
         public float LearningRate { get; set; }
         public float Momentum { get; set; }
-        public Matrix<float> Features { get; set; }
-        public Matrix<float>[][] Features2D { get; set; }
-        public Matrix<float> Labels { get; set; }
+        //public Matrix<float> Features { get; set; }
+        //public Matrix<float>[][] Features2D { get; set; }
+        //public Matrix<float> Labels { get; set; }
 
         // Structures for handling flat data.
         internal List<Vector<float>> Error { get; set; }
@@ -30,46 +30,12 @@ namespace QNetwork.Training {
         internal List<Matrix<float>> EBuffer2D { get; set; }
         internal List<Matrix<float>> Ones { get; set; }
 
-        public Backprop(float[][,] dataset) {
-            LearningRate = 1f;
-            Momentum = 0.9f;
-            Features = Matrix<float>.Build.DenseOfArray(dataset[0]);
-            Labels = Matrix<float>.Build.DenseOfArray(dataset[1]);
-        }
+        private readonly ConvolutionalNetwork _net;
 
-        public Backprop(float[][,] data2d, float[,] labels) {
-            LearningRate = 1f;
-            Momentum = 0.9f;
-            Features2D = new Matrix<float>[data2d.Length][];
-            for (int i = 0; i < data2d.Length; i++) {
-                Features2D[i] = new Matrix<float>[1]; // TODO: Channels.
-                Features2D[i][0] = Matrix<float>.Build.DenseOfArray(data2d[i]);
-            }
-            Labels = Matrix<float>.Build.DenseOfArray(labels);
-        }
-
-        public void Train(MultiLayerPerceptron network, int epochs = 1) {
-            Error = new List<Vector<float>>();
-            Deltas = new List<Matrix<float>>();
-            VBuffer = new List<Vector<float>>();
-            MBuffer = new List<Matrix<float>>();
-            network.Accept(new BackpropStateBuilder(this), new BackpropState());
-            for (int ep = 0; ep < epochs; ep++) {
-                var before = DateTime.Now;
-                for (int i = 0; i < Features.RowCount; i++) {
-                    if (i % 200 == 0) {
-                        Console.WriteLine(i + ": " + (DateTime.Now - before).TotalMilliseconds + " ms");
-                        before = DateTime.Now;
-                    }
-                    network.Compute(Features.Row(i));
-                    Labels.Row(i).CopyTo(Error[0]);
-                    Error[0].Subtract(network.Output(), Error[0]);
-                    network.Accept(this, new BackpropState());
-                }
-            }
-        }
-
-        public void Train(ConvolutionalNetwork network, int epochs = 1) {
+        public Backprop(ConvolutionalNetwork network, float lrate, float momentum) {
+            LearningRate = lrate;
+            Momentum = momentum;
+            _net = network;
             Error = new List<Vector<float>>();
             Deltas = new List<Matrix<float>>();
             VBuffer = new List<Vector<float>>();
@@ -80,39 +46,13 @@ namespace QNetwork.Training {
             EBuffer2D = new List<Matrix<float>>();
             Ones = new List<Matrix<float>>();
             network.Accept(new BackpropStateBuilder(this), new BackpropState());
-            for (int ep = 0; ep < epochs; ep++) {
-                int iteration = 0;
-                var before = DateTime.Now;
-                foreach (int i in (Enumerable.Range(0, Features2D.Length)).Shuffle()) {
-                    if (++iteration % 200 == 0) {
-                        Console.WriteLine(iteration + ": " + (DateTime.Now - before).TotalMilliseconds + " ms");
-                        before = DateTime.Now;
-                    }
-                    network.Compute(Features2D[i]);
-                    Labels.Row(i).CopyTo(Error[0]);
-                    Error[0].Subtract(network.Output(), Error[0]);
-                    network.Accept(this, new BackpropState());
-                }
-                LearningRate /= 2;
-            }
         }
 
-        public float Test(MultiLayerPerceptron network) {
-            int hits = 0;
-            for (int i = 0; i < Features.RowCount; i++) {
-                network.Compute(Features.Row(i));
-                hits += network.Output().IndexOfMax() == Labels.Row(i).IndexOfMax() ? 1 : 0;
-            }
-            return (float)hits / Features.RowCount;
-        }
-
-        public float Test(ConvolutionalNetwork network) {
-            int hits = 0;
-            for (int i = 0; i < Features2D.Length; i++) {
-                network.Compute(Features2D[i]);
-                hits += network.Output().IndexOfMax() == Labels.Row(i).IndexOfMax() ? 1 : 0;
-            }
-            return (float)hits / Features2D.Length;
+        public void SGD(Matrix<float>[] features, Vector<float> labels) {
+            _net.Compute(features);
+            labels.CopyTo(Error[0]);
+            Error[0].Subtract(_net.Output(), Error[0]);
+            _net.Accept(this, new BackpropState());
         }
 
         public BackpropState Visit(InputLayer unit, BackpropState st) {
