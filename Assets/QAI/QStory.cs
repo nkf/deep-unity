@@ -57,11 +57,6 @@ public class QStory {
     }
 
 	public static List<QStory> LoadAll(string dir) {
-		var filePaths = Directory.GetFiles(dir, "*.xml");
-		var l = new List<QStory>();
-		foreach(var f in filePaths) {
-			l.Add(Load (f));
-		}
-		return l;
+		return Directory.GetFiles(dir, "*.xml").Select(filepath => Load(filepath)).ToList();
 	}
 }
