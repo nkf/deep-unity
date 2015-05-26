@@ -15,7 +15,6 @@ public static class QData {
             fileStream = File.Open(path, FileMode.Open, FileAccess.Read);
             reader = XmlReader.Create(fileStream);
             dictionary.ReadXml(reader);
-            Debug.Log("Loaded QData from: " + path);
         } catch(Exception e) {
             Debug.Log(e);
         } finally {
@@ -32,7 +31,6 @@ public static class QData {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             writer = XmlWriter.Create(File.Open(path, FileMode.Create), xmlSettings); ;
             dictionary.WriteXml(writer);
-            Debug.Log("Saved QData at: " + path);
         } catch(Exception e) {
             Debug.Log(e);
         } finally {
