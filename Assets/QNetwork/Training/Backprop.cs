@@ -125,7 +125,7 @@ namespace QNetwork.Training {
                         }
                     unit.Weights[i][j].Add(Deltas2D[k][i][j], unit.Weights[i][j]);
                 }
-                unit.Biases.At(j, unit.Biases.At(j) + Error2D[k][j].RowSums().Sum());
+                unit.Biases.At(j, unit.Biases.At(j) + Error2D[k][j].RowSums().Sum() * LearningRate);
             }
             st.SpatialLayerIndex++;
             return st;
