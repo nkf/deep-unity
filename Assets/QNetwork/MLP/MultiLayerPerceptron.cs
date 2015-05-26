@@ -1,51 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using MathNet.Numerics.LinearAlgebra;
+﻿using MathNet.Numerics.LinearAlgebra;
 
 namespace QNetwork.MLP {
-    public class MultiLayerPerceptron : Network<Vector<float>> {
-        private InputLayer input;
-        private DenseLayer[] hidden;
-        private DenseLayer output;
+    public class MultiLayerPerceptron : Unit<Vector<float>, Vector<float>> {
+        private readonly InputLayer _input;
+        private readonly DenseLayer[] _hidden;
+        private readonly DenseLayer _output;
 
         public MultiLayerPerceptron(int insize, params int[] layers) {
-            input = new InputLayer(insize);
-            hidden = new DenseLayer[layers.Length - 1];
-            hidden[0] = new DenseLayer(layers[0], input, Functions.Sigmoid);
-            for (int i = 1; i < hidden.Length; i++)
-                hidden[i] = new DenseLayer(layers[i], hidden[i - 1], Functions.Sigmoid);
-            output = new DenseLayer(layers[layers.Length - 1], hidden[hidden.Length - 1], Functions.Sigmoid);
+            _input = new InputLayer(insize);
+            _hidden = new DenseLayer[layers.Length - 1];
+            _hidden[0] = new DenseLayer(layers[0], _input, Functions.Sigmoid);
+            for (int i = 1; i < _hidden.Length; i++)
+                _hidden[i] = new DenseLayer(layers[i], _hidden[i - 1], Functions.Sigmoid);
+            _output = new DenseLayer(layers[layers.Length - 1], _hidden[_hidden.Length - 1], Functions.Sigmoid);
         }
 
         public int Size() {
-            return hidden.Length + 2;
+            return _hidden.Length + 2;
         }
 
         public Vector<float> Compute(Vector<float> input) {
-            return BottomUp().ForwardPropagation(input);
+            return _output.Compute(_hidden.ForwardPropagation(_input.Compute(input)));
         }
 
         public Vector<float> Output() {
-            return output.Output();
+            return _output.Output();
         }
 
         public T Accept<T>(Trainer<T> t, T state) {
-            return TopDown().ApplyTrainer(t, state);
-        }
-
-        public IEnumerable<Unit<Vector<float>>> BottomUp() {
-            yield return input;
-            for (int i = 0; i < hidden.Length; i++)
-                yield return hidden[i];
-            yield return output;
-        }
-
-        public IEnumerable<Unit<Vector<float>>> TopDown() {
-            yield return output;
-            for (int i = hidden.Length - 1; i >= 0; i--)
-                yield return hidden[i];
-            yield return input;
+            return _input.Accept(t, _hidden.ApplyTrainer(t, _output.Accept(t, state)));
         }
     }
 }

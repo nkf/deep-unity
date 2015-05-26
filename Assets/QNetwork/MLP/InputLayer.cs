@@ -1,28 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using MathNet.Numerics.LinearAlgebra;
-using QNetwork.Training;
+﻿using MathNet.Numerics.LinearAlgebra;
 
 namespace QNetwork.MLP {
-	public class InputLayer : Layer {
-        private int size;
-        private Vector<float> buffer;
+	public class InputLayer : Layer<Vector<float>> {
+        private readonly int _size;
+        private Vector<float> _buffer;
 
         public InputLayer(int size) {
-            this.size = size;
+            _size = size;
         }
 
         public override int Size() {
-            return size;
+            return _size;
         }
 
         public override Vector<float> Compute(Vector<float> input) {
-            return buffer = input;
+            return _buffer = input;
         }
 
         public override Vector<float> Output() {
-            return buffer;
+            return _buffer;
         }
 
         public override T Accept<T>(Trainer<T> t, T state) {

@@ -30,9 +30,6 @@ namespace QNetwork.Training {
         internal List<Matrix<float>> EBuffer2D { get; set; }
         internal List<Matrix<float>> Ones { get; set; }
 
-        private bool spatial;
-        private int netsize;
-
         public Backprop(float[][,] dataset) {
             LearningRate = 1f;
             Momentum = 0.9f;
@@ -57,8 +54,6 @@ namespace QNetwork.Training {
             VBuffer = new List<Vector<float>>();
             MBuffer = new List<Matrix<float>>();
             network.Accept(new BackpropStateBuilder(this), new BackpropState());
-            spatial = false;
-            netsize = network.Size();
             for (int ep = 0; ep < epochs; ep++) {
                 var before = DateTime.Now;
                 for (int i = 0; i < Features.RowCount; i++) {
@@ -85,20 +80,20 @@ namespace QNetwork.Training {
             EBuffer2D = new List<Matrix<float>>();
             Ones = new List<Matrix<float>>();
             network.Accept(new BackpropStateBuilder(this), new BackpropState());
-            spatial = false;
-            netsize = network.Size();
             for (int ep = 0; ep < epochs; ep++) {
+                int iteration = 0;
                 var before = DateTime.Now;
-                for (int i = 0; i < Features2D.Length; i++) {
-                    if (i % 2000 == 0) {
-                        Console.WriteLine(i + ": " + (DateTime.Now - before).TotalMilliseconds + " ms");
+                foreach (int i in (Enumerable.Range(0, Features2D.Length)).Shuffle()) {
+                    if (++iteration % 200 == 0) {
+                        Console.WriteLine(iteration + ": " + (DateTime.Now - before).TotalMilliseconds + " ms");
                         before = DateTime.Now;
                     }
                     network.Compute(Features2D[i]);
                     Labels.Row(i).CopyTo(Error[0]);
-                    Error[0].Subtract(network.Output()[0].Row(0), Error[0]);
+                    Error[0].Subtract(network.Output(), Error[0]);
                     network.Accept(this, new BackpropState());
                 }
+                LearningRate /= 2;
             }
         }
 
@@ -115,7 +110,7 @@ namespace QNetwork.Training {
             int hits = 0;
             for (int i = 0; i < Features2D.Length; i++) {
                 network.Compute(Features2D[i]);
-                hits += network.Output()[0].Row(0).IndexOfMax() == Labels.Row(i).IndexOfMax() ? 1 : 0;
+                hits += network.Output().IndexOfMax() == Labels.Row(i).IndexOfMax() ? 1 : 0;
             }
             return (float)hits / Features2D.Length;
         }
@@ -130,7 +125,7 @@ namespace QNetwork.Training {
             unit.Activation.Derivatives(unit.Output(), VBuffer[i]);
             Error[i].PointwiseMultiply(VBuffer[i], Error[i]);
             // Calculate outgoing error term (first factor of next layer's error) based on weights and errors in this layer.
-            if (i < netsize)
+            if (i + 1 < Error.Count)
                 unit.Weights.TransposeThisAndMultiply(Error[i], Error[i + 1]);
             // Calculate delta weights (applying momentum).
             Error[i].OuterProduct(unit.Prev.Output(), MBuffer[i]);
@@ -149,18 +144,29 @@ namespace QNetwork.Training {
             return st;
         }
 
+        public BackpropState Visit(FlattenLayer unit, BackpropState st) {
+            // Unflatten error.
+            for (int j = 0; j < unit.Z; j++)
+                for (int m = 0; m < unit.X; m++)
+                    Error[Error.Count - 1].CopySubVectorTo(Error2D[0][j].Row(m), j * unit.X * unit.Y + m * unit.Y, 0, unit.Y);
+            return st;
+        }
+
         public BackpropState Visit(ConvolutionalLayer unit, BackpropState st) {
             int k = st.SpatialLayerIndex;
             int fsize = unit.Weights[0][0].RowCount;
-            var output = unit.Prev.Output2D();
+            var output = unit.Prev.Output();
+            // Clear next layer's error.
+            if (k + 1 < Error2D.Count)
+                for (int i = 0; i < unit.Prev.ChannelCount; i++)
+                    Error2D[k + 1][i].Clear();
             for (int j = 0; j < unit.ChannelCount; j++) {
                 // Multiply incoming error term with derivative of this layer's activation function.
-                unit.Activation.Derivatives(unit.Output2D()[j], EBuffer2D[k]);
+                unit.Activation.Derivatives(unit.Output()[j], EBuffer2D[k]);
                 Error2D[k][j].PointwiseMultiply(EBuffer2D[k], Error2D[k][j]);
                 // Propagate error to next layer.
                 if (k + 1 < Error2D.Count) {
                     for (int i = 0; i < unit.Prev.ChannelCount; i++) {
-                        Error2D[k + 1][i].Clear();
                         for (int m = 0; m < EBuffer2D[k].RowCount; m += unit.Stride)
                             for (int n = 0; n < EBuffer2D[k].ColumnCount; n += unit.Stride) {
                                 unit.Weights[i][j].Multiply(Error2D[k][j].At(m, n), Buffer2D[k]);
@@ -179,7 +185,7 @@ namespace QNetwork.Training {
                         }
                     unit.Weights[i][j].Add(Deltas2D[k][i][j], unit.Weights[i][j]);
                 }
-                unit.Biases.At(j, unit.Biases.At(j) + Error2D[k][j].EnumerateRows().Select(r => r.AbsoluteMaximum()).Max());
+                unit.Biases.At(j, unit.Biases.At(j) + Error2D[k][j].RowSums().Sum());
             }
             st.SpatialLayerIndex++;
             return st;
@@ -191,13 +197,6 @@ namespace QNetwork.Training {
 
         public BackpropState Visit(MeanPoolLayer unit, BackpropState st) {
             int i = st.SpatialLayerIndex;
-            if (!spatial) {
-                int k = st.DenseLayerIndex; // HACK!
-                for (int j = 0; j < unit.ChannelCount; j++)
-                    for (int m = 0; m < unit.SideLength; m++)
-                        Error2D[i][j].SetRow(m, Error[k].SubVector(j * unit.SideLength * unit.SideLength + m * unit.SideLength, unit.SideLength));
-                spatial = true;
-            }
             // Upsample the error by first taking the Kronecker product of a matrix of 1's the same size as the pooling region.
             // Then divide by the total size of the pooling region, thus distributing the error by mean.
             for (int j = 0; j < unit.ChannelCount; j++) {
@@ -210,7 +209,7 @@ namespace QNetwork.Training {
 	}
 
     public class BackpropStateBuilder : Trainer<BackpropState> {
-        private Backprop t;
+        private readonly Backprop t;
 
         public BackpropStateBuilder(Backprop trainer) {
             t = trainer;
@@ -229,6 +228,11 @@ namespace QNetwork.Training {
         }
 
         public BackpropState Visit(SpatialLayer unit, BackpropState st) {
+            return st;
+        }
+
+        public BackpropState Visit(FlattenLayer unit, BackpropState st) {
+            t.Error.Add(Vector<float>.Build.Dense(unit.Size()));
             return st;
         }
 
@@ -255,7 +259,6 @@ namespace QNetwork.Training {
         }
 
         public BackpropState Visit(MeanPoolLayer unit, BackpropState st) {
-            t.Error.Add(Vector<float>.Build.Dense(unit.Size()));
             var err2d = new Matrix<float>[unit.ChannelCount];
             for (int i = 0; i < unit.ChannelCount; i++)
                 err2d[i] = Matrix<float>.Build.Dense(unit.SideLength, unit.SideLength);
