@@ -11,19 +11,19 @@ namespace QNetwork.CNN {
         private readonly DenseLayer _output;
 
 	    private readonly int _inroot, _labels;
-	    private readonly int[][] _convl;
+	    private readonly CNNArgs[] _convl;
 
-        public ConvolutionalNetwork(int inroot, int labels, params int[][] convl) {
+        public ConvolutionalNetwork(int inroot, int labels, params CNNArgs[] convl) {
             _inroot = inroot;
             _labels = labels;
             _convl = convl;
             _input = new SpatialLayer(inroot, 1); // TODO: Channels.
             _hidden = new SpatialLayer[convl.Length * 2];
-            _hidden[0] = new ConvolutionalLayer(convl[0][0], convl[0][1], convl[0][2], _input, Functions.Tanh2D);
-            _hidden[1] = new MeanPoolLayer(convl[0][3], _hidden[0]);
+            _hidden[0] = new ConvolutionalLayer(convl[0].FilterSize, convl[0].Channels, convl[0].Stride, _input, Functions.Tanh2D);
+            _hidden[1] = new MeanPoolLayer(convl[0].PoolLayerSize, _hidden[0]);
             for (int i = 2; i < _hidden.Length; i += 2) {
-                _hidden[i] = new ConvolutionalLayer(convl[i][0], convl[i][1], convl[i][2], _hidden[i - 1], Functions.Tanh2D);
-                _hidden[i + 1] = new MeanPoolLayer(convl[i][3], _hidden[i]);
+                _hidden[i] = new ConvolutionalLayer(convl[i].FilterSize, convl[i].Channels, convl[i].Stride, _hidden[i - 1], Functions.Tanh2D);
+                _hidden[i + 1] = new MeanPoolLayer(convl[i].PoolLayerSize, _hidden[i]);
             }
             _flatten = new FlattenLayer(_hidden[_hidden.Length - 1]);
             _output = new DenseLayer(labels, _flatten, Functions.Softmax);
@@ -71,8 +71,7 @@ namespace QNetwork.CNN {
 	            
                 var inroot = int.Parse(reader.ReadElementString());
 	            var labels = int.Parse(reader.ReadElementString());
-                int[][] convl = new int[0][];
-                reader.XmlDeserialize(ref convl);
+                var convl = reader.XmlDeserialize<CNNArgs[]>();
 	            var network = new ConvolutionalNetwork(inroot, labels, convl);
                 for (int i = 0; i < network._hidden.Length; i += 2)
                     network._hidden[i].Deserialize(reader);
