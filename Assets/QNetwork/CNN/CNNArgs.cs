@@ -2,7 +2,7 @@
     //TODO: TEST IF SERILIZATION WORKS
     public struct CNNArgs {
         public int FilterSize;
-        public int Channels;
+        public int FilterCount;
         public int Stride;
         public int PoolLayerSize;
     }

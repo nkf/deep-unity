@@ -13,17 +13,17 @@ namespace QNetwork.CNN {
 	    private readonly int _inroot, _labels;
 	    private readonly CNNArgs[] _convl;
 
-        public ConvolutionalNetwork(int inroot, int labels, params CNNArgs[] convl) {
+        public ConvolutionalNetwork(int inroot, int labels, params CNNArgs[] args) {
             _inroot = inroot;
             _labels = labels;
-            _convl = convl;
+            _convl = args;
             _input = new SpatialLayer(inroot, 1); // TODO: Channels.
-            _hidden = new SpatialLayer[convl.Length * 2];
-            _hidden[0] = new ConvolutionalLayer(convl[0].FilterSize, convl[0].Channels, convl[0].Stride, _input, Functions.Tanh2D);
-            _hidden[1] = new MeanPoolLayer(convl[0].PoolLayerSize, _hidden[0]);
+            _hidden = new SpatialLayer[args.Length * 2];
+            _hidden[0] = new ConvolutionalLayer(args[0].FilterSize, args[0].FilterCount, args[0].Stride, _input, Functions.Tanh2D);
+            _hidden[1] = new MeanPoolLayer(args[0].PoolLayerSize, _hidden[0]);
             for (int i = 2; i < _hidden.Length; i += 2) {
-                _hidden[i] = new ConvolutionalLayer(convl[i].FilterSize, convl[i].Channels, convl[i].Stride, _hidden[i - 1], Functions.Tanh2D);
-                _hidden[i + 1] = new MeanPoolLayer(convl[i].PoolLayerSize, _hidden[i]);
+                _hidden[i] = new ConvolutionalLayer(args[i].FilterSize, args[i].FilterCount, args[i].Stride, _hidden[i - 1], Functions.Tanh2D);
+                _hidden[i + 1] = new MeanPoolLayer(args[i].PoolLayerSize, _hidden[i]);
             }
             _flatten = new FlattenLayer(_hidden[_hidden.Length - 1]);
             _output = new DenseLayer(labels, _flatten, Functions.Softmax);
