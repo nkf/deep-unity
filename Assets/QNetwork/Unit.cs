@@ -23,12 +23,17 @@ namespace QNetwork {
     }
 
     public static class UnitTraversal {
+
         public static T ForwardPropagation<T>(this IEnumerable<Unit<T, T>> source, T input) {
                 return source.Aggregate(input, (xs, unit) => unit.Compute(xs));
         }
 
         public static V ApplyTrainer<T, V>(this IEnumerable<Unit<T, T>> source, Trainer<V> t, V state) {
-                return source.Reverse().Aggregate(state, (st, unit) => unit.Accept(t, st));
+            foreach (var unit in source.Reverse()) {
+                state = unit.Accept(t, state);
+            }
+            return state;
+            //return source.Reverse().Aggregate(state, (st, unit) => unit.Accept(t, st));
         }
     }
 }
