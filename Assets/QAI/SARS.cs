@@ -1,10 +1,13 @@
-﻿public struct SARS {
+﻿using System;
+
+[Serializable]
+public class SARS {
     public readonly QState State;
 	public readonly QState NextState;
 	public readonly QAction Action;
-	public readonly double Reward;
+	public readonly float Reward;
 	
-	public SARS(QState s, QAction a, double r, QState s0) {
+	public SARS(QState s, QAction a, float r, QState s0) {
 		State = s; Action = a; Reward = r; NextState = s0;
 	}
 

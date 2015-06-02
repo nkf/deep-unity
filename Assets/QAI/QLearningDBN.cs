@@ -52,7 +52,7 @@ public class QLearningDBN : QLearning {
     public override void RemakeModel() {
         Initialize();
         // Deep belief network.
-        size = Agent.GetState().Features.Length;
+//        size = Agent.GetState().Features.Length;
         _net = new DeepBeliefNetwork(size, size * 3, Actions.Count);
         new GaussianWeights(_net).Randomize();
         _net.UpdateVisibleWeights();
@@ -86,7 +86,7 @@ public class QLearningDBN : QLearning {
     }
 
     public override ActionValueFunction Q(QState s) {
-        _output = _netRecent.Compute(s.Features);
+//        _output = _netRecent.Compute(s.Features);
         //Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}",_output.Average()));
         return a => _output[_amap[a.ActionId]];
     }
@@ -115,8 +115,8 @@ public class QLearningDBN : QLearning {
         trainer.Algorithm = (h, v, j) => new ContrastiveDivergenceLearning(h, v);
         for (int i = 0; i < _net.Machines.Count - 1; i++) {
             trainer.LayerIndex = i;
-            var data = trainer.GetLayerInput(inp);
-            trainer.RunEpoch(data);
+//            var data = trainer.GetLayerInput(inp);
+//            trainer.RunEpoch(data);
         }
     }
 
@@ -126,16 +126,16 @@ public class QLearningDBN : QLearning {
         var outp = new double[batch.Count][];
         int i = 0;
         foreach (var sars in batch) {
-            inp[i] = sars.State.Features;
+//            inp[i] = sars.State.Features;
             var ideal = query.Compute(inp[i]);
             double target;
             if (!sars.NextState.IsTerminal) {
-                var a0max = query.Compute(sars.NextState.Features).Max();
-                target = sars.Reward + Discount * a0max;
+//                var a0max = query.Compute(sars.NextState.Features).Max();
+//                target = sars.Reward + Discount * a0max;
             } else {
                 target = sars.Reward;
             }
-            ideal[_amap[sars.Action.ActionId]] = target;
+//            ideal[_amap[sars.Action.ActionId]] = target;
             outp[i++] = ideal;
         }
         var backprop = new BackPropagationLearning(train);

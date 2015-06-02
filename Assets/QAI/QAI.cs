@@ -27,7 +27,7 @@ public class QAI : MonoBehaviour {
     private bool _abortTestRun = false;
 
     private static QAI _instance = null;
-    private QLearningNN _qlearning;
+    private QLearningCNN _qlearning;
     private QImitation _imitation;
 
     public static int NumIterations() {
@@ -54,10 +54,11 @@ public class QAI : MonoBehaviour {
     }
 
     private IEnumerator<YieldInstruction> RunTester(QAgent agent) {
+        Time.timeScale = 1f;
         _abortTestRun = false;
         while(!agent.GetState().IsTerminal) {
-            //var a = _qlearning.GreedyPolicy();
-            var a = _qlearning.EpsilonGreedy(0.1f);
+            var a = _qlearning.GreedyPolicy();
+            //var a = _qlearning.EpsilonGreedy(0.1f);
             //var a = _qlearning.PropabalisticPolicy();
             Tester.OnActionTaken(agent, agent.MakeSARS(a));
             //yield return new WaitForEndOfFrame();
@@ -93,11 +94,11 @@ public class QAI : MonoBehaviour {
             if (Imitating) {
                 _imitation = new QImitation();
             } else {
-                _qlearning = new QLearningNN();
+                _qlearning = new QLearningCNN();
                 _qlearning.SetAgent(agent);
                 DontDestroyOnLoad(gameObject);
                 if (Learning) {
-                    Time.timeScale = 2;
+                    Time.timeScale = 1f;
                     if (Remake)
                         _qlearning.RemakeModel();
                     else

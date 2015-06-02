@@ -30,8 +30,8 @@ public class GridStateCreator : QTester {
 
     public override void OnActionTaken(QAgent agent, SARS sars) {
         var state = sars.NextState.Features;
-        var distToGoal = new Vector2((float)state[0], (float)state[1]).magnitude;
-        _distScores.Add( 1/(distToGoal+1) );
+        //var distToGoal = new Vector2((float)state[0], (float)state[1]).magnitude;
+        //_distScores.Add( 1/(distToGoal+1) );
         _history.AddFirst(sars);
         if (_history.Count >= HistorySize) {
             if (DetectCycle(_history)) {
