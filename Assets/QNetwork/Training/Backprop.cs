@@ -3,20 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
 using QNetwork.CNN;
+using QNetwork.Experimental;
 using QNetwork.MLP;
 
 namespace QNetwork.Training {
-    public struct BackpropState {
-        public int DenseLayerIndex;
-        public int SpatialLayerIndex;
-    }
-
-	public class Backprop : Trainer<BackpropState> {
+    public class Backprop : Trainer<BackpropState> {
         public float LearningRate { get; set; }
         public float Momentum { get; set; }
-        //public Matrix<float> Features { get; set; }
-        //public Matrix<float>[][] Features2D { get; set; }
-        //public Matrix<float> Labels { get; set; }
 
         // Structures for handling flat data.
         internal List<Vector<float>> Error { get; set; }
@@ -60,7 +53,7 @@ namespace QNetwork.Training {
         }
 
         public BackpropState Visit(DenseLayer unit, BackpropState st) {
-            int i = st.DenseLayerIndex;
+            int i = st.FlatLayerIndex;
             // Multiply incoming error term with derivative of this layer's activation function.
             unit.Activation.Derivatives(unit.Output(), VBuffer[i]);
             Error[i].PointwiseMultiply(VBuffer[i], Error[i]);
@@ -76,7 +69,7 @@ namespace QNetwork.Training {
             unit.Weights.Add(Deltas[i], unit.Weights);
             Error[i].Multiply(LearningRate, VBuffer[i]);
             unit.Biases.Add(VBuffer[i], unit.Biases);
-            st.DenseLayerIndex++;
+            st.FlatLayerIndex++;
             return st;
         }
 
@@ -146,68 +139,12 @@ namespace QNetwork.Training {
             st.SpatialLayerIndex++;
             return st;
         }
+
+        public BackpropState Visit(TreeLayer unit, BackpropState st) {
+            int i = st.FlatLayerIndex;
+            // TODO
+            st.FlatLayerIndex++;
+            return st;
+        }
 	}
-
-    public class BackpropStateBuilder : Trainer<BackpropState> {
-        private readonly Backprop t;
-
-        public BackpropStateBuilder(Backprop trainer) {
-            t = trainer;
-        }
-
-        public BackpropState Visit(InputLayer unit, BackpropState st) {
-            return st;
-        }
-
-        public BackpropState Visit(DenseLayer unit, BackpropState st) {
-            t.Error.Add(Vector<float>.Build.Dense(unit.Size()));
-            t.VBuffer.Add(Vector<float>.Build.Dense(unit.Size()));
-            t.Deltas.Add(Matrix<float>.Build.Dense(unit.Size(), unit.Prev.Size()));
-            t.MBuffer.Add(Matrix<float>.Build.Dense(unit.Size(), unit.Prev.Size()));
-            return st;
-        }
-
-        public BackpropState Visit(SpatialLayer unit, BackpropState st) {
-            return st;
-        }
-
-        public BackpropState Visit(FlattenLayer unit, BackpropState st) {
-            t.Error.Add(Vector<float>.Build.Dense(unit.Size()));
-            return st;
-        }
-
-        public BackpropState Visit(ConvolutionalLayer unit, BackpropState st) {
-            var err2d = new Matrix<float>[unit.ChannelCount];
-            for (int i = 0; i < unit.ChannelCount; i++)
-                err2d[i] = Matrix<float>.Build.Dense(unit.SideLength, unit.SideLength);
-            t.Error2D.Add(err2d);
-            t.EBuffer2D.Add(Matrix<float>.Build.Dense(unit.SideLength, unit.SideLength));
-            int fsize = unit.Weights[0][0].RowCount;
-            t.Buffer2D.Add(Matrix<float>.Build.Dense(fsize, fsize));
-            var d2d = new Matrix<float>[unit.Prev.ChannelCount][];
-            for (int i = 0; i < d2d.Length; i++) {
-                d2d[i] = new Matrix<float>[unit.ChannelCount];
-                for (int j = 0; j < unit.ChannelCount; j++)
-                    d2d[i][j] = Matrix<float>.Build.Dense(fsize, fsize);
-            }
-            t.Deltas2D.Add(d2d);
-            return st;
-        }
-
-        public BackpropState Visit(MaxPoolLayer unit, BackpropState st) {
-            return st;
-        }
-
-        public BackpropState Visit(MeanPoolLayer unit, BackpropState st) {
-            var err2d = new Matrix<float>[unit.ChannelCount];
-            for (int i = 0; i < unit.ChannelCount; i++)
-                err2d[i] = Matrix<float>.Build.Dense(unit.SideLength, unit.SideLength);
-            t.Error2D.Add(err2d);
-            t.Ones.Add(Matrix<float>.Build.Dense(unit.PoolSize, unit.PoolSize, 1f));
-            t.EBuffer2D.Add(null);
-            t.Buffer2D.Add(null);
-            t.Deltas2D.Add(null);
-            return st;
-        }
-    }
 }

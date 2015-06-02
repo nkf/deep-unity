@@ -27,7 +27,7 @@ public class QAI : MonoBehaviour {
     private bool _abortTestRun = false;
 
     private static QAI _instance = null;
-    private QLearningNN _qlearning;
+    private QLearningDBN _qlearning;
     private QImitation _imitation;
 
     public static int NumIterations() {
@@ -93,7 +93,7 @@ public class QAI : MonoBehaviour {
             if (Imitating) {
                 _imitation = new QImitation();
             } else {
-                _qlearning = new QLearningNN();
+                _qlearning = new QLearningDBN();
                 _qlearning.SetAgent(agent);
                 DontDestroyOnLoad(gameObject);
                 if (Learning) {
