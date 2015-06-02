@@ -104,7 +104,7 @@ public class QAI : MonoBehaviour {
                 _qlearning.SetAgent(agent);
                 DontDestroyOnLoad(gameObject);
                 if (Learning) {
-                    Time.timeScale = 1f;
+                    Time.timeScale = 5f;
                     if (Remake)
                         _qlearning.RemakeModel();
                     else

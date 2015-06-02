@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Accord.Math;
 using MathNet.Numerics.LinearAlgebra;
 using QNetwork.CNN;
 using QNetwork.Training;
@@ -14,7 +12,7 @@ public class QLearningCNN : QLearning {
     private const float EpisilonStart = 0.5f;
     private const float EpisilonEnd = 0.1f;
     private readonly Param Epsilon = t => EpisilonStart - ((EpisilonEnd - EpisilonStart) / QAI.NumIterations()) * t;
-    private const float Discount = 1f;
+    private const float Discount = 0.99f;
 
     private int _size;
     private ConvolutionalNetwork _net;
@@ -37,7 +35,7 @@ public class QLearningCNN : QLearning {
     public override void LoadModel() {
         Initialize();
         _net = ConvolutionalNetwork.Load(MODEL_PATH);
-        _trainer = new Backprop(_net, 0.5f, 0.9f);
+        _trainer = new Backprop(_net, 0.1f, 0.9f);
     }
 
     public override void SaveModel() {
@@ -47,8 +45,8 @@ public class QLearningCNN : QLearning {
     public override void RemakeModel() {
         Initialize();
         _size = Agent.GetState().Features.RowCount;
-        _net = new ConvolutionalNetwork(_size, _amap.Count, new CNNArgs {FilterSize = _size/4, FilterCount = 2, PoolLayerSize = 2, Stride = 1});
-        _trainer = new Backprop(_net, 0.5f, 0.9f);
+        _net = new ConvolutionalNetwork(_size, _amap.Count, new CNNArgs {FilterSize = 4, FilterCount = 2, PoolLayerSize = 2, Stride = 2});
+        _trainer = new Backprop(_net, 0.1f, 0.9f);
     }
 
     public override IEnumerator<YieldInstruction> RunEpisode(QAI.EpisodeCallback callback) {
