@@ -54,8 +54,14 @@ public class QAI : MonoBehaviour {
     }
 
     private IEnumerator<YieldInstruction> RunTester(QAgent agent) {
-        Time.timeScale = 1f;
         _abortTestRun = false;
+        Time.timeScale = 1f;
+        var sceneSetup = Tester.SetupNextTest(agent);
+        if(!sceneSetup) {
+            _instance.Tester.OnRunComplete();
+            EditorApplication.isPlaying = false;
+            yield break;
+        }
         while(!agent.GetState().IsTerminal) {
             var a = _qlearning.GreedyPolicy();
             //var a = _qlearning.EpsilonGreedy(0.1f);
@@ -106,12 +112,7 @@ public class QAI : MonoBehaviour {
                     StartCoroutine(_qlearning.RunEpisode(EndOfEpisode));
                 } else if (Testing) {
                     _qlearning.LoadModel();
-                    var sceneSetup = Tester.SetupNextTest(agent);
-                    if (sceneSetup) StartCoroutine(RunTester(agent));
-                    else {
-                        _instance.Tester.OnRunComplete();
-                        EditorApplication.isPlaying = false;
-                    }
+                    StartCoroutine(RunTester(agent));
                 } else {
                     _qlearning.LoadModel();
                     StartCoroutine(RunAgent());
@@ -124,12 +125,7 @@ public class QAI : MonoBehaviour {
             if (!_instance.Imitating && _instance.Learning) {
                 _instance.StartCoroutine(_instance._qlearning.RunEpisode(_instance.EndOfEpisode));
             } else if (_instance.Testing) {
-                var sceneSetup = _instance.Tester.SetupNextTest(agent);
-                if (sceneSetup) _instance.StartCoroutine(_instance.RunTester(agent));
-                else {
-                    _instance.Tester.OnRunComplete();
-                    EditorApplication.isPlaying = false;
-                }
+                _instance.StartCoroutine(_instance.RunTester(agent));
             }
             Destroy(gameObject);
         }
