@@ -48,9 +48,9 @@ public class GridMan : MonoBehaviour, QAgent {
     public QState GetState() {
         var terminal = HP < 0;
         return new QState(
-            GetRelativeStateGrid().SelectMany(g => g).ToArray(),
-            terminal ? Score : 0,
-            terminal
+//            GetRelativeStateGrid().SelectMany(g => g).ToArray(),
+//            terminal ? Score : 0,
+//            terminal
             );
     }
 

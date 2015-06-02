@@ -2,6 +2,7 @@
 using System.IO;
 using System.Xml.Serialization;
 
+[Serializable]
 public class QImitationStorage {
     public readonly String Name;
     public readonly QExperience Experience;

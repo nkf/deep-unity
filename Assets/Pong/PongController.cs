@@ -10,7 +10,7 @@ class PongController : MonoBehaviour, QAgent {
     PongGame _game;
     PongBall _ball;
 
-    QGrid _grid;
+    Q2DGrid _grid;
 
 
     public int Hits { get; set; } //Set by pongball
@@ -27,7 +27,8 @@ class PongController : MonoBehaviour, QAgent {
         StartPosistion = transform.position;
         _game = FindObjectOfType<PongGame>();
         _ball = FindObjectOfType<PongBall>();
-        _grid = new QGrid(4, 10, 1, transform, new Vector3(10,0,0), 6f, 1.5f, 6f);
+        //_grid = new QGrid(4, 10, 1, transform, new Vector3(10,0,0), 6f, 1.5f, 6f);
+        _grid = new Q2DGrid(12, transform, new GridSettings{ Offset = new Vector3(10,0,0), ResolutionX = 2f});
     }
 
 
@@ -70,10 +71,10 @@ class PongController : MonoBehaviour, QAgent {
     [QBehavior]
     public void Idle() { }
 
-    private List<Coordinates?> _prevPositions = new List<Coordinates?>(); 
+    private List<Coordinates2D?> _prevPositions = new List<Coordinates2D?>(); 
     public QState GetState() {
         var winner = _ball.IsTerminal();
-        double reward;
+        float reward;
         bool terminal;
         //var terminal = winner.HasValue;
         //var reward = terminal ? (winner.Value == Side ? 1 : 0) : 0;
@@ -83,7 +84,7 @@ class PongController : MonoBehaviour, QAgent {
         if (b.Overlaps(controller)) {
             reward = 1;
             terminal = winner.HasValue;
-            //terminal = true;
+            terminal = true;
         } else {
             terminal = winner.HasValue;
             reward = terminal ? (winner.Value == Side ? 1 : -1) : 0;
@@ -99,16 +100,18 @@ class PongController : MonoBehaviour, QAgent {
 
         var nbp = bp + _ball.Velocity * 0.5f;
 
-        var positions = new List<Coordinates?> { _grid.Locate(bp), _grid.Locate(nbp) };
+        var positions = new List<Coordinates2D?> { _grid.Locate(bp), _grid.Locate(nbp) };
 
         SetGridValues(_grid, _prevPositions, 0);
         SetGridValues(_grid, positions, 1);
         _prevPositions = positions;
-
+        var state = _grid.Matrix.Clone();
+        
+        /*
         var state = _grid.State
             .Concat(new double[]{rbp.x, rbp.y, topDist, botDist})
             .ToArray();
-        
+        */
         
         
 //        var bv = _ball.Velocity;
@@ -130,7 +133,7 @@ class PongController : MonoBehaviour, QAgent {
         return new QState(state, reward, terminal);
     }
 
-    private void SetGridValues(QGrid grid, IEnumerable<Coordinates?> coords, double value) {
+    private void SetGridValues(Q2DGrid grid, IEnumerable<Coordinates2D?> coords, float value) {
         foreach (var coord in coords.Where(c => c.HasValue).Select(c => c.Value)) {
             grid[coord] = value;
         }

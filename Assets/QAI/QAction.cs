@@ -3,17 +3,18 @@ using System.Xml.Serialization;
 using UnityEngine;
 using System.Collections;
 
-public struct QAction {
+[Serializable]
+public class QAction {
 
     public static readonly QAction NullAction = new QAction("0", () => { }, null);
 
     public readonly string ActionId;
-    [XmlIgnore]
+    [XmlIgnore][NonSerialized]
     public readonly Action Action;
-    [XmlIgnore]
+    [XmlIgnore][NonSerialized]
     private readonly QPredicate.Basic p;
 
-    public QAction(string actionId, Action action, QPredicate.Basic predicate) : this() {
+    public QAction(string actionId, Action action, QPredicate.Basic predicate)  {
         ActionId = actionId;
         Action = action;
         p = predicate;

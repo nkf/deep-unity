@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Xml.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System;
 using System.Linq;
-using UnityEngine;
 
 [Serializable]
 public class QStory {
@@ -23,7 +22,7 @@ public class QStory {
 
     public void Save(string directory, string filename = "Story") {
 		Directory.CreateDirectory(directory);
-        var serializer = new XmlSerializer(typeof(QStory));
+        var serializer = new BinaryFormatter();
 		Id = Id == -1 ? NextSaveId(directory, filename) : Id;
 		FilePath = Path.Combine(directory, filename + "-" + Id + ".xml");
 		using(var fs = File.Open(FilePath, FileMode.Create)) {
@@ -48,7 +47,7 @@ public class QStory {
 	}
 
     public static QStory Load(string path) {
-        var serializer = new XmlSerializer(typeof(QStory));
+        var serializer = new BinaryFormatter();
         using(var fs = File.Open(path, FileMode.Open)) {
 			var qs = (QStory) serializer.Deserialize(fs);
 			qs.FilePath = path;

@@ -109,9 +109,12 @@ public class GridWoman : MonoBehaviour, QAgent {
         var goal = p.SequenceEqual(g);
         var v = VectorToGoal(transform.position, Goal.Position).normalized;
         return new QState(
+            /*
             _grid.State
                  .Concat(new double[] {v.x, v.z})
                  .ToArray(),
+            */
+            null,
             dead ? 0 : goal ? 1 : 0,
             dead || goal
             );

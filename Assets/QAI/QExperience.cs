@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections;
 
+[Serializable]
 public class QExperience : IEnumerable<SARS> {
     private readonly List<SARS> _data = new List<SARS>();
 
