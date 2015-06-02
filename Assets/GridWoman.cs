@@ -5,10 +5,10 @@ using UnityEngine;
 
 public class GridWoman : MonoBehaviour, QAgent {
     
-    private QGrid _grid;
+    private Q2DGrid _grid;
     private Bin _nvectorBin;
     private void Start() {
-        _grid = new QGrid(7, 1, 7, transform, 1f);
+        _grid = new Q2DGrid(12, transform, new GridSettings { NormalAxis = Axis.Y });
         _nvectorBin = new Bin(-0.75f,-0.25f,0.25f,0.75f);
     }
 
@@ -114,7 +114,7 @@ public class GridWoman : MonoBehaviour, QAgent {
                  .Concat(new double[] {v.x, v.z})
                  .ToArray(),
             */
-            null,
+            _grid.Matrix.Clone(),
             dead ? 0 : goal ? 1 : 0,
             dead || goal
             );
