@@ -45,7 +45,7 @@ public class QLearningCNN : QLearning {
     public override void RemakeModel() {
         Initialize();
         _size = Agent.GetState().Features.RowCount;
-        _net = new ConvolutionalNetwork(_size, _amap.Count, new CNNArgs {FilterSize = 4, FilterCount = 2, PoolLayerSize = 2, Stride = 2});
+        _net = new ConvolutionalNetwork(_size, _amap.Count, new CNNArgs {FilterSize = 4, FilterCount = 3, PoolLayerSize = 2, Stride = 2});
         _trainer = new Backprop(_net, 0.1f, 0.9f);
     }
 
@@ -84,8 +84,10 @@ public class QLearningCNN : QLearning {
 
     public List<SARS> SampleBatch() {
         //var r = _imitationExps.Random().Concat(_qexp.Random()).ToList();
-        var r = _imitationExps.Concat(_qexp).Shuffle().Take(10).ToList();
+        //var r = _imitationExps.Concat(_qexp).Shuffle().Take(20).ToList();
+        //var r = _qexp.Shuffle().Take(20).ToList();
         //var r = _qexp.Shuffle().Take(15).ToList();
+        var r = _imitationExps.Shuffle().ToList();
         return r;
     }
 
@@ -104,6 +106,12 @@ public class QLearningCNN : QLearning {
             } else {
                 target = sars.Reward;
             }
+            // ATTENTION: Not Q-learning.
+            // Delete from here.
+            for (int n = 0; n < ideal.Count; n++)
+                ideal[n] = 0f;
+            target = 1f;
+            // To here.
             ideal[_amap[sars.Action.ActionId]] = target;
             outp[i++] = ideal;
         }

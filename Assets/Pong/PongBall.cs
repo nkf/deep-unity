@@ -15,7 +15,6 @@ class PongBall : MonoBehaviour {
         _game = FindObjectOfType<PongGame>();
         _speed = 5f;
         _velocity = new Vector3(-1, Random.Range(-1f, 1)).normalized * _speed;
-        //_velocity = new Vector3(-1, -1).normalized * _speed;
         var pcs = FindObjectsOfType<PongController>();
         Player1 = pcs.First(pc => pc.Side == Player.Player1);
         Player2 = pcs.First(pc => pc.Side == Player.Player2);

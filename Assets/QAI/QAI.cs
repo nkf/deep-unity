@@ -98,13 +98,14 @@ public class QAI : MonoBehaviour {
             _instance = this;
             var agent = ActiveAgent.GetComponent<QAgent>();
             if (Imitating) {
+                Time.timeScale = 1f;
                 _imitation = new QImitation();
             } else {
                 _qlearning = new QLearningCNN();
                 _qlearning.SetAgent(agent);
                 DontDestroyOnLoad(gameObject);
                 if (Learning) {
-                    Time.timeScale = 5f;
+                    Time.timeScale = 1f;
                     if (Remake)
                         _qlearning.RemakeModel();
                     else

@@ -26,7 +26,7 @@ namespace QNetwork.CNN {
                 _hidden[i + 1] = new MeanPoolLayer(args[i].PoolLayerSize, _hidden[i]);
             }
             _flatten = new FlattenLayer(_hidden[_hidden.Length - 1]);
-            _output = new DenseLayer(labels, _flatten, Functions.Identity);
+            _output = new DenseLayer(labels, _flatten, Functions.Softmax);
         }
 
         public int Size() {

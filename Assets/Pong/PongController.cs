@@ -28,7 +28,7 @@ class PongController : MonoBehaviour, QAgent {
         _game = FindObjectOfType<PongGame>();
         _ball = FindObjectOfType<PongBall>();
         //_grid = new QGrid(4, 10, 1, transform, new Vector3(10,0,0), 6f, 1.5f, 6f);
-        _grid = new Q2DGrid(11, transform, new GridSettings{ Offset = new Vector3(10,0,0), ResolutionX = 2f});
+        _grid = new Q2DGrid(11, transform, new GridSettings{ Offset = new Vector3(5,0,0), ResolutionX = 1f});
     }
 
 
@@ -98,13 +98,18 @@ class PongController : MonoBehaviour, QAgent {
         var bp = _ball.transform.position;
         var rbp = bp - transform.position;
 
-        var nbp = bp + _ball.Velocity * 0.5f;
+        var nbp = bp + _ball.Velocity.normalized;
+        var nbp1 = bp + _ball.Velocity.normalized * 2;
+        var nbp2 = bp + _ball.Velocity.normalized * 3;
+        var nbp3 = bp + _ball.Velocity.normalized * 4;
 
-        var positions = new List<Coordinates2D?> { _grid.Locate(bp), _grid.Locate(nbp) };
+        var positions = new List<Coordinates2D?> { _grid.Locate(bp), _grid.Locate(nbp),
+            _grid.Locate(nbp1), _grid.Locate(nbp2), _grid.Locate(nbp3) };
 
         SetGridValues(_grid, _prevPositions, 0);
         SetGridValues(_grid, positions, 1);
         _prevPositions = positions;
+
         var state = _grid.Matrix.Clone();
         
         /*
