@@ -11,14 +11,14 @@ namespace QNetwork {
 
     public interface Trainer<V> {
         // Visitor pattern.
-        V Visit(QNetwork.MLP.InputLayer unit, V state);
-        V Visit(QNetwork.MLP.DenseLayer unit, V state);
-        V Visit(QNetwork.CNN.SpatialLayer unit, V state);
-        V Visit(QNetwork.CNN.FlattenLayer unit, V state);
-        V Visit(QNetwork.CNN.ConvolutionalLayer unit, V state);
-        V Visit(QNetwork.CNN.MaxPoolLayer unit, V state);
-        V Visit(QNetwork.CNN.MeanPoolLayer unit, V state);
-        V Visit(QNetwork.Experimental.TreeLayer unit, V state);
+        V Visit(MLP.InputLayer unit, V state);
+        V Visit(MLP.DenseLayer unit, V state);
+        V Visit(CNN.SpatialLayer unit, V state);
+        V Visit(CNN.FlattenLayer unit, V state);
+        V Visit(CNN.ConvolutionalLayer unit, V state);
+        V Visit(CNN.MaxPoolLayer unit, V state);
+        V Visit(CNN.MeanPoolLayer unit, V state);
+        V Visit(Experimental.TreeLayer unit, V state);
     }
 
     public static class UnitTraversal {
