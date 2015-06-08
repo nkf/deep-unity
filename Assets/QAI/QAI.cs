@@ -58,7 +58,7 @@ public class QAI : MonoBehaviour {
         Time.timeScale = 1f;
         var sceneSetup = Tester.SetupNextTest(agent);
         if(!sceneSetup) {
-            _instance.Tester.OnRunComplete();
+            Tester.OnRunComplete();
             EditorApplication.isPlaying = false;
             yield break;
         }

@@ -15,9 +15,10 @@ namespace QNetwork.CNN {
 
         public override Matrix<float>[] Compute(Matrix<float>[] input) {
             for (int i = 0; i < _values.Length; i++)
-                for (int m = 0; m < _values[i].RowCount; m += PoolSize)
-                    for (int n = 0; n < _values[i].ColumnCount; n += PoolSize)
-                        _values[i].At(m, n, input[i].SubMatrix(m, PoolSize, n, PoolSize).EnumerateRows().Select(r => r.Average()).Average());
+                for (int m = 0; m < _values[i].RowCount; m++)
+                    for (int n = 0; n < _values[i].ColumnCount; n++)
+                        _values[i].At(m, n, input[i].SubMatrix(m * PoolSize, PoolSize, n * PoolSize, PoolSize).EnumerateRows()
+                            .Select(r => r.Average()).Average());
             return _values;
         }
 

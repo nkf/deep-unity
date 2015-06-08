@@ -45,7 +45,7 @@ public class QLearningCNN : QLearning {
     public override void RemakeModel() {
         Initialize();
         _size = Agent.GetState().Features.RowCount;
-        _net = new ConvolutionalNetwork(_size, _amap.Count, new CNNArgs {FilterSize = 4, FilterCount = 3, PoolLayerSize = 2, Stride = 2});
+        _net = new ConvolutionalNetwork(_size, _amap.Count, new CNNArgs {FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2});
         _trainer = new Backprop(_net, 0.1f, 0.9f);
     }
 
@@ -66,7 +66,7 @@ public class QLearningCNN : QLearning {
         }
         callback();
     }
-
+    
     public override ActionValueFunction Q(QState s) {
         _output = _net.Compute(new []{s.Features});
         Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}",_output.Average()));
