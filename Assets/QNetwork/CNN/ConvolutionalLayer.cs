@@ -54,9 +54,9 @@ namespace QNetwork.CNN {
         }
 
         private void Convolution(Matrix<float> source, Matrix<float> filter, Matrix<float> dest) {
-            for (int m = 0; m < dest.RowCount; m += Stride)
-                for (int n = 0; n < dest.ColumnCount; n += Stride) {
-                    source.SubMatrix(m, filter.RowCount, n, filter.ColumnCount).PointwiseMultiply(filter, _cache);
+            for (int m = 0; m < dest.RowCount; m++)
+                for (int n = 0; n < dest.ColumnCount; n++) {
+                    source.SubMatrix(m * Stride, filter.RowCount, n * Stride, filter.ColumnCount).PointwiseMultiply(filter, _cache);
                     dest.At(m, n, _cache.RowSums().Sum());
                 }
         }

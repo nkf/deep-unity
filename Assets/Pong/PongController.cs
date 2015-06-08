@@ -28,7 +28,7 @@ class PongController : MonoBehaviour, QAgent {
         _game = FindObjectOfType<PongGame>();
         _ball = FindObjectOfType<PongBall>();
         //_grid = new QGrid(4, 10, 1, transform, new Vector3(10,0,0), 6f, 1.5f, 6f);
-        _grid = new Q2DGrid(11, transform, new GridSettings{ Offset = new Vector3(5,0,0), ResolutionX = 1f});
+        _grid = new Q2DGrid(13, transform, new GridSettings{ Offset = new Vector3(6,0,0), ResolutionX = 1f});
     }
 
 
@@ -70,7 +70,7 @@ class PongController : MonoBehaviour, QAgent {
     }
     [QBehavior]
     public void Idle() { }
-
+    
     private List<Coordinates2D?> _prevPositions = new List<Coordinates2D?>(); 
     public QState GetState() {
         var winner = _ball.IsTerminal();
