@@ -32,12 +32,16 @@ public class Q2DGrid {
     }
 
     public float this[Coordinates2D c] {
-        get { return Matrix[c.X, c.Y]; }
-        set { Matrix[c.X, c.Y] = value; }
+        get { return Matrix[c.x, c.y]; }
+        set { Matrix[c.x, c.y] = value; }
     }
 
     public void Populate(Func<Bounds, float> populator) {
         Iterate((c, b) => this[c] = populator(b));
+    }
+
+    public void Populate(Func<Bounds, Coordinates2D, float> populator) {
+        Iterate((c, b) => this[c] = populator(b,c));
     }
 
     /// <summary>
@@ -114,20 +118,20 @@ public class Q2DGrid {
 }
 
 public struct Coordinates2D {
-    public readonly int X, Y;
-    public Coordinates2D(int x, int y) { X = x; Y = y; }
+    public readonly int x, y;
+    public Coordinates2D(int x, int y) { this.x = x; this.y = y; }
     public bool Equals(Coordinates2D other) {
-        return X == other.X && Y == other.Y;
+        return x == other.x && y == other.y;
     }
     public override bool Equals(object obj) {
         if(ReferenceEquals(null, obj)) return false;
         return obj is Coordinates2D && Equals((Coordinates2D)obj);
     }
     public override int GetHashCode() {
-        unchecked { return (X * 397) ^ Y; }
+        unchecked { return (x * 397) ^ y; }
     }
     public override string ToString() {
-        return string.Format("[{0},{1}]", X, Y);
+        return string.Format("[{0},{1}]", x, y);
     }
 }
 
