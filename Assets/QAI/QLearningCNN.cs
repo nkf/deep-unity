@@ -98,7 +98,8 @@ public class QLearningCNN : QLearning {
         int i = 0;
         foreach (var sars in batch) {
             inp[i] = sars.State.Features;
-            var ideal = _net.Compute(new[] { inp[i] }).Clone();
+            /*
+            var ideal = net.Compute(new[] {inp[i]}).Clone();
             float target;
             if(!sars.NextState.IsTerminal) {
                 var a0max = _net.Compute(new[] { sars.NextState.Features }).Max();
@@ -106,11 +107,13 @@ public class QLearningCNN : QLearning {
             } else {
                 target = sars.Reward;
             }
+            */
             // ATTENTION: Not Q-learning.
             // Delete from here.
-            /*for (int n = 0; n < ideal.Count; n++)
+            var ideal = Vector<float>.Build.Dense(3);
+            for (int n = 0; n < ideal.Count; n++)
                 ideal[n] = 0f;
-            target = 1f;*/
+            var target = 1f;
             // To here.
             ideal[_amap[sars.Action.ActionId]] = target;
             outp[i++] = ideal;

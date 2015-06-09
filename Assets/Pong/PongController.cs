@@ -97,7 +97,7 @@ class PongController : MonoBehaviour, QAgent {
         
         var bp = _ball.transform.position;
         var rbp = bp - transform.position;
-
+        /*
         var nbp = bp + _ball.Velocity.normalized;
         var nbp1 = bp + _ball.Velocity.normalized * 2;
         var nbp2 = bp + _ball.Velocity.normalized * 3;
@@ -109,7 +109,15 @@ class PongController : MonoBehaviour, QAgent {
         SetGridValues(_grid, _prevPositions, 0);
         SetGridValues(_grid, positions, 1);
         _prevPositions = positions;
-
+        */
+        var gridmid = _grid.GridSize/2f;
+        var top = bp.y >= _grid.Center.y;
+        var gbp = _grid.Locate(bp);
+        var bpy = gbp.HasValue ? gbp.Value.y : -1;
+        //_grid.Populate((bo, c) => c.y > gridmid ? (top ? 1 : 0) : (top ? 0 : 1)); //one half
+        //_grid.Populate((bo,c) => c.y == bpy ? 1 : 0); //one line
+        //_grid.Populate((bo,c) => gbp.HasValue && gbp.Value.Equals(c) ? 1 : 0); //single
+        _grid.Populate((bo, c) => gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 1 : 0);
         var state = _grid.Matrix.Clone();
         
         /*
@@ -142,6 +150,10 @@ class PongController : MonoBehaviour, QAgent {
         foreach (var coord in coords.Where(c => c.HasValue).Select(c => c.Value)) {
             grid[coord] = value;
         }
+    }
+
+    private int HammingDistance(Coordinates2D a, Coordinates2D b) {
+        return Math.Abs(a.x - b.x) + Math.Abs(a.y - b.y);
     }
 }
 internal enum Player {
