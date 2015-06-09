@@ -59,7 +59,8 @@ public class QLearningCNN : QLearning {
             _qexp.Store(sars, 1000);
             s = sars.NextState;
             // Learning step.
-            TrainModel(_net);
+            //TrainModel();
+            AdvantageLearning();
 
             // End of frame.
             yield return new WaitForFixedUpdate();
@@ -68,8 +69,8 @@ public class QLearningCNN : QLearning {
     }
     
     public override ActionValueFunction Q(QState s) {
-        _output = _net.Compute(new []{s.Features});
-        Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}",_output.Average()));
+        _output = _net.Compute(new[] { s.Features });
+        Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}", _output.Average()));
         return a => _output[_amap[a.ActionId]];
     }
 
@@ -85,38 +86,52 @@ public class QLearningCNN : QLearning {
     public List<SARS> SampleBatch() {
         //var r = _imitationExps.Random().Concat(_qexp.Random()).ToList();
         //var r = _imitationExps.Concat(_qexp).Shuffle().Take(20).ToList();
-        //var r = _qexp.Shuffle().Take(20).ToList();
-        //var r = _qexp.Shuffle().Take(15).ToList();
-        var r = _imitationExps.Shuffle().ToList();
+        var r = _qexp.Shuffle().Take(10).ToList();
+        //var r = _imitationExps.Shuffle().ToList();
         return r;
     }
 
-    private void TrainModel(ConvolutionalNetwork net) {
+    private void TrainModel() {
         var batch = SampleBatch();
         var inp = new Matrix<float>[batch.Count];
         var outp = new Vector<float>[batch.Count];
         int i = 0;
-        foreach(var sars in batch) {
+        foreach (var sars in batch) {
             inp[i] = sars.State.Features;
-            var ideal = net.Compute(new[] {inp[i]}).Clone();
+            var ideal = _net.Compute(new[] { inp[i] }).Clone();
             float target;
             if(!sars.NextState.IsTerminal) {
-                var a0max = net.Compute(new [] {sars.NextState.Features}).Max();
+                var a0max = _net.Compute(new[] { sars.NextState.Features }).Max();
                 target = sars.Reward + Discount * a0max;
             } else {
                 target = sars.Reward;
             }
             // ATTENTION: Not Q-learning.
             // Delete from here.
-            for (int n = 0; n < ideal.Count; n++)
+            /*for (int n = 0; n < ideal.Count; n++)
                 ideal[n] = 0f;
-            target = 1f;
+            target = 1f;*/
             // To here.
             ideal[_amap[sars.Action.ActionId]] = target;
             outp[i++] = ideal;
         }
         for (int j = 0; j < batch.Count; j++) {
             _trainer.SGD(new []{inp[j]}, outp[j]);
+        }
+    }
+
+    private void AdvantageLearning() {
+        float dtK = 0.02f;
+        float dtKinv = 1 / dtK;
+        var batch = SampleBatch();
+        foreach (var sars in batch) {
+            var inp = new[] { sars.State.Features };
+            var outp = _net.Compute(inp).Clone();
+            var amax = outp.Max();
+            var a0max = _net.Compute(new[] { sars.NextState.Features } ).Max();
+            float target = (sars.Reward + Discount * a0max) * dtKinv + (1 - dtKinv) * amax;
+            outp[_amap[sars.Action.ActionId]] = target;
+            _trainer.SGD(inp, outp);
         }
     }
 }
