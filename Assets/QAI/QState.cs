@@ -4,10 +4,10 @@ using MathNet.Numerics.LinearAlgebra;
 
 [Serializable]
 public struct QState {
-    public readonly Matrix<float> Features;
+    public readonly Matrix<float>[] Features;
     public readonly float Reward;
     public readonly bool IsTerminal;
-    public QState(Matrix<float> features, float reward, bool isTerminal) : this() {
+    public QState(Matrix<float>[] features, float reward, bool isTerminal) : this() {
         Features = features;
         Reward = reward;
         IsTerminal = isTerminal;

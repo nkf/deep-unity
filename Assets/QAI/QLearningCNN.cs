@@ -16,7 +16,7 @@ public class QLearningCNN : QLearning {
 
     private int _size;
     private ConvolutionalNetwork _net;
-    private Backprop _trainer;
+    private Backprop<Matrix<float>[]> _trainer;
     private List<SARS> _imitationExps;
     private QExperience _qexp;
     private Dictionary<string, int> _amap;
@@ -35,7 +35,8 @@ public class QLearningCNN : QLearning {
     public override void LoadModel() {
         Initialize();
         _net = ConvolutionalNetwork.Load(MODEL_PATH);
-        _trainer = new Backprop(_net, 0.1f, 0.9f);
+        //_net = MultiLayerPerceptron.Load(MODEL_PATH);
+        _trainer = new Backprop<Matrix<float>[]>(_net, 0.1f, 0.9f);
     }
 
     public override void SaveModel() {
@@ -46,7 +47,8 @@ public class QLearningCNN : QLearning {
         Initialize();
         _size = Agent.GetState().Features.RowCount;
         _net = new ConvolutionalNetwork(_size, _amap.Count, new CNNArgs {FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2});
-        _trainer = new Backprop(_net, 0.1f, 0.9f);
+        //_net = new MultiLayerPerceptron(5, new[] { 50, 3 });
+        _trainer = new Backprop<Matrix<float>[]>(_net, 0.1f, 0.9f);
     }
 
     public override IEnumerator<YieldInstruction> RunEpisode(QAI.EpisodeCallback callback) {
@@ -59,8 +61,7 @@ public class QLearningCNN : QLearning {
             _qexp.Store(sars, 1000);
             s = sars.NextState;
             // Learning step.
-            //TrainModel();
-            AdvantageLearning();
+            TrainModel();
 
             // End of frame.
             yield return new WaitForFixedUpdate();
@@ -69,7 +70,7 @@ public class QLearningCNN : QLearning {
     }
     
     public override ActionValueFunction Q(QState s) {
-        _output = _net.Compute(new[] { s.Features });
+        _output = _net.Compute(s.Features);
         Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}", _output.Average()));
         return a => _output[_amap[a.ActionId]];
     }
@@ -97,7 +98,7 @@ public class QLearningCNN : QLearning {
         var outp = new Vector<float>[batch.Count];
         int i = 0;
         foreach (var sars in batch) {
-            inp[i] = sars.State.Features;
+            //inp[i] = sars.State.Features;
             /*
             var ideal = net.Compute(new[] {inp[i]}).Clone();
             float target;
@@ -119,19 +120,18 @@ public class QLearningCNN : QLearning {
             outp[i++] = ideal;
         }
         for (int j = 0; j < batch.Count; j++) {
-            _trainer.SGD(new []{inp[j]}, outp[j]);
+            //_trainer.SGD(new []{inp[j]}, outp[j]);
         }
     }
 
     private void AdvantageLearning() {
-        float dtK = 0.02f;
-        float dtKinv = 1 / dtK;
+        float dtKinv = 3f;
         var batch = SampleBatch();
         foreach (var sars in batch) {
-            var inp = new[] { sars.State.Features };
+            var inp = sars.State.Features;
             var outp = _net.Compute(inp).Clone();
             var amax = outp.Max();
-            var a0max = _net.Compute(new[] { sars.NextState.Features } ).Max();
+            var a0max = _net.Compute(sars.NextState.Features).Max();
             float target = (sars.Reward + Discount * a0max) * dtKinv + (1 - dtKinv) * amax;
             outp[_amap[sars.Action.ActionId]] = target;
             _trainer.SGD(inp, outp);

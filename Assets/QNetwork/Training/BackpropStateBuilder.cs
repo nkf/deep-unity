@@ -4,10 +4,10 @@ using QNetwork.MLP;
 using MathNet.Numerics.LinearAlgebra;
 
 namespace QNetwork.Training {
-    public class BackpropStateBuilder : Trainer<BackpropState> {
-        private readonly Backprop t;
+    public class BackpropStateBuilder<T> : Trainer<BackpropState> {
+        private readonly Backprop<T> t;
 
-        public BackpropStateBuilder(Backprop trainer) {
+        public BackpropStateBuilder(Backprop<T> trainer) {
             t = trainer;
         }
 

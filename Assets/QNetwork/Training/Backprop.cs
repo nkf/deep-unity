@@ -7,7 +7,7 @@ using QNetwork.Experimental;
 using QNetwork.MLP;
 
 namespace QNetwork.Training {
-    public class Backprop : Trainer<BackpropState> {
+    public class Backprop<T> : Trainer<BackpropState> {
         public float LearningRate { get; set; }
         public float Momentum { get; set; }
 
@@ -23,9 +23,9 @@ namespace QNetwork.Training {
         internal List<Matrix<float>> EBuffer2D { get; set; }
         internal List<Matrix<float>> Ones { get; set; }
 
-        private readonly ConvolutionalNetwork _net;
+        private readonly Unit<T, Vector<float>> _net;
 
-        public Backprop(ConvolutionalNetwork network, float lrate, float momentum) {
+        public Backprop(Unit<T, Vector<float>> network, float lrate, float momentum) {
             LearningRate = lrate;
             Momentum = momentum;
             _net = network;
@@ -38,10 +38,10 @@ namespace QNetwork.Training {
             Buffer2D = new List<Matrix<float>>();
             EBuffer2D = new List<Matrix<float>>();
             Ones = new List<Matrix<float>>();
-            network.Accept(new BackpropStateBuilder(this), new BackpropState());
+            network.Accept(new BackpropStateBuilder<T>(this), new BackpropState());
         }
 
-        public void SGD(Matrix<float>[] features, Vector<float> labels) {
+        public void SGD(T features, Vector<float> labels) {
             _net.Compute(features);
             labels.CopyTo(Error[0]);
             Error[0].Subtract(_net.Output(), Error[0]);

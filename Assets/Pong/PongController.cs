@@ -119,6 +119,7 @@ class PongController : MonoBehaviour, QAgent {
         //_grid.Populate((bo,c) => gbp.HasValue && gbp.Value.Equals(c) ? 1 : 0); //single
         _grid.Populate((bo, c) => gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 1 : 0);
         var state = _grid.Matrix.Clone();
+        //var state = MathNet.Numerics.LinearAlgebra.Vector<float>.Build.DenseOfArray(new[] { bp.x, bp.y, rbp.x, rbp.y, transform.position.y });
         
         /*
         var state = _grid.State
@@ -143,7 +144,7 @@ class PongController : MonoBehaviour, QAgent {
 //            .Concat(_vm[bvm])
 //            .ToArray();
 //            new double[] {rbpn.x, rbpn.y, rbpm/10, bvn.x, bvn.y, bvm/5};
-        return new QState(state, reward, terminal);
+        return new QState(new[] { state }, reward, terminal);
     }
 
     private void SetGridValues(Q2DGrid grid, IEnumerable<Coordinates2D?> coords, float value) {
