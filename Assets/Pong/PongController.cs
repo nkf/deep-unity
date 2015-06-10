@@ -117,7 +117,14 @@ class PongController : MonoBehaviour, QAgent {
         //_grid.Populate((bo, c) => c.y > gridmid ? (top ? 1 : 0) : (top ? 0 : 1)); //one half
         //_grid.Populate((bo,c) => c.y == bpy ? 1 : 0); //one line
         //_grid.Populate((bo,c) => gbp.HasValue && gbp.Value.Equals(c) ? 1 : 0); //single
-        _grid.Populate((bo, c) => gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 1 : 0);
+        _grid.Populate((bo, c) => {
+            var x = bo.center.x;
+            var v = bo.Contains(new Vector3(x, _game.Border.yMin)) || bo.Contains(new Vector3(x, _game.Border.yMax)) ? 50 : 0f; //walls
+            v = bo.Contains(new Vector3(controller.x, controller.center.y)) ? 100 : v; //controller
+            v = gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 200f : v; //ball
+
+            return v;
+        });
         var state = _grid.Matrix.Clone();
         
         /*
