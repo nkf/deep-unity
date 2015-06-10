@@ -35,7 +35,7 @@ public class QLearningCNN : QLearning {
     public override void LoadModel() {
         Initialize();
         _net = ConvolutionalNetwork.Load(MODEL_PATH);
-        _trainer = new Backprop(_net, 0.1f, 0.9f);
+        _trainer = new Backprop(_net, 0.01f, 0.9f);
     }
 
     public override void SaveModel() {
@@ -45,19 +45,28 @@ public class QLearningCNN : QLearning {
     public override void RemakeModel() {
         Initialize();
         _size = Agent.GetState().Features.RowCount;
-        _net = new ConvolutionalNetwork(_size, _amap.Count, new CNNArgs {FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2});
-        _trainer = new Backprop(_net, 0.1f, 0.9f);
+        _net = new ConvolutionalNetwork(_size, _amap.Count, new CNNArgs {FilterSize = 5, FilterCount = 3, PoolLayerSize = 2, Stride = 2});
+        _trainer = new Backprop(_net, 0.01f, 0.9f);
     }
 
     public override IEnumerator<YieldInstruction> RunEpisode(QAI.EpisodeCallback callback) {
         Iteration++;
         var s = Agent.GetState();
+        var a = default(QAction);
+        var prevS = default(QState);
         while(!s.IsTerminal) {
+            if (s.Equals(prevS)) {
+                a.Invoke();
+                s = Agent.GetState();
+                yield return new WaitForFixedUpdate();
+                continue;
+            }
             // Experience step.
-            var a = EpsilonGreedy(Epsilon(Iteration));
+            a = EpsilonGreedy(Epsilon(Iteration));
             var sars = Agent.MakeSARS(a);
-            _qexp.Store(sars, 1000);
+            _qexp.Store(sars, 100);
             s = sars.NextState;
+            prevS = sars.State;
             // Learning step.
             TrainModel(_net);
 
@@ -84,10 +93,9 @@ public class QLearningCNN : QLearning {
 
     public List<SARS> SampleBatch() {
         //var r = _imitationExps.Random().Concat(_qexp.Random()).ToList();
-        //var r = _imitationExps.Concat(_qexp).Shuffle().Take(20).ToList();
+        var r = _imitationExps.Concat(_qexp).Shuffle().Take(20).ToList();
         //var r = _qexp.Shuffle().Take(20).ToList();
-        //var r = _qexp.Shuffle().Take(15).ToList();
-        var r = _imitationExps.Shuffle().ToList();
+        //var r = _imitationExps.Shuffle().ToList();
         return r;
     }
 
@@ -98,7 +106,6 @@ public class QLearningCNN : QLearning {
         int i = 0;
         foreach(var sars in batch) {
             inp[i] = sars.State.Features;
-            /*
             var ideal = net.Compute(new[] {inp[i]}).Clone();
             float target;
             if(!sars.NextState.IsTerminal) {
@@ -107,7 +114,7 @@ public class QLearningCNN : QLearning {
             } else {
                 target = sars.Reward;
             }
-            */
+            /*
             // ATTENTION: Not Q-learning.
             // Delete from here.
             var ideal = Vector<float>.Build.Dense(3);
@@ -115,6 +122,7 @@ public class QLearningCNN : QLearning {
                 ideal[n] = 0f;
             var target = 1f;
             // To here.
+            */
             ideal[_amap[sars.Action.ActionId]] = target;
             outp[i++] = ideal;
         }
