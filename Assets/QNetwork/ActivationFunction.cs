@@ -14,7 +14,17 @@ namespace QNetwork {
             Derivatives = (ys, ds) => ds.MapInplace(d => 1f)
         };
 
+        public static ActivationFunction<Matrix<float>> Identity2D = new ActivationFunction<Matrix<float>> {
+            Apply = (xs, ys) => xs.CopyTo(ys),
+            Derivatives = (ys, ds) => ds.MapInplace(d => 1f)
+        };
+
         public static ActivationFunction<Vector<float>> Rectifier = new ActivationFunction<Vector<float>> {
+            Apply = (xs, ys) => xs.Map(x => Math.Max(0, x), ys),
+            Derivatives = (ys, ds) => ys.Map(y => y > 0 ? 1f : 0f, ds)
+        };
+
+        public static ActivationFunction<Matrix<float>> Rectifier2D = new ActivationFunction<Matrix<float>> {
             Apply = (xs, ys) => xs.Map(x => Math.Max(0, x), ys),
             Derivatives = (ys, ds) => ys.Map(y => y > 0 ? 1f : 0f, ds)
         };

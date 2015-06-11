@@ -23,7 +23,7 @@ namespace QNetwork.CNN {
             _hidden[1] = new MeanPoolLayer(args[0].PoolLayerSize, _hidden[0]);
             for (int i = 2; i < _hidden.Length; i += 2) {
                 _hidden[i] = new ConvolutionalLayer(args[i].FilterSize, args[i].FilterCount, args[i].Stride, _hidden[i - 1], Functions.Tanh2D);
-                _hidden[i + 1] = new MeanPoolLayer(args[i].PoolLayerSize, _hidden[i]);
+                _hidden[i + 1] = new MaxPoolLayer(args[i].PoolLayerSize, _hidden[i]);
             }
             _flatten = new FlattenLayer(_hidden[_hidden.Length - 1]);
             _output = new DenseLayer(labels, _flatten, Functions.Sigmoid);

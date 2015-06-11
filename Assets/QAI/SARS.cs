@@ -6,6 +6,7 @@ public class SARS {
 	public readonly QState NextState;
 	public readonly QAction Action;
 	public readonly float Reward;
+    public float Priority { get; set; }
 	
 	public SARS(QState s, QAction a, float r, QState s0) {
 		State = s; Action = a; Reward = r; NextState = s0;

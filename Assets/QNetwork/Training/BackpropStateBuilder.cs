@@ -47,10 +47,19 @@ namespace QNetwork.Training {
                     d2d[i][j] = Matrix<float>.Build.Dense(fsize, fsize);
             }
             t.Deltas2D.Add(d2d);
+            t.Ones.Add(null);
             return st;
         }
 
         public BackpropState Visit(MaxPoolLayer unit, BackpropState st) {
+            var err2d = new Matrix<float>[unit.ChannelCount];
+            for (int i = 0; i < unit.ChannelCount; i++)
+                err2d[i] = Matrix<float>.Build.Dense(unit.SideLength, unit.SideLength);
+            t.Error2D.Add(err2d);
+            t.Ones.Add(Matrix<float>.Build.Dense(unit.PoolSize, unit.PoolSize, 1f));
+            t.EBuffer2D.Add(null);
+            t.Buffer2D.Add(null);
+            t.Deltas2D.Add(null);
             return st;
         }
 

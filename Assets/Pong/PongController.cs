@@ -28,12 +28,11 @@ class PongController : MonoBehaviour, QAgent {
         _game = FindObjectOfType<PongGame>();
         _ball = FindObjectOfType<PongBall>();
         //_grid = new QGrid(4, 10, 1, transform, new Vector3(10,0,0), 6f, 1.5f, 6f);
-        _grid = new Q2DGrid(13, transform, new GridSettings{ Offset = new Vector3(6,0,0), ResolutionX = 1f});
+        _grid = new Q2DGrid(11, transform, new GridSettings{ Offset = new Vector3(5,0,0), ResolutionX = 1f});
     }
 
-
     void FixedUpdate() {
-        if(Side == Player.Player1) _grid.DebugDraw(v => v == 1 ? Color.yellow : Color.magenta);
+        if (Side == Player.Player1) _grid.DebugDraw(v => v > 128 ? Color.red : v > 1 ? Color.yellow : Color.magenta);
     }
 
     IEnumerator Movement() {
@@ -117,7 +116,10 @@ class PongController : MonoBehaviour, QAgent {
         //_grid.Populate((bo, c) => c.y > gridmid ? (top ? 1 : 0) : (top ? 0 : 1)); //one half
         //_grid.Populate((bo,c) => c.y == bpy ? 1 : 0); //one line
         //_grid.Populate((bo,c) => gbp.HasValue && gbp.Value.Equals(c) ? 1 : 0); //single
-        _grid.Populate((bo, c) => gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 1 : 0);
+        _grid.Populate((bo, c) => {
+            var ham = gbp.HasValue ? HammingDistance(gbp.Value, c) : int.MaxValue;
+            return ham < 1 ? 255 : ham < 2 ? 128 : 0;
+        });
         var state = _grid.Matrix.Clone();
         //var state = MathNet.Numerics.LinearAlgebra.Vector<float>.Build.DenseOfArray(new[] { bp.x, bp.y, rbp.x, rbp.y, transform.position.y });
         
