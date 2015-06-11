@@ -28,12 +28,12 @@ class PongController : MonoBehaviour, QAgent {
         _game = FindObjectOfType<PongGame>();
         _ball = FindObjectOfType<PongBall>();
         //_grid = new QGrid(4, 10, 1, transform, new Vector3(10,0,0), 6f, 1.5f, 6f);
-        _grid = new Q2DGrid(13, transform, new GridSettings{ Offset = new Vector3(6,0,0), ResolutionX = 1f});
+        _grid = new Q2DGrid(17, transform, new GridSettings{ Offset = new Vector3(8.2f,0,0), ResolutionX = 1.2f, ResolutionY = 1.2f});
     }
 
 
     void FixedUpdate() {
-        if(Side == Player.Player1) _grid.DebugDraw(v => v == 1 ? Color.yellow : Color.magenta);
+		if(Side == Player.Player1) _grid.DebugDraw(v => Color.Lerp(Color.black, Color.white, v/250f));
     }
 
     IEnumerator Movement() {
@@ -119,9 +119,12 @@ class PongController : MonoBehaviour, QAgent {
         //_grid.Populate((bo,c) => gbp.HasValue && gbp.Value.Equals(c) ? 1 : 0); //single
         _grid.Populate((bo, c) => {
             var x = bo.center.x;
-            var v = bo.Contains(new Vector3(x, _game.Border.yMin)) || bo.Contains(new Vector3(x, _game.Border.yMax)) ? 50 : 0f; //walls
-            v = bo.Contains(new Vector3(controller.x, controller.center.y)) ? 100 : v; //controller
-            v = gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 200f : v; //ball
+//            var v = bo.Contains(new Vector3(x, _game.Border.yMin)) || bo.Contains(new Vector3(x, _game.Border.yMax)) ? 50 : 0f; //walls
+			var v = 0f;
+			v = gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 250f : v; //ball
+//			v = bo.Contains(bp + _ball.Velocity/2) ? 100f : v;
+			v = bo.Contains(new Vector3(controller.x, controller.yMin)) || bo.Contains(new Vector3(controller.x, controller.yMax)) ? 130 : v; //controller
+			v = bo.Contains(new Vector3(controller.x, controller.center.y)) ? 130 : v;
 
             return v;
         });
