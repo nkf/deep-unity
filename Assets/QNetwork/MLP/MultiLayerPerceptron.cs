@@ -1,4 +1,6 @@
-﻿using MathNet.Numerics.LinearAlgebra;
+﻿using System.IO;
+using System.Xml;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace QNetwork.MLP {
     public class MultiLayerPerceptron : Unit<Vector<float>, Vector<float>> {
@@ -6,7 +8,12 @@ namespace QNetwork.MLP {
         private readonly DenseLayer[] _hidden;
         private readonly DenseLayer _output;
 
+        private readonly int _insize;
+        private readonly int[] _layers;
+
         public MultiLayerPerceptron(int insize, params int[] layers) {
+            _insize = insize;
+            _layers = layers;
             _input = new InputLayer(insize);
             _hidden = new DenseLayer[layers.Length - 1];
             _hidden[0] = new DenseLayer(layers[0], _input, Functions.Sigmoid);
@@ -29,6 +36,36 @@ namespace QNetwork.MLP {
 
         public T Accept<T>(Trainer<T> t, T state) {
             return _input.Accept(t, _hidden.ApplyTrainer(t, _output.Accept(t, state)));
+        }
+
+        public void Save(string filename) {
+            var file = File.Create(filename);
+            using (var writer = XmlWriter.Create(file, new XmlWriterSettings { Indent = true })) {
+                writer.WriteStartElement(GetType().Name);
+                //Constructor arguments
+                writer.WriteElementString("insize", _insize.ToString());
+                writer.XmlSerialize(_layers);
+                //Layers
+                for (int i = 0; i < _hidden.Length; i++)
+                    _hidden[i].Serialize(writer);
+                _output.Serialize(writer);
+                writer.WriteEndElement();
+            }
+            file.Close();
+        }
+
+        public static MultiLayerPerceptron Load(string filename) {
+            using (var reader = XmlReader.Create(File.Open(filename, FileMode.Open))) {
+                reader.ReadStartElement(typeof(MultiLayerPerceptron).Name);
+                var insize = int.Parse(reader.ReadElementString());
+                var layers = reader.XmlDeserialize<int[]>();
+                var network = new MultiLayerPerceptron(insize, layers);
+                for (int i = 0; i < network._hidden.Length; i++)
+                    network._hidden[i].Deserialize(reader);
+                network._output.Deserialize(reader);
+                reader.ReadEndElement();
+                return network;
+            }
         }
     }
 }

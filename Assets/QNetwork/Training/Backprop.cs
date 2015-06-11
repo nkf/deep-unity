@@ -7,7 +7,16 @@ using QNetwork.Experimental;
 using QNetwork.MLP;
 
 namespace QNetwork.Training {
-    public class Backprop : Trainer<BackpropState> {
+    public struct TargetIndexPair {
+        public readonly float Target;
+        public readonly int Index;
+        public TargetIndexPair(float t, int i) : this() {
+            Target = t;
+            Index = i;
+        }
+    }
+
+    public class Backprop<T> : Trainer<BackpropState> {
         public float LearningRate { get; set; }
         public float Momentum { get; set; }
 
@@ -23,9 +32,9 @@ namespace QNetwork.Training {
         internal List<Matrix<float>> EBuffer2D { get; set; }
         internal List<Matrix<float>> Ones { get; set; }
 
-        private readonly ConvolutionalNetwork _net;
+        private readonly Unit<T, Vector<float>> _net;
 
-        public Backprop(ConvolutionalNetwork network, float lrate, float momentum) {
+        public Backprop(Unit<T, Vector<float>> network, float lrate, float momentum) {
             LearningRate = lrate;
             Momentum = momentum;
             _net = network;
@@ -38,13 +47,18 @@ namespace QNetwork.Training {
             Buffer2D = new List<Matrix<float>>();
             EBuffer2D = new List<Matrix<float>>();
             Ones = new List<Matrix<float>>();
-            network.Accept(new BackpropStateBuilder(this), new BackpropState());
+            network.Accept(new BackpropStateBuilder<T>(this), new BackpropState());
         }
 
-        public void SGD(Matrix<float>[] features, Vector<float> labels) {
-            _net.Compute(features);
-            labels.CopyTo(Error[0]);
-            Error[0].Subtract(_net.Output(), Error[0]);
+        public void SGD(T features, Vector<float> labels) {
+            _net.Compute(features).CopyTo(Error[0]);
+            labels.Subtract(Error[0], Error[0]);
+            _net.Accept(this, new BackpropState());
+        }
+
+        public void SGD(T features, TargetIndexPair p) {
+            _net.Compute(features).CopyTo(Error[0]);
+            Error[0][p.Index] = p.Target - Error[0][p.Index];
             _net.Accept(this, new BackpropState());
         }
 
@@ -125,7 +139,15 @@ namespace QNetwork.Training {
         }
 
         public BackpropState Visit(MaxPoolLayer unit, BackpropState st) {
-            throw new NotImplementedException();
+            int i = st.SpatialLayerIndex;
+            // Upsample the error by first taking the Kronecker product of a matrix of 1's the same size as the pooling region.
+            // Then pointwise multiply by the pooling layer's distribution matrix.
+            for (int j = 0; j < unit.ChannelCount; j++) {
+                Error2D[i][j].KroneckerProduct(Ones[i], Error2D[i + 1][j]);
+                Error2D[i + 1][j].PointwiseMultiply(unit.Distribution[i], Error2D[i + 1][j]);
+            }
+            st.SpatialLayerIndex++;
+            return st;
         }
 
         public BackpropState Visit(MeanPoolLayer unit, BackpropState st) {
