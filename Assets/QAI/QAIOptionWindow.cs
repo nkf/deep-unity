@@ -61,6 +61,9 @@ public class QAIOptionWindow : EditorWindow {
         EditorApplication.playmodeStateChanged -= PlayModeChange;
         EditorApplication.playmodeStateChanged += PlayModeChange;
 
+		EditorGUILayout.Toggle(_learning);
+		EditorGUILayout.Toggle(_remake);
+
         var ais = FindObjectsOfType<QAI>();
         //PROGRESS BAR
         if (ais.Length > 0) {
@@ -232,8 +235,10 @@ public class QAIOptionWindow : EditorWindow {
                 _forceStart = true;
             }
             else {
+				_learning = false;
                 _learnAllStories = false;
                 _learningStory = 0;
+				_remake = false;
             }
         }
         if (_starting && EditorApplication.isPlaying) {
