@@ -23,6 +23,6 @@ public class PongBenchmark : QTester {
     }
 
     public override void OnRunComplete() {
-        Debug.Log(string.Join(",", _rewards.Select(d => d.ToString(CultureInfo.InvariantCulture)).ToArray()));
+        Debug.Log(string.Join(",", _rewards.Select(d => d.ToString(CultureInfo.InvariantCulture)).ToArray()) +" ~ "+ _rewards.Sum() + "/" + _rewards.Count);
     }
 }
