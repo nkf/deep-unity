@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -30,7 +30,6 @@ class PongController : MonoBehaviour, QAgent {
         //_grid = new QGrid(4, 10, 1, transform, new Vector3(10,0,0), 6f, 1.5f, 6f);
         _grid = new Q2DGrid(17, transform, new GridSettings{ Offset = new Vector3(8.2f,0,0), ResolutionX = 1.2f, ResolutionY = 1.2f});
     }
-
 
     void FixedUpdate() {
 		if(Side == Player.Player1) _grid.DebugDraw(v => Color.Lerp(Color.black, Color.white, v/250f));
@@ -118,17 +117,16 @@ class PongController : MonoBehaviour, QAgent {
         //_grid.Populate((bo,c) => c.y == bpy ? 1 : 0); //one line
         //_grid.Populate((bo,c) => gbp.HasValue && gbp.Value.Equals(c) ? 1 : 0); //single
         _grid.Populate((bo, c) => {
+            //var ham = gbp.HasValue ? HammingDistance(gbp.Value, c) : int.MaxValue;
+            //return ham < 1 ? 255 : ham < 2 ? 128 : 0;
             var x = bo.center.x;
-//            var v = bo.Contains(new Vector3(x, _game.Border.yMin)) || bo.Contains(new Vector3(x, _game.Border.yMax)) ? 50 : 0f; //walls
-			var v = 0f;
-			v = gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 250f : v; //ball
-//			v = bo.Contains(bp + _ball.Velocity/2) ? 100f : v;
-			v = bo.Contains(new Vector3(controller.x, controller.yMin)) || bo.Contains(new Vector3(controller.x, controller.yMax)) ? 130 : v; //controller
-			v = bo.Contains(new Vector3(controller.x, controller.center.y)) ? 130 : v;
-
+            var v = bo.Contains(new Vector3(x, _game.Border.yMin)) || bo.Contains(new Vector3(x, _game.Border.yMax)) ? 50 : 0f; //walls
+            v = bo.Contains(new Vector3(controller.x, controller.center.y)) ? 100 : v; //controller
+            v = gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 200f : v; //ball
             return v;
         });
         var state = _grid.Matrix.Clone();
+        //var state = MathNet.Numerics.LinearAlgebra.Vector<float>.Build.DenseOfArray(new[] { bp.x, bp.y, rbp.x, rbp.y, transform.position.y });
         
         /*
         var state = _grid.State
@@ -153,7 +151,7 @@ class PongController : MonoBehaviour, QAgent {
 //            .Concat(_vm[bvm])
 //            .ToArray();
 //            new double[] {rbpn.x, rbpn.y, rbpm/10, bvn.x, bvn.y, bvm/5};
-        return new QState(state, reward, terminal);
+        return new QState(new[] { state }, reward, terminal);
     }
 
     private void SetGridValues(Q2DGrid grid, IEnumerable<Coordinates2D?> coords, float value) {

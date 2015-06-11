@@ -114,7 +114,8 @@ public class GridWoman : MonoBehaviour, QAgent {
                  .Concat(new double[] {v.x, v.z})
                  .ToArray(),
             */
-            _grid.Matrix.Clone(),
+            null,
+            //_grid.Matrix.Clone(),
             dead ? 0 : goal ? 1 : 0,
             dead || goal
             );
