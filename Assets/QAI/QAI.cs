@@ -55,7 +55,7 @@ public class QAI : MonoBehaviour {
 
     private IEnumerator<YieldInstruction> RunTester(QAgent agent) {
         _abortTestRun = false;
-        Time.timeScale = 1f;
+        Time.timeScale = 3f;
         var sceneSetup = Tester.SetupNextTest(agent);
         if(!sceneSetup) {
             Tester.OnRunComplete();
