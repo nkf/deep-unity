@@ -47,6 +47,7 @@ namespace QNetwork.Training {
                     d2d[i][j] = Matrix<float>.Build.Dense(fsize, fsize);
             }
             t.Deltas2D.Add(d2d);
+			t.Ones.Add(null);
             return st;
         }
 
