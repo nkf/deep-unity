@@ -57,8 +57,8 @@ namespace QNetwork.Training {
         }
 
         public void SGD(T features, TargetIndexPair p) {
-            _net.Compute(features).CopyTo(Error[0]);
-            Error[0][p.Index] = p.Target - Error[0][p.Index];
+            Error[0].Clear();
+            Error[0].At(p.Index, p.Target - _net.Compute(features)[p.Index]);
             _net.Accept(this, new BackpropState());
         }
 
