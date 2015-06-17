@@ -5,8 +5,13 @@ using UnityEngine;
 
 public class QAI : MonoBehaviour {
     public delegate void EpisodeCallback();
+    public enum QAIMode {
+        Runnning, Learning, Imitating, Testing
+    }
 
     public const float TimeStep = 0.3f;
+    [HideInInspector] 
+    public QAIMode Mode;
     [HideInInspector]
     public bool Learning;
     [HideInInspector]
