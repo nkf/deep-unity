@@ -11,10 +11,7 @@ public class QAIOptionWindow : EditorWindow {
     private const string STORY_PATH = "QData/Story";
     [NonSerialized] private bool _init = false;
 	private bool _initNext = false;
-    private bool _imitation;
-	private bool _learning;
 	private bool _remake;
-    private bool _testing;
     private int _term;
 
     private bool _starting = false;
@@ -33,6 +30,8 @@ public class QAIOptionWindow : EditorWindow {
 	private GameObject _agent;
 	private QTester _tester;
 
+	private QAI.QAIMode _mode;
+
     // Add menu named "My Window" to the Window menu
     [MenuItem("QAI/Options")]
     private static void OpenWindow() {
@@ -49,8 +48,7 @@ public class QAIOptionWindow : EditorWindow {
 		_manager = CreateManager();
 		_agent = _manager.ActiveAgent;
 		_tester = _manager.Tester;
-        _imitation = _manager.Imitating;
-		_learning = _manager.Learning;
+		_mode = _manager.Mode;
 		_remake = _manager.Remake;
 		_term = _manager.Terminator;
         _sceneList = GetScenes().ToArray();
@@ -67,10 +65,6 @@ public class QAIOptionWindow : EditorWindow {
 		_scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
         EditorApplication.playmodeStateChanged -= PlayModeChange;
         EditorApplication.playmodeStateChanged += PlayModeChange;
-
-		//For debugging
-//		EditorGUILayout.Toggle(_learning);
-//		EditorGUILayout.Toggle(_remake);
 
         //PROGRESS BAR
 		ProgressBar();
@@ -90,99 +84,51 @@ public class QAIOptionWindow : EditorWindow {
 		}
 
         //IMITATION LEARNING
-//        for (int i = 0; i < _stories.Count; i++) {
-            var story = _stories[0];
-//            var dr = EditorGUILayout.BeginHorizontal();
-//            dr.height = 16;
-//			dr.x += 4;
-//			dr.width -= 2;
-//            GUI.Label(dr, "Story " + story.Id);
-			GUILayout.Space(20);
-			EditorGUILayout.LabelField("Training data");
-//            var w = dr.width;
-//            dr.width = 20;
-//            dr.x = w - 23;
-//            if (GUI.Button(dr, "X")) {
-//                story.Delete();
-//                _init = false;
-//            }
-//            EditorGUILayout.EndHorizontal();
-//            GUILayout.Space(20);
+        var story = _stories[0];
+		GUILayout.Space(20);
+		EditorGUILayout.LabelField("Training data");
 
-//            var index = Array.IndexOf(_sceneList, story.ScenePath);
-//            var r = EditorGUILayout.BeginVertical();
-//            //Scene selection
-//            GUILayout.Space(15);
-//			r.x += 1;
-//			r.width -= 5;
-//            index = EditorGUI.Popup(r, " Scene:", index == -1 ? 0 : index, _sceneList);
-//            if (_sceneList[index] != story.ScenePath) {
-//                story.ImitationExperiences.Clear(); // Huehuehue
-//                story.ScenePath = _sceneList[index];
-//                story.Save(STORY_PATH);
-//            }
-//            EditorGUILayout.EndVertical();
-            //Iteration field
-//            var itt = EditorGUILayout.IntField("Iterations:", story.Iterations);
-//            if (itt != story.Iterations) {
-//                story.Iterations = itt;
-//                story.Save(STORY_PATH);
-//            }
-
-            //Imitation training
-            var r = EditorGUILayout.BeginHorizontal();
-            GUILayout.Space(17);
-            GUILayout.Label("Imitation learning");
-            if (GUILayout.Button("Record")) {
-				_learning = true;
-                _imitation = true;
-                _currentStory = story;
-//				if(EditorApplication.currentScene != story.ScenePath)
-//                	EditorApplication.OpenScene(story.ScenePath);
-                ChangePlayMode();
+        //Imitation training
+        var r = EditorGUILayout.BeginHorizontal();
+        GUILayout.Space(17);
+        GUILayout.Label("Imitation learning");
+        if (GUILayout.Button("Record")) {
+			_mode = QAI.QAIMode.Imitating;
+            _currentStory = story;
+            ChangePlayMode();
+        }
+        EditorGUILayout.EndHorizontal();
+        foreach (var exp in story.ImitationExperiences) {
+            r = EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(35);
+            GUILayout.Label(exp.Name);
+            if (GUILayout.Button("Delete")) {
+                story.ImitationExperiences.Remove(exp);
+                story.Save(STORY_PATH);
+                return;
             }
             EditorGUILayout.EndHorizontal();
-            foreach (var exp in story.ImitationExperiences) {
-                r = EditorGUILayout.BeginHorizontal();
-                GUILayout.Space(35);
-                GUILayout.Label(exp.Name);
-                if (GUILayout.Button("Delete")) {
-                    story.ImitationExperiences.Remove(exp);
-                    story.Save(STORY_PATH);
-                    return;
-                }
-                EditorGUILayout.EndHorizontal();
-            }
-//        }
-//        var style = new GUIStyle(GUI.skin.button) {margin = new RectOffset(50, 50, 0, 0)};
-//        if (GUILayout.Button("New training story", style)) {
-//            var nStory = new QStory();
-//			nStory.Save(STORY_PATH);
-//			_stories.Add(nStory);
-//		}
-//		EditorGUILayout.Space();
+        }
 
         EditorGUILayout.EndScrollView();
 
 
 		// Set the values in the AI manager to be saved with the scene.
 		if(_manager.ActiveAgent != _agent 
-		   || _manager.Learning != _learning
 		   || _manager.Remake != _remake
 		   || _manager.Terminator != _term
-		   || _manager.Testing != _testing
 		   || _manager.ActiveAgent != _agent
-		   || _manager.Tester != _tester) {
+		   || _manager.Tester != _tester
+		   || _manager.Mode != _mode) {
 			Debug.Log ("Creating undo operation");
 			EditorApplication.MarkSceneDirty();
 		}
-		_manager.Imitating = _imitation;
-		_manager.Learning = _learning;
 		_manager.Remake = _remake;
 		_manager.Terminator = _term;
-		_manager.Testing = _testing;
 		_manager.ActiveAgent = _agent;
 		_manager.Tester = _tester;
+
+		_manager.Mode = _mode;
 
         if (_forceStart) {
             _forceStart = false;
@@ -211,25 +157,17 @@ public class QAIOptionWindow : EditorWindow {
 				EditorUtility.DisplayDialog("QAI", "No agent is currently set. Unable to start training.", "OK");
 			} 
 
-			if (start && _agent != null) {
-				_remake = false;
-				_learning = true;
+			_remake = remake && _agent != null;
+			if((start || remake) && _agent != null) {
+				_mode = QAI.QAIMode.Learning;
 				_learnAllStories = true;
 				ChangePlayMode();
-			}
-
-			if (remake && _agent != null) {
-				_remake = true;
-				_learning = true;
-				_learnAllStories = true;
-				ChangePlayMode ();
 			}
 
 			//TESTER
 			var testButton = GUILayout.Button("Run Tester");
 			if(testButton && _manager.Tester != null) {
-				_testing = true;
-				_learning = false;
+				_mode = QAI.QAIMode.Testing;
 				ChangePlayMode();
 			} else if(testButton && _manager.Tester == null) {
 				EditorUtility.DisplayDialog("QAI", "No tester is set. Please create a testing manager and assign it in the editor.", "OK");
@@ -282,8 +220,7 @@ public class QAIOptionWindow : EditorWindow {
 			_init = false;
 			Init();
 
-			_testing = false;
-            _imitation = false;
+			_mode = QAI.QAIMode.Runnning;
 			_currentStory = null;
 			_initNext = true;
 
@@ -293,9 +230,9 @@ public class QAIOptionWindow : EditorWindow {
                 LoadNextStory();
                 _remake = false;
                 _forceStart = true;
+				_mode = QAI.QAIMode.Learning;
             }
             else {
-				_learning = false;
                 _learnAllStories = false;
                 _learningStory = 0;
 				_remake = false;
@@ -314,16 +251,12 @@ public class QAIOptionWindow : EditorWindow {
     private void LoadNextStory() {
         Debug.Log("Continuing on to next story");
         var story = _stories[_learningStory];
-//		if(EditorApplication.currentScene != story.ScenePath)
-//        	EditorApplication.OpenScene(story.ScenePath);
-//        _term = story.Iterations;
     }
 
 	private QAI CreateManager() {
 		var managers = FindObjectsOfType<QAI>();
 		if(managers.Length > 1) {
 			Debug.Log ("[QAI] - More than one manager detected...");
-//			managers.ForEach(g => GameObject.DestroyImmediate(g));
 		}
 
 		var manager = managers.FirstOrDefault();
