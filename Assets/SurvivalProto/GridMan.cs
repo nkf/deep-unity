@@ -54,6 +54,10 @@ public class GridMan : MonoBehaviour, QAgent {
             );
     }
 
+    public AIID AI_ID() {
+        throw new NotImplementedException();
+    }
+
     private const int AbsGridX = 30;
     private const int AbsGridY = 30;
     private double[][] GetAbsoluteStateGrid() {

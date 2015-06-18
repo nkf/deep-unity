@@ -7,6 +7,7 @@ public struct QState {
     public readonly Matrix<float>[] Features;
     public readonly float Reward;
     public readonly bool IsTerminal;
+    public int Size { get { return Features[0].RowCount; } }
     public QState(Matrix<float>[] features, float reward, bool isTerminal) : this() {
         Features = features;
         Reward = reward;

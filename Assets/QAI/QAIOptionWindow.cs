@@ -30,7 +30,7 @@ public class QAIOptionWindow : EditorWindow {
 	private GameObject _agent;
 	private QTester _tester;
 
-	private QAI.QAIMode _mode;
+	private QAIMode _mode;
 
     // Add menu named "My Window" to the Window menu
     [MenuItem("QAI/Options")]
@@ -93,7 +93,7 @@ public class QAIOptionWindow : EditorWindow {
         GUILayout.Space(17);
         GUILayout.Label("Imitation learning");
         if (GUILayout.Button("Record")) {
-			_mode = QAI.QAIMode.Imitating;
+			_mode = QAIMode.Imitating;
             _currentStory = story;
             ChangePlayMode();
         }
@@ -159,7 +159,7 @@ public class QAIOptionWindow : EditorWindow {
 
 			_remake = remake && _agent != null;
 			if((start || remake) && _agent != null) {
-				_mode = QAI.QAIMode.Learning;
+				_mode = QAIMode.Learning;
 				_learnAllStories = true;
 				ChangePlayMode();
 			}
@@ -167,7 +167,7 @@ public class QAIOptionWindow : EditorWindow {
 			//TESTER
 			var testButton = GUILayout.Button("Run Tester");
 			if(testButton && _manager.Tester != null) {
-				_mode = QAI.QAIMode.Testing;
+				_mode = QAIMode.Testing;
 				ChangePlayMode();
 			} else if(testButton && _manager.Tester == null) {
 				EditorUtility.DisplayDialog("QAI", "No tester is set. Please create a testing manager and assign it in the editor.", "OK");
@@ -220,7 +220,7 @@ public class QAIOptionWindow : EditorWindow {
 			_init = false;
 			Init();
 
-			_mode = QAI.QAIMode.Runnning;
+			_mode = QAIMode.Runnning;
 			_currentStory = null;
 			_initNext = true;
 
@@ -230,7 +230,7 @@ public class QAIOptionWindow : EditorWindow {
                 LoadNextStory();
                 _remake = false;
                 _forceStart = true;
-				_mode = QAI.QAIMode.Learning;
+				_mode = QAIMode.Learning;
             }
             else {
                 _learnAllStories = false;

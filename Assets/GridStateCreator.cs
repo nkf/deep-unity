@@ -35,7 +35,7 @@ public class GridStateCreator : QTester {
         _history.AddFirst(sars);
         if (_history.Count >= HistorySize) {
             if (DetectCycle(_history)) {
-                QAI.EndTestRun();
+                //QAI.EndTestRun();
             }
             _history.RemoveLast();
         }

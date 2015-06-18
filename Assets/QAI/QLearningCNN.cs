@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using C5;
 using MathNet.Numerics.LinearAlgebra;
@@ -13,18 +14,17 @@ public class QLearningCNN : QLearning {
     private const float EpisilonStart = 0.5f;
     private const float EpisilonEnd = 0.1f;
     private readonly Param Epsilon = t => EpisilonStart - ((EpisilonEnd - EpisilonStart) / QAI.NumIterations()) * t;
-    private const float Discount = 0.99f;
+    private const float Discount = 0.95f;
 
-    private const bool PrioritySweeping = true;
+    private const bool PrioritySweeping = false;
 
     private const int BatchSize = 10;
     private const int PredecessorCap = 6;
     private const float PriorityThreshold = 0.01f;
 
     private const float LearningRate = 0.01f;
-    private const float Momentum = 0.0f;
+    private const float Momentum = 0.9f;
 
-    private int _size;
     private ConvolutionalNetwork _net;
     private Backprop<Matrix<float>[]> _trainer;
     private List<SARS> _imitationExps;
@@ -34,6 +34,10 @@ public class QLearningCNN : QLearning {
 
     private Dictionary<QState, List<SARS>> _preds = new Dictionary<QState,List<SARS>>(1000);
     private IntervalHeap<SARS> _pq = new IntervalHeap<SARS>(200, new SARSPrioritizer());
+
+    private QState _prevState;
+    private QAction _prevAction;
+    private bool _remake;
 
     private class SARSPrioritizer : IComparer<SARS> {
         public int Compare(SARS x, SARS y) {
@@ -52,10 +56,8 @@ public class QLearningCNN : QLearning {
     }
 
     public override void LoadModel() {
-        Initialize();
-        _net = ConvolutionalNetwork.Load(MODEL_PATH);
-        //_net = MultiLayerPerceptron.Load(MODEL_PATH);
-        _trainer = new Backprop<Matrix<float>[]>(_net, LearningRate, Momentum);
+        _remake = false;
+        InitModel(0);
     }
 
     public override void SaveModel() {
@@ -63,53 +65,54 @@ public class QLearningCNN : QLearning {
     }
 
     public override void RemakeModel() {
+        _remake = true;
+    }
+
+    private void InitModel(int size) {
         Initialize();
-        _size = Agent.GetState().Features[0].RowCount;
-        _net = new ConvolutionalNetwork(_size, _amap.Count, new CNNArgs {FilterSize = 5, FilterCount = 3, PoolLayerSize = 2, Stride = 2});
-        //_net = new MultiLayerPerceptron(5, new[] { 50, 3 });
+        if (_remake) {
+            _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs {FilterSize = 5, FilterCount = 3, PoolLayerSize = 2, Stride = 2});
+        } else {
+            _net = ConvolutionalNetwork.Load(MODEL_PATH);
+        }
         _trainer = new Backprop<Matrix<float>[]>(_net, LearningRate, Momentum);
     }
 
-    public override IEnumerator<YieldInstruction> RunEpisode(QAI.EpisodeCallback callback) {
-        Iteration++;
-        var s = Agent.GetState();
-        var a = default(QAction);
-        var prevS = default(QState);
-        while(!s.IsTerminal) {
-            if (s.Equals(prevS)) {
-                a.Invoke();
-                s = Agent.GetState();
-                yield return new WaitForFixedUpdate();
-                continue;
-            }
-            // Experience step.
-            a = EpsilonGreedy(Epsilon(Iteration));
-            var sars = Agent.MakeSARS(a);
-            if (PrioritySweeping) {
+    public override IEnumerator<YieldInstruction> RunEpisode(QAI.EpisodeCallback callback) {throw new NotImplementedException();}
+
+
+    public Action GetLearningAction(QState state) {
+        if(_net == null) InitModel(state.Size);
+        if (state.IsTerminal)
+            return null;
+        if (state.Equals(_prevState)) 
+            return _prevAction.Action;
+        var a = EpsilonGreedy(Epsilon(Iteration));
+        _prevState = state;
+        _prevAction = a;
+        return () => {
+            a.Invoke();
+            var s = Agent.GetState();
+            var sars = new SARS(state, a, s.Reward, s);
+            if(PrioritySweeping) {
                 PutPredecessor(sars);
                 EnqueueSARS(sars);
-                while (_pq.Count > 100)
+                while(_pq.Count > 100)
                     _pq.DeleteMin();
             } else {
                 _qexp.Store(sars, 100);
             }
-            s = sars.NextState;
-            prevS = sars.State;
             // Learning step.
-            if (PrioritySweeping)
+            if(PrioritySweeping)
                 PrioritizedSweeping();
             else
                 TrainModel();
-
-            // End of frame.
-            yield return new WaitForFixedUpdate();
-        }
-        callback();
+        };
     }
     
     public override ActionValueFunction Q(QState s) {
         _output = _net.Compute(s.Features);
-        //Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}", _output.Average()));
+        Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}", _output.Average()));
         return a => _output[_amap[a.ActionId]];
     }
 
@@ -120,6 +123,10 @@ public class QLearningCNN : QLearning {
             .SelectMany(e => e).ToList();
         Debug.Log("Loading " + _imitationExps.Count + " imitation experiences");
         _qexp = new QExperience();
+        foreach (var imitationExp in _imitationExps) {
+            _qexp.Store(imitationExp);
+            PutPredecessor(imitationExp);
+        }
     }
 
     public List<SARS> SampleBatch(int size) {
