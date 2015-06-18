@@ -30,6 +30,6 @@ public static class QAgentExtension {
     public static SARS MakeSARS(this QAgent agent, QAction move, QState state) {
         move.Invoke();
         var s0 = agent.GetState();
-        return new SARS(state, move, s0.Reward, s0);
+        return new SARS(state, move, s0);
     }
 }

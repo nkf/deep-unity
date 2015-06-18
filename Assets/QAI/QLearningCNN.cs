@@ -32,11 +32,12 @@ public class QLearningCNN : QLearning {
     private Dictionary<string, int> _amap;
     private Vector<float> _output;
 
-    private Dictionary<QState, List<SARS>> _preds = new Dictionary<QState,List<SARS>>(1000);
-    private IntervalHeap<SARS> _pq = new IntervalHeap<SARS>(200, new SARSPrioritizer());
+    private readonly Dictionary<QState, List<SARS>> _preds = new Dictionary<QState,List<SARS>>(1000);
+    private readonly IntervalHeap<SARS> _pq = new IntervalHeap<SARS>(200, new SARSPrioritizer());
 
     private QState _prevState;
     private QAction _prevAction;
+    private bool _isFirstTurn = true;
     private bool _remake;
 
     private class SARSPrioritizer : IComparer<SARS> {
@@ -71,7 +72,7 @@ public class QLearningCNN : QLearning {
     private void InitModel(int size) {
         Initialize();
         if (_remake) {
-            _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs {FilterSize = 5, FilterCount = 3, PoolLayerSize = 2, Stride = 2});
+            _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs {FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2});
         } else {
             _net = ConvolutionalNetwork.Load(MODEL_PATH);
         }
@@ -80,34 +81,45 @@ public class QLearningCNN : QLearning {
 
     public override IEnumerator<YieldInstruction> RunEpisode(QAI.EpisodeCallback callback) {throw new NotImplementedException();}
 
-
     public Action GetLearningAction(QState state) {
-        if(_net == null) InitModel(state.Size);
-        if (state.IsTerminal)
-            return null;
-        if (state.Equals(_prevState)) 
-            return _prevAction.Action;
+        if (_net == null) InitModel(state.Size);
+        if (!_isFirstTurn) {
+            if (state.IsTerminal) {
+                StoreSARS(new SARS(_prevState, _prevAction, state));
+                _isFirstTurn = true;
+                return null;
+            }
+            if (state.Equals(_prevState)) {
+                return _prevAction.Action;
+            }
+            StoreSARS(new SARS(_prevState, _prevAction, state));
+        }
         var a = EpsilonGreedy(Epsilon(Iteration));
-        _prevState = state;
         _prevAction = a;
+        _prevState = state;
+        _isFirstTurn = false;
         return () => {
             a.Invoke();
-            var s = Agent.GetState();
-            var sars = new SARS(state, a, s.Reward, s);
-            if(PrioritySweeping) {
-                PutPredecessor(sars);
-                EnqueueSARS(sars);
-                while(_pq.Count > 100)
-                    _pq.DeleteMin();
-            } else {
-                _qexp.Store(sars, 100);
-            }
-            // Learning step.
-            if(PrioritySweeping)
-                PrioritizedSweeping();
-            else
-                TrainModel();
+            Train();
         };
+    }
+
+    private void StoreSARS(SARS sars) {
+        if(PrioritySweeping) {
+            PutPredecessor(sars);
+            EnqueueSARS(sars);
+            while(_pq.Count > 100)
+                _pq.DeleteMin();
+        } else {
+            _qexp.Store(sars, 100);
+        }
+    }
+
+    private void Train() {
+        if(PrioritySweeping)
+            PrioritizedSweeping();
+        else
+            TrainModel();
     }
     
     public override ActionValueFunction Q(QState s) {
