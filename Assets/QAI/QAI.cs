@@ -55,7 +55,7 @@ public class QAI : MonoBehaviour {
 
     private IEnumerator<YieldInstruction> RunTester(QAgent agent) {
         _abortTestRun = false;
-        Time.timeScale = 1f;
+        Time.timeScale = 5f;
         var sceneSetup = Tester.SetupNextTest(agent);
         if(!sceneSetup) {
             Tester.OnRunComplete();
@@ -105,7 +105,7 @@ public class QAI : MonoBehaviour {
                 _qlearning.SetAgent(agent);
                 DontDestroyOnLoad(gameObject);
                 if (Learning) {
-                    Time.timeScale = 4f;
+                    Time.timeScale = 2f;
                     if (Remake)
                         _qlearning.RemakeModel();
                     else

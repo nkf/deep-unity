@@ -15,14 +15,14 @@ public class QLearningCNN : QLearning {
     private readonly Param Epsilon = t => EpisilonStart - ((EpisilonEnd - EpisilonStart) / QAI.NumIterations()) * t;
     private const float Discount = 0.99f;
 
-    private const bool PrioritySweeping = true;
+    private const bool PrioritySweeping = false;
 
     private const int BatchSize = 10;
     private const int PredecessorCap = 6;
     private const float PriorityThreshold = 0.01f;
 
-    private const float LearningRate = 0.01f;
-    private const float Momentum = 0.0f;
+    private const float LearningRate = 0.1f;
+    private const float Momentum = 0.9f;
 
     private int _size;
     private ConvolutionalNetwork _net;

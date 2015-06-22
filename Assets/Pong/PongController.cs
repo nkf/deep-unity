@@ -117,13 +117,13 @@ class PongController : MonoBehaviour, QAgent {
         //_grid.Populate((bo,c) => c.y == bpy ? 1 : 0); //one line
         //_grid.Populate((bo,c) => gbp.HasValue && gbp.Value.Equals(c) ? 1 : 0); //single
         _grid.Populate((bo, c) => {
-            //var ham = gbp.HasValue ? HammingDistance(gbp.Value, c) : int.MaxValue;
-            //return ham < 1 ? 255 : ham < 2 ? 128 : 0;
-            var x = bo.center.x;
+            var ham = gbp.HasValue ? HammingDistance(gbp.Value, c) : int.MaxValue;
+            return ham < 1 ? 255 : ham < 2 ? 128 : 0;
+            /*var x = bo.center.x;
             var v = bo.Contains(new Vector3(x, _game.Border.yMin)) || bo.Contains(new Vector3(x, _game.Border.yMax)) ? 50 : 0f; //walls
             v = bo.Contains(new Vector3(controller.x, controller.center.y)) ? 100 : v; //controller
             v = gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 200f : v; //ball
-            return v;
+            return v;*/
         });
         var state = _grid.Matrix.Clone();
         //var state = MathNet.Numerics.LinearAlgebra.Vector<float>.Build.DenseOfArray(new[] { bp.x, bp.y, rbp.x, rbp.y, transform.position.y });
