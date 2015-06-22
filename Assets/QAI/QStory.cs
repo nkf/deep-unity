@@ -58,4 +58,8 @@ public class QStory {
 	public static List<QStory> LoadAll(string dir) {
 		return Directory.GetFiles(dir, "*.xml").Select(filepath => Load(filepath)).ToList();
 	}
+
+	public static List<QStory> LoadForScene(string dir, string scenePath) {
+		return LoadAll(dir).Where(s => s.ScenePath == scenePath).ToList();
+	}
 }
