@@ -39,7 +39,8 @@ public class QAI : MonoBehaviour {
             _instance.Init(agent);
         }
         _instance._agent = agent;
-        _instance._qlearning.Agent = agent;
+        if(_instance.Mode != QAIMode.Imitating) 
+			_instance._qlearning.Agent = agent;
     }
 
     private void Init(QAgent agent) {

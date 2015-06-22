@@ -84,8 +84,10 @@ public class QAIOptionWindow : EditorWindow {
 		}
 
         //IMITATION LEARNING
-        if (_stories.Count == 0)
-            _stories.Add(new QStory());
+		if(_stories.Count == 0) {
+			_stories.Add(new QStory());
+			_stories[0].Save(STORY_PATH);
+		}
         var story = _stories[0];
 		GUILayout.Space(20);
 		EditorGUILayout.LabelField("Training data");
