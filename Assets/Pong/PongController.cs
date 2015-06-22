@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using System.Collections;
 
@@ -27,12 +28,18 @@ class PongController : MonoBehaviour, QAgent {
         StartPosistion = transform.position;
         _game = FindObjectOfType<PongGame>();
         _ball = FindObjectOfType<PongBall>();
-        //_grid = new QGrid(4, 10, 1, transform, new Vector3(10,0,0), 6f, 1.5f, 6f);
-        _grid = new Q2DGrid(11, transform, new GridSettings{ Offset = new Vector3(5,0,0), ResolutionX = 1f});
+        if (Side == Player.Player1) {
+            _grid = new Q2DGrid(17, transform,
+                new GridSettings {Offset = new Vector3(8.2f, 0, 0), ResolutionX = 1.2f, ResolutionY = 1.2f});
+            QAI.InitAgent(this);
+        }
     }
 
     void FixedUpdate() {
-        if (Side == Player.Player1) _grid.DebugDraw(v => v > 128 ? Color.red : v > 1 ? Color.yellow : Color.magenta);
+        if (Side == Player.Player1) {
+            _grid.DebugDraw(v => Color.Lerp(Color.black, Color.white, v/250f));
+            QAI.GetAction(GetState())();
+        }
     }
 
     IEnumerator Movement() {
@@ -133,25 +140,12 @@ class PongController : MonoBehaviour, QAgent {
             .Concat(new double[]{rbp.x, rbp.y, topDist, botDist})
             .ToArray();
         */
-        
-        
-//        var bv = _ball.Velocity;
-//
-//        var rbpn = rbp.normalized;
-//        var rbpm = rbp.magnitude;
-//
-//        var bvn = bv.normalized;
-//        var bvm = bv.magnitude;
-//        var state =
-//            _nv[rbpn.x]
-//            .Concat(_nv[rbpn.y])
-//            .Concat(_vm[rbpm])
-//            .Concat(_nv[bvn.x])
-//            .Concat(_nv[bvn.y])
-//            .Concat(_vm[bvm])
-//            .ToArray();
-//            new double[] {rbpn.x, rbpn.y, rbpm/10, bvn.x, bvn.y, bvm/5};
+       
         return new QState(new[] { state }, reward, terminal);
+    }
+
+    public AIID AI_ID() {
+        return new AIID("PongAI");
     }
 
     private void SetGridValues(Q2DGrid grid, IEnumerable<Coordinates2D?> coords, float value) {

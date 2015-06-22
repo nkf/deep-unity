@@ -1,4 +1,4 @@
-﻿using QNetwork.CNN;
+using QNetwork.CNN;
 using QNetwork.Experimental;
 using QNetwork.MLP;
 using MathNet.Numerics.LinearAlgebra;

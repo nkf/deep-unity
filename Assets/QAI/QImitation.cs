@@ -18,7 +18,7 @@ public class QImitation {
         var c = _experience.Count;
         if (c > 0) {
             var sars = _experience[c-1];
-            _experience[c-1] = new SARS(sars.State, sars.Action, state.Reward, state);
+            _experience[c-1] = new SARS(sars.State, sars.Action, state);
         }
     } 
 

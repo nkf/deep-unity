@@ -51,14 +51,15 @@ namespace QNetwork.Training {
         }
 
         public void SGD(T features, Vector<float> labels) {
-            _net.Compute(features).CopyTo(Error[0]);
-            labels.Subtract(Error[0], Error[0]);
+			_net.Compute(features);
+			labels.CopyTo(Error[0]);
+			Error[0].Subtract(_net.Output(), Error[0]);
             _net.Accept(this, new BackpropState());
         }
 
         public void SGD(T features, TargetIndexPair p) {
             Error[0].Clear();
-            Error[0][p.Index] = p.Target - _net.Compute(features)[p.Index];
+            Error[0].At(p.Index, p.Target - _net.Compute(features)[p.Index]);
             _net.Accept(this, new BackpropState());
         }
 

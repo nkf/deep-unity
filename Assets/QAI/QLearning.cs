@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
 using Random = System.Random;
@@ -7,11 +8,12 @@ using Random = System.Random;
 public abstract class QLearning {
 
     private const double TIE_BREAK = 1e-9;
-    private Random rng = new Random();
+    private readonly Random rng = new Random();
 
-    protected QAgent Agent { get; private set; }
-    protected IList<QAction> Actions { get; private set; }
-    public int Iteration { get; protected set; }
+    private QAgent _agent;
+    public QAgent Agent { get { return _agent; } set { SetAgent(value);} }
+    public ReadOnlyCollection<QAction> Actions { get; private set; }
+    public int Iteration { get; set; }
 
     public delegate double Param(double t);
     public delegate double ActionValueFunction(QAction a);
@@ -23,13 +25,16 @@ public abstract class QLearning {
     public abstract ActionValueFunction Q(QState s);
     public abstract IEnumerator<YieldInstruction> RunEpisode(QAI.EpisodeCallback callback);
 
-    public void SetAgent(QAgent agent) {
-        Agent = agent;
-        Actions = agent.GetQActions();
+    private void SetAgent(QAgent agent) {
+        _agent = agent;
+        Actions = agent.GetQActions().AsReadOnly();
     }
 
     public QAction GreedyPolicy() {
-        var s = Agent.GetState();
+        return GreedyPolicy(Agent.GetState());
+    }
+
+    public QAction GreedyPolicy(QState s) {
         var q = Q(s);
         return ValidActions().Select(a => new { v = q(a) + TIE_BREAK * rng.NextDouble(), a }).OrderByDescending(va => va.v).First().a;
     }

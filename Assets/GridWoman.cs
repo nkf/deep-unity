@@ -121,6 +121,10 @@ public class GridWoman : MonoBehaviour, QAgent {
             );
     }
 
+    public AIID AI_ID() {
+        throw new NotImplementedException();
+    }
+
 
     public void Update() {
         _grid.DebugDraw(value => value == 0 ? Color.red : value == 1 ? Color.gray : Color.yellow);
