@@ -53,7 +53,7 @@ public class QAIOptionWindow : EditorWindow {
 		_term = _manager.Terminator;
         _sceneList = GetScenes().ToArray();
         Directory.CreateDirectory(STORY_PATH);
-        _stories = QStory.LoadAll(STORY_PATH); // Should read this when serialization works
+        _stories = QStory.LoadForScene(STORY_PATH, EditorApplication.currentScene); // Should read this when serialization works
         _currentStory = _currentStory == null ? null : _stories.Find(s => s.Id == _currentStory.Id);
     }
 
@@ -85,8 +85,10 @@ public class QAIOptionWindow : EditorWindow {
 
         //IMITATION LEARNING
 		if(_stories.Count == 0) {
-			_stories.Add(new QStory());
-			_stories[0].Save(STORY_PATH);
+			var newStory = new QStory();
+			newStory.ScenePath = EditorApplication.currentScene;
+			newStory.Save(STORY_PATH);
+			_stories.Add(newStory);
 		}
         var story = _stories[0];
 		GUILayout.Space(20);
