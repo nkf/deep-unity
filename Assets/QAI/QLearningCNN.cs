@@ -22,7 +22,7 @@ public class QLearningCNN : QLearning {
     private const int PredecessorCap = 6;
     private const float PriorityThreshold = 0.01f;
 
-    private const float LearningRate = 0.001f;
+    private const float LearningRate = 0.01f;
     private const float Momentum = 0.9f;
 
     private ConvolutionalNetwork _net;
@@ -46,19 +46,26 @@ public class QLearningCNN : QLearning {
         }
     }
 
-    private void Initialize() {
-        LoadExperienceDatabase();
-
+    private void Initialize(int size) {
         // Action-index mapping.
         _amap = new Dictionary<string, int>();
         int ix = 0;
         foreach(QAction a in Actions)
             _amap[a.ActionId] = ix++;
+        // Model.
+        if (_remake) {
+            _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2 });
+        } else {
+            _net = ConvolutionalNetwork.Load(MODEL_PATH);
+        }
+        _trainer = new Backprop<Matrix<float>[]>(_net, LearningRate, Momentum);
+        // Experience replay.
+        LoadExperienceDatabase();
     }
 
     public override void LoadModel() {
         _remake = false;
-        InitModel(0);
+        Initialize(0);
     }
 
     public override void SaveModel() {
@@ -69,20 +76,10 @@ public class QLearningCNN : QLearning {
         _remake = true;
     }
 
-    private void InitModel(int size) {
-        Initialize();
-        if (_remake) {
-            _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs {FilterSize = 5, FilterCount = 3, PoolLayerSize = 2, Stride = 2});
-        } else {
-            _net = ConvolutionalNetwork.Load(MODEL_PATH);
-        }
-        _trainer = new Backprop<Matrix<float>[]>(_net, LearningRate, Momentum);
-    }
-
     public override IEnumerator<YieldInstruction> RunEpisode(QAI.EpisodeCallback callback) {throw new NotImplementedException();}
 
     public Action GetLearningAction(QState state) {
-        if (_net == null) InitModel(state.Size);
+        if (_net == null) Initialize(state.Size);
         if (!_isFirstTurn) {
             if (state.IsTerminal) {
                 StoreSARS(new SARS(_prevState, _prevAction, state));
@@ -138,6 +135,7 @@ public class QLearningCNN : QLearning {
         foreach (var imitationExp in _imitationExps) {
             _qexp.Store(imitationExp);
             PutPredecessor(imitationExp);
+            EnqueueSARS(imitationExp);
         }
     }
 

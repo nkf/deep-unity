@@ -10,7 +10,8 @@ public class QImitation {
     public bool Imitate(QAgent agent, QAction a) {
         var sars = agent.MakeSARS(a);
         ModLastExp(sars.State);
-        _experience.Store(sars);
+        if (!sars.State.Equals(sars.NextState))
+            _experience.Store(sars);
         return sars.NextState.IsTerminal;
     }
     //Take the current state and set it as the last's state "next state"

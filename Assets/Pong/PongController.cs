@@ -29,8 +29,8 @@ class PongController : MonoBehaviour, QAgent {
         _game = FindObjectOfType<PongGame>();
         _ball = FindObjectOfType<PongBall>();
         if (Side == Player.Player1) {
-            _grid = new Q2DGrid(19, transform,
-                new GridSettings {Offset = new Vector3(9.2f, 0, 0), ResolutionX = 1f, ResolutionY = 1f});
+            _grid = new Q2DGrid(21, transform,
+                new GridSettings {Offset = new Vector3(11.2f, 0, 0), ResolutionX = 1.1f, ResolutionY = 1.1f});
             QAI.InitAgent(this);
         }
     }
@@ -125,12 +125,11 @@ class PongController : MonoBehaviour, QAgent {
         //_grid.Populate((bo,c) => gbp.HasValue && gbp.Value.Equals(c) ? 1 : 0); //single
         _grid.Populate((bo, c) => {
             var ham = gbp.HasValue ? HammingDistance(gbp.Value, c) : int.MaxValue;
-            return ham < 1 ? 255 : ham < 2 ? 128 : 0;
-            /*var x = bo.center.x;
+            var x = bo.center.x;
             var v = bo.Contains(new Vector3(x, _game.Border.yMin)) || bo.Contains(new Vector3(x, _game.Border.yMax)) ? 50 : 0f; //walls
             v = bo.Contains(new Vector3(controller.x, controller.center.y)) ? 100 : v; //controller
-            v = gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 200f : v; //ball
-            return v;*/
+            v = ham < 1 ? 255 : ham < 2 ? 128 : v; //ball
+            return v;
         });
         var state = _grid.Matrix.Clone();
         //var state = MathNet.Numerics.LinearAlgebra.Vector<float>.Build.DenseOfArray(new[] { bp.x, bp.y, rbp.x, rbp.y, transform.position.y });

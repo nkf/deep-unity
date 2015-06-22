@@ -2,19 +2,22 @@
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
+using Random = System.Random;
 
 [Serializable]
 public class QExperience : IEnumerable<SARS> {
     private readonly List<SARS> _data = new List<SARS>();
+    private readonly Random _rng = new Random();
 
     public void Store(SARS sars, int maxSize) {
-        Store(sars);
+        /*Store(sars);
         if (_data.Count > maxSize)
-            _data.RemoveAt(0); // TODO: Expensive on List.
+            _data.RemoveAt(0); // TODO: Expensive on List.*/
+        if (_data.Count > maxSize)
+            _data[_rng.Next(_data.Count)] = sars;
     }
 
     public void Store(SARS sars) {
-        if (sars.State.Equals(sars.NextState)) return;
         _data.Add(sars);
     }
 
