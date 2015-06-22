@@ -16,7 +16,7 @@ public class QLearningCNN : QLearning {
     private readonly Param Epsilon = t => EpisilonStart - ((EpisilonEnd - EpisilonStart) / QAI.NumIterations()) * t;
     private const float Discount = 0.95f;
 
-    private const bool PrioritySweeping = false;
+    private const bool PrioritySweeping = true;
 
     private const int BatchSize = 20;
     private const int PredecessorCap = 6;
@@ -54,7 +54,7 @@ public class QLearningCNN : QLearning {
             _amap[a.ActionId] = ix++;
         // Model.
         if (_remake) {
-            _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2 });
+            _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs { FilterSize = 7, FilterCount = 3, PoolLayerSize = 2, Stride = 2 });
         } else {
             _net = ConvolutionalNetwork.Load(MODEL_PATH);
         }
