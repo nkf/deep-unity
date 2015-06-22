@@ -84,6 +84,8 @@ public class QAIOptionWindow : EditorWindow {
 		}
 
         //IMITATION LEARNING
+        if (_stories.Count == 0)
+            _stories.Add(new QStory());
         var story = _stories[0];
 		GUILayout.Space(20);
 		EditorGUILayout.LabelField("Training data");
@@ -120,7 +122,7 @@ public class QAIOptionWindow : EditorWindow {
 		   || _manager.ActiveAgent != _agent
 		   || _manager.Tester != _tester
 		   || _manager.Mode != _mode) {
-			Debug.Log ("Creating undo operation");
+			//Debug.Log ("Creating undo operation");
 			EditorApplication.MarkSceneDirty();
 		}
 		_manager.Remake = _remake;

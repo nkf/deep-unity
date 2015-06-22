@@ -86,6 +86,7 @@ public class QAI : MonoBehaviour {
         else               SetupTest(state);
     }
     private void RunTest(QState state) {
+        Time.timeScale = TimeStep * 6;
         //End run if terminal
         if(state.IsTerminal) {
             Tester.OnTestComplete(state.Reward);

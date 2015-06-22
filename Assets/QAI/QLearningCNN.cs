@@ -18,11 +18,11 @@ public class QLearningCNN : QLearning {
 
     private const bool PrioritySweeping = false;
 
-    private const int BatchSize = 10;
+    private const int BatchSize = 20;
     private const int PredecessorCap = 6;
     private const float PriorityThreshold = 0.01f;
 
-    private const float LearningRate = 0.01f;
+    private const float LearningRate = 0.001f;
     private const float Momentum = 0.9f;
 
     private ConvolutionalNetwork _net;
@@ -72,7 +72,7 @@ public class QLearningCNN : QLearning {
     private void InitModel(int size) {
         Initialize();
         if (_remake) {
-            _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs {FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2});
+            _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs {FilterSize = 5, FilterCount = 3, PoolLayerSize = 2, Stride = 2});
         } else {
             _net = ConvolutionalNetwork.Load(MODEL_PATH);
         }
@@ -111,7 +111,7 @@ public class QLearningCNN : QLearning {
             while(_pq.Count > 100)
                 _pq.DeleteMin();
         } else {
-            _qexp.Store(sars, 100);
+            _qexp.Store(sars, 1000);
         }
     }
 
@@ -124,7 +124,7 @@ public class QLearningCNN : QLearning {
     
     public override ActionValueFunction Q(QState s) {
         _output = _net.Compute(s.Features);
-        Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}", _output.Average()));
+        //Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}", _output.Average()));
         return a => _output[_amap[a.ActionId]];
     }
 

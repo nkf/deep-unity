@@ -29,8 +29,8 @@ class PongController : MonoBehaviour, QAgent {
         _game = FindObjectOfType<PongGame>();
         _ball = FindObjectOfType<PongBall>();
         if (Side == Player.Player1) {
-            _grid = new Q2DGrid(17, transform,
-                new GridSettings {Offset = new Vector3(8.2f, 0, 0), ResolutionX = 1.2f, ResolutionY = 1.2f});
+            _grid = new Q2DGrid(19, transform,
+                new GridSettings {Offset = new Vector3(9.2f, 0, 0), ResolutionX = 1f, ResolutionY = 1f});
             QAI.InitAgent(this);
         }
     }
@@ -90,7 +90,7 @@ class PongController : MonoBehaviour, QAgent {
         if (b.Overlaps(controller)) {
             reward = 1;
             terminal = winner.HasValue;
-            terminal = true;
+            //terminal = true;
         } else {
             terminal = winner.HasValue;
             reward = terminal ? (winner.Value == Side ? 1 : 0) : 0;
