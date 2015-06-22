@@ -54,9 +54,6 @@ namespace QNetwork.Training {
 			_net.Compute(features);
 			labels.CopyTo(Error[0]);
 			Error[0].Subtract(_net.Output(), Error[0]);
-
-//			_net.Compute(features).CopyTo(Error[0]);
-//            labels.Subtract(Error[0], Error[0]);
             _net.Accept(this, new BackpropState());
         }
 

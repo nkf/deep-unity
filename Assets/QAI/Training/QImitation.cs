@@ -11,17 +11,18 @@ namespace QAI.Training {
         public bool Imitate(QAgent agent, QAction a) {
             var sars = agent.MakeSARS(a);
             ModLastExp(sars.State);
-            _experience.Store(sars);
+            if(!sars.State.Equals(sars.NextState))
+                _experience.Store(sars);
             return sars.NextState.IsTerminal;
         }
         //Take the current state and set it as the last's state "next state"
         private void ModLastExp(QState state) {
             var c = _experience.Count;
-            if (c > 0) {
-                var sars = _experience[c-1];
-                _experience[c-1] = new SARS(sars.State, sars.Action, state);
+            if(c > 0) {
+                var sars = _experience[c - 1];
+                _experience[c - 1] = new SARS(sars.State, sars.Action, state);
             }
-        } 
+        }
 
         public QImitationStorage CreateStorageItem(string id) {
             return new QImitationStorage(id, _experience);
@@ -42,13 +43,13 @@ namespace QAI.Training {
         private int NextSaveId(string directory, string prefix) {
             var files = Directory.GetFiles(directory);
             var idList = new List<int>();
-            foreach (var file in files) {
+            foreach(var file in files) {
                 var name = Path.GetFileNameWithoutExtension(file);
                 var split = name.Split('-');
                 if(split[0] == prefix) idList.Add(int.Parse(split[1]));
             }
             var id = 0;
-            while (idList.Contains(id)) id++;
+            while(idList.Contains(id)) id++;
             return id;
         }
 
