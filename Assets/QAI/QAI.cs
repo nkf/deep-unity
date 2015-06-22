@@ -76,10 +76,10 @@ public class QAI : MonoBehaviour {
         if(_qlearning.Iteration >= Terminator) {
             _qlearning.SaveModel();
             EditorApplication.isPlaying = false;
-        } else {
-            Application.LoadLevel(Application.loadedLevel);
+        } else if(!Application.isLoadingLevel) {
+			Application.LoadLevel(Application.loadedLevel);
+			_qlearning.Iteration++;
         }
-        _qlearning.Iteration++;
     }
 
     private void TesterAction(QState state) {
