@@ -17,7 +17,7 @@ public static class LinqExtension {
 
     public static IEnumerable<T> Random<T>(this IEnumerable<T> source) {
         if (!source.Any()) yield break;
-        var n = Rng.Next(source.Count() - 1);
+        var n = Rng.Next(source.Count());
         yield return source.ElementAt(n);
     }
 
