@@ -56,7 +56,7 @@ namespace QAI.Learning {
                 _amap[a.ActionId] = ix++;
             // Model.
             if(_remake) {
-                _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2 });
+                _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs { FilterSize = 5, FilterCount = 3, PoolLayerSize = 2, Stride = 2 });
             } else {
                 _net = ConvolutionalNetwork.Load(MODEL_PATH);
             }

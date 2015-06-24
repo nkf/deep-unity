@@ -14,6 +14,8 @@ namespace QAI.Training {
                 _data.RemoveAt(0); // TODO: Expensive on List.*/
             if(_data.Count > maxSize)
                 _data[_rng.Next(_data.Count)] = sars;
+			else
+				_data.Add(sars);
         }
 
         public void Store(SARS sars) {
