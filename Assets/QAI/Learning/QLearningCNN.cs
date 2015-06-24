@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using C5;
 using MathNet.Numerics.LinearAlgebra;
 using QAI.Agent;
 using QAI.Training;
+using QNetwork;
 using QNetwork.CNN;
-using QNetwork.Training;
 using UnityEditor;
 using UnityEngine;
 using QAI.Visualizer;
@@ -20,17 +20,15 @@ namespace QAI.Learning {
         private readonly Param Epsilon = t => EpisilonStart - ((EpisilonEnd - EpisilonStart) / QAIManager.NumIterations()) * t;
         private const float Discount = 0.95f;
 
-        private const bool PrioritySweeping = true;
+        private const bool PrioritySweeping = false;
 
         private const int BatchSize = 20;
         private const int PredecessorCap = 6;
         private const float PriorityThreshold = 0.01f;
 
-        private const float LearningRate = 0.01f;
-        private const float Momentum = 0.9f;
+        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.001f, Momentum = 0.9f };
 
         private ConvolutionalNetwork _net;
-        private Backprop<Matrix<float>[]> _trainer;
         private List<SARS> _imitationExps;
         private QExperience _qexp;
         private Dictionary<string, int> _amap;
@@ -62,7 +60,7 @@ namespace QAI.Learning {
             } else {
                 _net = ConvolutionalNetwork.Load(MODEL_PATH);
             }
-            _trainer = new Backprop<Matrix<float>[]>(_net, LearningRate, Momentum);
+            _net.InitializeTraining(LearningParams);
             // Experience replay.
             LoadExperienceDatabase();
         }
@@ -178,7 +176,7 @@ namespace QAI.Learning {
                 outp[i++] = new TargetIndexPair(target, _amap[sars.Action.ActionId]);
             }
             for(int j = 0; j < batch.Count; j++) {
-                _trainer.SGD(inp[j], outp[j]);
+                _net.SGD(inp[j], outp[j]);
             }
         }
 
@@ -202,7 +200,7 @@ namespace QAI.Learning {
                         EnqueueSARS(pred);
             }
             for(int i = 0; i < N; i++) {
-                _trainer.SGD(inp[i], outp[i]);
+                _net.SGD(inp[i], outp[i]);
             }
         }
 

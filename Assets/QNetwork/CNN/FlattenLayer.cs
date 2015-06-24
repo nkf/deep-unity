@@ -33,9 +33,5 @@ namespace QNetwork.CNN {
         public override Vector<float> Output() {
             return _values;
         }
-
-        public override V Accept<V>(Trainer<V> t, V state) {
-            return t.Visit(this, state);
-        }
     }
 }

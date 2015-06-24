@@ -1,5 +1,4 @@
-﻿using QNetwork.Training;
-using MathNet.Numerics.LinearAlgebra;
+﻿using MathNet.Numerics.LinearAlgebra;
 
 namespace QNetwork.Experimental {
     public struct VectorPair {
@@ -25,10 +24,6 @@ namespace QNetwork.Experimental {
 
         public override Vector<float> Output() {
             return _buffer;
-        }
-
-        public override V Accept<V>(Trainer<V> t, V state) {
-            return t.Visit(this, state);
         }
 	}
 }

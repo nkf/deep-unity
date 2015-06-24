@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,8 +32,8 @@ namespace Pong {
             _game = FindObjectOfType<PongGame>();
             _ball = FindObjectOfType<PongBall>();
             if (Side == Player.Player1) {
-                _grid = new Q2DGrid(17, transform,
-                    new GridSettings {Offset = new Vector3(8.2f, 0, 0), ResolutionX = 1.2f, ResolutionY = 1.2f});
+                _grid = new Q2DGrid(19, transform,
+                    new GridSettings {Offset = new Vector3(10.2f, 0, 0), ResolutionX = 1.1f, ResolutionY = 1.1f});
                 QAIManager.InitAgent(this);
             }
         }

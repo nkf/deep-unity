@@ -35,6 +35,7 @@ namespace QAI {
 
         private QAgent _agent;
         private bool _testIsRunning;
+        private bool _testIsOver = false;
 
         public static int NumIterations() {
             return _instance == null ? 1 : _instance.Terminator;
@@ -91,10 +92,12 @@ namespace QAI {
         }
 
         private void TesterAction(QState state) {
+            if(Application.isLoadingLevel || _testIsOver) return;
             if(_testIsRunning) RunTest(state);
             else               SetupTest(state);
         }
         private void RunTest(QState state) {
+            Time.timeScale = TimeStep * 10;
             //End run if terminal
             if(state.IsTerminal) {
                 Tester.OnTestComplete(state.Reward);
@@ -111,6 +114,7 @@ namespace QAI {
             //End test run if tester says its over.
             if(!sceneSetup) {
                 Tester.OnRunComplete();
+                _testIsOver = true;
                 EditorApplication.isPlaying = false;
                 //Run Test if tester have set up scene
             } else {

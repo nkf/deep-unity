@@ -7,7 +7,6 @@ namespace QNetwork.CNN {
         public ActivationFunction<Matrix<float>> Activation;
 	    public Vector<float> Biases { get; set; }
 	    public Matrix<float>[][] Weights { get; set; }
-	    public new SpatialLayer Prev { get; set; }
         public int Stride { get; set; }
         
         private readonly Matrix<float> _cache, _buffer;
@@ -59,10 +58,6 @@ namespace QNetwork.CNN {
                     source.SubMatrix(m * Stride, filter.RowCount, n * Stride, filter.ColumnCount).PointwiseMultiply(filter, _cache);
                     dest.At(m, n, _cache.RowSums().Sum());
                 }
-        }
-
-        public override T Accept<T>(Trainer<T> t, T state) {
-            return t.Visit(this, state);
         }
 
         public override void Serialize(XmlWriter writer) {
