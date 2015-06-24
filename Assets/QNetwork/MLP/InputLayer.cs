@@ -20,9 +20,5 @@ namespace QNetwork.MLP {
         public override Vector<float> Output() {
             return _buffer;
         }
-
-        public override T Accept<T>(Trainer<T> t, T state) {
-            return t.Visit(this, state);
-        }
 	}
 }

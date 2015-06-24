@@ -35,10 +35,6 @@ namespace QNetwork.MLP {
             return _values;
         }
 
-        public override T Accept<T>(Trainer<T> t, T state) {
-            return t.Visit(this, state);
-        }
-
         public override void Serialize(XmlWriter writer) {
             writer.WriteStartElement(GetType().Name);
 

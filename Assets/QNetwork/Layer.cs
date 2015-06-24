@@ -11,8 +11,6 @@ namespace QNetwork {
 
         public abstract T Output();
 
-        public abstract V Accept<V>(Trainer<V> t, V state);
-
         public virtual void Serialize(XmlWriter writer) {
             throw new InvalidOperationException();
         }

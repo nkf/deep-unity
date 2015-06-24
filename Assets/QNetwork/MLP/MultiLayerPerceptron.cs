@@ -1,13 +1,21 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 using MathNet.Numerics.LinearAlgebra;
 
 namespace QNetwork.MLP {
     public class MultiLayerPerceptron : Unit<Vector<float>, Vector<float>> {
+        // Forward propagation.
         private readonly InputLayer _input;
         private readonly DenseLayer[] _hidden;
         private readonly DenseLayer _output;
 
+        // Backpropagation.
+        private BackpropParams _params;
+        private Vector<float> _loss;
+        private List<Backprop<Vector<float>, Vector<float>>> _backprop;
+
+        // Serialization.
         private readonly int _insize;
         private readonly int[] _layers;
 
@@ -34,8 +42,26 @@ namespace QNetwork.MLP {
             return _output.Output();
         }
 
-        public T Accept<T>(Trainer<T> t, T state) {
-            return _input.Accept(t, _hidden.ApplyTrainer(t, _output.Accept(t, state)));
+        public void InitializeTraining(BackpropParams par) {
+            _params = par;
+            _loss = Vector<float>.Build.Dense(_output.Size());
+            _backprop = new List<Backprop<Vector<float>, Vector<float>>>();
+            _backprop.Add(new DenseLayerBackprop(_output));
+            for (int i = _hidden.Length - 1; i >= 0; i--)
+                _backprop.Add(new DenseLayerBackprop(_hidden[i]));
+        }
+
+        public void SGD(Vector<float> features, Vector<float> labels) {
+            Compute(features);
+            labels.CopyTo(_loss);
+            _loss.Subtract(Output(), _loss);
+            _backprop.BackPropagation(_loss, _params);
+        }
+
+        public void SGD(Vector<float> features, TargetIndexPair p) {
+            _loss.Clear();
+            _loss.At(p.Index, p.Target - Compute(features)[p.Index]);
+            _backprop.BackPropagation(_loss, _params);
         }
 
         public void Save(string filename) {

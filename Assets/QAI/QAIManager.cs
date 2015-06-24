@@ -92,6 +92,7 @@ namespace QAI {
             else               SetupTest(state);
         }
         private void RunTest(QState state) {
+            Time.timeScale = TimeStep * 10;
             //End run if terminal
             if(state.IsTerminal) {
                 Tester.OnTestComplete(state.Reward);

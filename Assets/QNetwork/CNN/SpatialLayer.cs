@@ -3,6 +3,7 @@
 namespace QNetwork.CNN {
 	public class SpatialLayer : Layer<Matrix<float>[]> {
         protected Matrix<float>[] _values;
+        public new SpatialLayer Prev { get; set; }
         public int SideLength { get; set; }
         public int ChannelCount { get; set; }
 
@@ -21,10 +22,6 @@ namespace QNetwork.CNN {
 
         public override Matrix<float>[] Output() {
             return _values;
-        }
-
-        public override T Accept<T>(Trainer<T> t, T state) {
-            return t.Visit(this, state);
         }
     }
 }
