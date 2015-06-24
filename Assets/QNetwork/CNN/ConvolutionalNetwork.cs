@@ -87,8 +87,9 @@ namespace QNetwork.CNN {
 
 		public IEnumerable<SpatialLayer> IterateSpatialLayers() {
 			yield return _input;
-			foreach(var s in _hidden) {
-				yield return s;
+			for(var i = 0; i < _conv.Length; i++) {
+				yield return _conv[i];
+				yield return _subs[i];
 			}
 		}
 
