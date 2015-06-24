@@ -18,6 +18,8 @@ namespace QAI {
         public bool Remake;
         [HideInInspector]
         public int Terminator;
+		[HideInInspector]
+		public bool VisualizeNetwork;
 
         [HideInInspector]
         public List<QStory> Stories;
@@ -60,6 +62,7 @@ namespace QAI {
                     _qlearning = new QLearningCNN {Agent = agent};
                     if(Remake) _qlearning.RemakeModel();
                     else _qlearning.LoadModel();
+					if(VisualizeNetwork) _qlearning.CreateVisualizer();
                     break;
                 }
             }

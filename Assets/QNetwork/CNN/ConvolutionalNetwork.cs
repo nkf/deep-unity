@@ -3,6 +3,7 @@ using System.IO;
 using System.Xml;
 using MathNet.Numerics.LinearAlgebra;
 using QNetwork.MLP;
+using System.Collections.Generic;
 
 namespace QNetwork.CNN {
 	public class ConvolutionalNetwork : Unit<Matrix<float>[], Vector<float>> {
@@ -83,6 +84,14 @@ namespace QNetwork.CNN {
             var _e2d = _flatback.Visit(_outback.Visit(_loss, _params), _params);
             _backprop.BackPropagation(_e2d, _params);
         }
+
+		public IEnumerable<SpatialLayer> IterateSpatialLayers() {
+			yield return _input;
+			for(var i = 0; i < _conv.Length; i++) {
+				yield return _conv[i];
+				yield return _subs[i];
+			}
+		}
 
 	    public void Save(string filename) {
             var file = File.Create(filename);

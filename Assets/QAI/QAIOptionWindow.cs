@@ -14,11 +14,13 @@ namespace QAI {
         private bool _initNext = false;
         private bool _remake;
         private int _term;
+		private bool _visualize;
 
         private bool _starting = false;
         private bool _started = false;
         private bool _forceStart = false;
         private Vector2 _scrollPosition;
+		private bool _showAdvanced = false;
 
         private List<QStory> _stories;
         private string[] _sceneList;
@@ -119,6 +121,11 @@ namespace QAI {
 
             EditorGUILayout.EndScrollView();
 
+			if(_showAdvanced = EditorGUILayout.Toggle("Advanced options", _showAdvanced)) {
+				EditorGUI.indentLevel++;
+				_visualize = EditorGUILayout.Toggle("Visualize Network", _visualize);
+			}
+
 
             // Set the values in the AI manager to be saved with the scene.
             if(_manager.ActiveAgent != _agent 
@@ -126,7 +133,8 @@ namespace QAI {
                || _manager.Terminator != _term
                || _manager.ActiveAgent != _agent
                || _manager.Tester != _tester
-               || _manager.Mode != _mode) {
+               || _manager.Mode != _mode
+			   || _manager.VisualizeNetwork != _visualize) {
                 Debug.Log ("Creating undo operation");
                 EditorApplication.MarkSceneDirty();
             }
@@ -134,6 +142,7 @@ namespace QAI {
             _manager.Terminator = _term;
             _manager.ActiveAgent = _agent;
             _manager.Tester = _tester;
+			_manager.VisualizeNetwork = _visualize;
 
             _manager.Mode = _mode;
 
