@@ -9,6 +9,7 @@ using QNetwork.CNN;
 using QNetwork.Training;
 using UnityEditor;
 using UnityEngine;
+using QAI.Visualizer;
 
 namespace QAI.Learning {
     public class QLearningCNN : QLearning {
@@ -57,7 +58,7 @@ namespace QAI.Learning {
                 _amap[a.ActionId] = ix++;
             // Model.
             if(_remake) {
-                _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs { FilterSize = 7, FilterCount = 3, PoolLayerSize = 2, Stride = 2 });
+                _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2 });
             } else {
                 _net = ConvolutionalNetwork.Load(MODEL_PATH);
             }
@@ -77,6 +78,7 @@ namespace QAI.Learning {
 
         public override void RemakeModel() {
             _remake = true;
+			Initialize(Agent.GetState().Size);
         }
 
         public override IEnumerator<YieldInstruction> RunEpisode(QAIManager.EpisodeCallback callback) { throw new NotImplementedException(); }
@@ -223,6 +225,10 @@ namespace QAI.Learning {
             if(!p.Contains(sars))
                 p.Add(sars);
         }
+
+		public NetworkVisualizer CreateVisualizer() {
+			return NetworkVisualizer.CreateVisualizer(_net);
+		}
     }
 
 }

@@ -26,7 +26,7 @@ namespace Pong {
             new[] {KeyCode.UpArrow, KeyCode.DownArrow}
         };
 
-        void Awake() {
+        void Start() {
             StartCoroutine(Movement());
             StartPosistion = transform.position;
             _game = FindObjectOfType<PongGame>();
@@ -132,9 +132,10 @@ namespace Pong {
                 var x = bo.center.x;
                 var v = bo.Contains(new Vector3(x, _game.Border.yMin)) || bo.Contains(new Vector3(x, _game.Border.yMax)) ? 50 : 0f; //walls
                 v = gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 200f : v; //ball
-                v = bo.Contains(new Vector3(controller.x, controller.center.y)) ||
-                    bo.Contains(new Vector3(controller.x, controller.yMax)) ||
-                    bo.Contains(new Vector3(controller.x, controller.yMin)) ? 100 : v; //controller
+                v = bo.Contains(new Vector3(controller.x, controller.center.y)) 
+                    || bo.Contains(new Vector3(controller.x, controller.yMax)) 
+                    || bo.Contains(new Vector3(controller.x, controller.yMin)) 
+					? 100 : v; //controller
                 return v;
             });
             var state = _grid.Matrix.Clone();

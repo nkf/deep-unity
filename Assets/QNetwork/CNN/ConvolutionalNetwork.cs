@@ -2,6 +2,7 @@
 using System.Xml;
 using MathNet.Numerics.LinearAlgebra;
 using QNetwork.MLP;
+using System.Collections.Generic;
 
 namespace QNetwork.CNN {
 	public class ConvolutionalNetwork : Unit<Matrix<float>[], Vector<float>> {
@@ -46,6 +47,13 @@ namespace QNetwork.CNN {
             // Backpropagate.
             return _input.Accept(t, _hidden.ApplyTrainer(t, _flatten.Accept(t, _output.Accept(t, state))));
         }
+
+		public IEnumerable<SpatialLayer> IterateSpatialLayers() {
+			yield return _input;
+			foreach(var s in _hidden) {
+				yield return s;
+			}
+		}
 
 	    public void Save(string filename) {
             var file = File.Create(filename);
