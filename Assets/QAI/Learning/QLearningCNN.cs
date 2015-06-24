@@ -122,7 +122,7 @@ namespace QAI.Learning {
 
         public override ActionValueFunction Q(QState s) {
             _output = _net.Compute(s.Features);
-            //Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}", _output.Average()));
+            Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}", _output.Average()));
             return a => _output[_amap[a.ActionId]];
         }
 
