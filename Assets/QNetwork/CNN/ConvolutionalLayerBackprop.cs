@@ -41,8 +41,8 @@ namespace QNetwork.CNN {
                         for (int n = 0; n < incoming[j].ColumnCount; n++) {
                             // Propagate error.
                             _unit.Weights[i][j].Multiply(incoming[j].At(m, n), _fbuf);
-                            var subm = _outgoing[i].SubMatrix(m * stride, fsize, n * stride, fsize);
-                            subm.Add(_fbuf, subm);
+                            _outgoing[i].SubMatrix(m * stride, fsize, n * stride, fsize).Add(_fbuf, _fbuf);
+                            _outgoing[i].SetSubMatrix(m * stride, fsize, n * stride, fsize, _fbuf);
                             // Calculate deltas.
                             input[i].SubMatrix(m * stride, fsize, n * stride, fsize).Multiply(incoming[j].At(m, n) * par.LearningRate, _fbuf);
                             _deltas[i][j].Add(_fbuf, _deltas[i][j]);

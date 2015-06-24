@@ -16,7 +16,8 @@ namespace QNetwork.CNN {
             // Unflatten error.
             for (int j = 0; j < _unit.Z; j++)
                 for (int m = 0; m < _unit.X; m++)
-                    incoming.CopySubVectorTo(_outgoing[j].Row(m), j * _unit.X * _unit.Y + m * _unit.Y, 0, _unit.Y);
+                    for (int n = 0; n < _unit.Y; n++)
+                        _outgoing[j].At(m, n, incoming.At(j * _unit.X * _unit.Y + m * _unit.Y + n));
             return _outgoing;
         }
 	}
