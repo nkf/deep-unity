@@ -7,7 +7,6 @@ using MathNet.Numerics.LinearAlgebra;
 
 namespace QAI.Visualizer {
 	public class LayerVisualizer  {
-		private const float V_SCALE = 2f;
 
 		private List<MatrixVisualizer> _images;
 		private SpatialLayer _layer;
@@ -21,6 +20,7 @@ namespace QAI.Visualizer {
 			_images = new List<MatrixVisualizer>();
 			var p = _visuals.GetComponentInChildren<GridLayoutGroup>();
 			Matrix<float> last = null;
+
 			foreach(var m in o) {
 				var mv = new MatrixVisualizer(m.RowCount, m.ColumnCount);
 				var r = GameObject.Instantiate(Resources.Load<RawImage>("MatrixImage"));
@@ -30,14 +30,12 @@ namespace QAI.Visualizer {
 				_images.Add(mv);
 				last = m;
 			}
-
-			if(last != null)
-				p.cellSize = new Vector2(last.RowCount * V_SCALE, last.ColumnCount * V_SCALE);
+		    var n = o[0].RowCount;
+            _visuals.GetComponentInChildren<Text>().text = _layer.GetType().Name.Replace("Layer", "") + " ("+n+"x"+n+"x"+o.Length+")";
 		}
 
 		public GameObject CreateUI() {
 			_visuals = GameObject.Instantiate(Resources.Load<GameObject>("LayerVisualizer"));
-			_visuals.GetComponentInChildren<Text>().text = _layer.GetType().Name;
 			return _visuals;
 		}
 
