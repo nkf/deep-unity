@@ -6,7 +6,7 @@ namespace QNetwork.CNN {
         public int PoolSize { get; set; }
         public Matrix<float>[] Distribution { get; set; }
 
-        public MaxPoolLayer(int size, SpatialLayer prev) : base((prev.SideLength - size) / size + 1, prev.ChannelCount) {
+        public MaxPoolLayer(int size, SpatialLayer prev) : base(prev.SideLength / size, prev.ChannelCount) {
             _values = new Matrix<float>[ChannelCount];
             for (int i = 0; i < _values.Length; i++)
                 _values[i] = Matrix<float>.Build.Dense(SideLength, SideLength);

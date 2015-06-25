@@ -27,7 +27,7 @@ namespace QAI.Learning {
         private const int PredecessorCap = 6;
         private const float PriorityThreshold = 0.05f;
 
-        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.001f, Momentum = 0.9f };
+        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.01f, Momentum = 0.9f };
 
         private ConvolutionalNetwork _net;
         private List<SARS> _imitationExps;
@@ -57,7 +57,7 @@ namespace QAI.Learning {
                 _amap[a.ActionId] = ix++;
             // Model.
             if(_remake) {
-                _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs { FilterSize = 5, FilterCount = 3, PoolLayerSize = 2, Stride = 2 });
+                _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs { FilterSize = 7, FilterCount = 3, PoolLayerSize = 2, Stride = 1 });
             } else {
                 _net = ConvolutionalNetwork.Load(MODEL_PATH);
             }
