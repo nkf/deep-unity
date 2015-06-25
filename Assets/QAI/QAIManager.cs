@@ -37,6 +37,8 @@ namespace QAI {
         private bool _testIsRunning;
         private bool _testIsOver = false;
 
+        private bool _sceneIsOver;
+
         public static int NumIterations() {
             return _instance == null ? 1 : _instance.Terminator;
         }
@@ -46,6 +48,7 @@ namespace QAI {
                 _instance = FindObjectOfType<QAIManager>();
                 _instance.Init(agent);
             }
+            _instance._sceneIsOver = false;
             _instance._agent = agent;
             if(_instance.Mode != QAIMode.Imitating) 
                 _instance._qlearning.Agent = agent;
@@ -71,6 +74,7 @@ namespace QAI {
         public static Action GetAction(QState state) {
             switch (_instance.Mode) {
                 case QAIMode.Learning:
+                    if (_instance._sceneIsOver) return () => {};
                     return _instance._qlearning.GetLearningAction(state) ?? _instance.EndOfEpisode;
                 case QAIMode.Testing:
                     return () => _instance.TesterAction(state);
@@ -82,13 +86,15 @@ namespace QAI {
         }
 
         private void EndOfEpisode() {
+            if (_sceneIsOver) return;
             if(_qlearning.Iteration >= Terminator) {
                 _qlearning.SaveModel();
                 EditorApplication.isPlaying = false;
-            } else if(!Application.isLoadingLevel) {
+            } else {
                 Application.LoadLevel(Application.loadedLevel);
                 _qlearning.Iteration++;
             }
+            _sceneIsOver = true;
         }
 
         private void TesterAction(QState state) {
