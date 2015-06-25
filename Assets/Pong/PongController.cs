@@ -64,8 +64,8 @@ namespace Pong {
             //Stay within game border
             var pos = transform.position;
             var h = transform.localScale.y/2f;
-            pos.y = Mathf.Min(pos.y+h, _game.Border.yMax) - h;
-            pos.y = Mathf.Max(pos.y-h, _game.Border.yMin) + h;
+            pos.y = Mathf.Min(pos.y+h, _game.Border.max.y) - h;
+            pos.y = Mathf.Max(pos.y-h, _game.Border.min.y) + h;
             transform.position = pos;
         }
 
@@ -87,13 +87,13 @@ namespace Pong {
             bool terminal;
             //var terminal = winner.HasValue;
             //var reward = terminal ? (winner.Value == Side ? 1 : 0) : 0;
-            var b = PongGame.RectFromTransform(_ball.transform);
-            var controller = PongGame.RectFromTransform(transform);
-            controller.width += 0.2f;
-            if (b.Overlaps(controller)) {
+            var b = PongGame.BoundsFromTransform(_ball.transform);
+            var controller = PongGame.BoundsFromTransform(transform);
+            controller.size += new Vector3(0.2f,0,0);
+            if (b.Intersects(controller)) {
                 reward = 1;
                 terminal = winner.HasValue;
-                terminal = true;
+                //terminal = true;
             } else {
                 terminal = winner.HasValue;
                 reward = terminal ? (winner.Value == Side ? 1 : 0) : 0;
@@ -101,8 +101,8 @@ namespace Pong {
         
 
             //Calculate distance to top and bottom
-            var topDist = _game.Border.yMax - controller.yMax;
-            var botDist = controller.yMin - _game.Border.yMin;
+            var topDist = _game.Border.max.y - controller.max.y;
+            var botDist = controller.min.y - _game.Border.min.y;
         
             var bp = _ball.transform.position;
             var rbp = bp - transform.position;
