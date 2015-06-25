@@ -16,7 +16,12 @@ namespace QAI.Agent {
         }
 
         public bool Equals(QState other) {
-            return Features == other.Features || (Features != null && other.Features != null && Features.SequenceEqual(other.Features));
+            return IsTerminal == other.IsTerminal 
+				&& Reward == other.Reward 
+				&& (Features == other.Features 
+				|| (Features != null 
+					    && other.Features != null 
+					    && Features.SequenceEqual(other.Features)));
         }
 
         public override bool Equals(object obj) {

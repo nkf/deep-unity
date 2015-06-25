@@ -32,8 +32,8 @@ namespace Pong {
             _game = FindObjectOfType<PongGame>();
             _ball = FindObjectOfType<PongBall>();
             if (Side == Player.Player1) {
-                _grid = new Q2DGrid(20, transform,
-                    new GridSettings {Offset = new Vector3(10.2f, 0, 0), ResolutionX = 1.1f, ResolutionY = 1.1f});
+                _grid = new Q2DGrid(16, transform,
+                    new GridSettings {Offset = new Vector3(9.2f, 0, 0), ResolutionX = 1.28f, ResolutionY = 1.28f});
                 QAIManager.InitAgent(this);
             }
         }
@@ -136,7 +136,7 @@ namespace Pong {
                     || bo.Contains(new Vector3(controller.x, controller.yMax)) 
                     || bo.Contains(new Vector3(controller.x, controller.yMin)) 
 					? 100 : v; //controller
-                return v;*/
+                return v;
             });
             var state = _grid.Matrix.Clone();
             //var state = MathNet.Numerics.LinearAlgebra.Vector<float>.Build.DenseOfArray(new[] { bp.x, bp.y, rbp.x, rbp.y, transform.position.y });
