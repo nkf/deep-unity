@@ -22,44 +22,44 @@ namespace Pong {
             Player2 = pcs.First(pc => pc.Side == Player.Player2);
         }
         void FixedUpdate () {
-            var ball = PongGame.RectFromTransform(transform);
+            var ball = PongGame.BoundsFromTransform(transform);
+//            var ball = GetComponent<Renderer>().bounds;
             var p = transform.position + _velocity * Time.fixedDeltaTime;
-            p.x -= ball.width/2;
-            p.y -= ball.height/2;
-            ball = PongGame.Encapsulate(ball, p);
-            PongGame.DebugDrawRect(ball, Color.red);
-        
+            p.x -= ball.size.x/2;
+            p.y -= ball.size.y/2;
+
             //Check vs game borders
-            if        (ball.yMax > _game.Border.yMax) { //Top
+            if        (ball.max.y > _game.Border.max.y) { //Top
                 _velocity = Vector3.Reflect(_velocity, Vector3.down);
-                SetTransformY(_game.Border.yMax - ball.height/2);
-            } else if (ball.yMin < _game.Border.yMin) { //Bot
+                SetTransformY(_game.Border.max.y - ball.size.y/2);
+            } else if (ball.min.y < _game.Border.min.y) { //Bot
                 _velocity = Vector3.Reflect(_velocity, Vector3.up);
-                SetTransformY(_game.Border.yMin + ball.height/2);
+                SetTransformY(_game.Border.min.y + ball.size.y/2);
             }  
         
-            var p1 = PongGame.RectFromTransform(Player1.transform);
-            var p2 = PongGame.RectFromTransform(Player2.transform);
-            if (ball.Overlaps(p1)) { //Player 1 controller
+            var p1 = PongGame.BoundsFromTransform(Player1.transform);
+            var p2 = PongGame.BoundsFromTransform(Player2.transform);
+            if (ball.Intersects(p1)) { //Player 1 controller
                 _velocity = Vector3.Reflect(_velocity, Vector3.right).normalized * ++_speed;
-                SetTransformX(p1.xMax + ball.width / 2);
+                SetTransformX(p1.max.x + ball.size.x / 2);
                 Player1.Hits++;
-            } else if(ball.xMin < _game.Border.xMin) { //Player 1 Goal
+            } else if(ball.min.x < _game.Border.min.x) { //Player 1 Goal
                 _game.Score(Player.Player1);
                 //Reset(1);
             }
             
-            if (ball.Overlaps(p2)) { //Player 2 controller
+            if (ball.Intersects(p2)) { //Player 2 controller
                 _velocity = Vector3.Reflect(_velocity, Vector3.left).normalized * ++_speed;
-                SetTransformX(p2.xMin - ball.width / 2);
+                SetTransformX(p2.min.x - ball.size.x / 2);
                 Player2.Hits++;
-            } else if(ball.xMax > _game.Border.xMax) { //Player 2 Goal
+            } else if(ball.max.x > _game.Border.max.x) { //Player 2 Goal
                 _game.Score(Player.Player2);
                 //Reset(-1);
             }
 
             //Update position
             transform.position += _velocity * Time.fixedDeltaTime;
+            PongGame.DebugDrawBounds(PongGame.BoundsFromTransform(transform), Color.red);
         }
 
         void SetTransformY(float y) {
@@ -87,9 +87,9 @@ namespace Pong {
         }
         //Returns the winner if there is one
         public Player? IsTerminal() {
-            var ball = PongGame.RectFromTransform(transform);
-            if (ball.xMin < _game.Border.xMin) return Player.Player2;
-            if (ball.xMax > _game.Border.xMax) return Player.Player1;
+            var ball = PongGame.BoundsFromTransform(transform);
+            if (ball.min.x < _game.Border.min.x) return Player.Player2;
+            if (ball.max.x > _game.Border.max.x) return Player.Player1;
             return null;
         }
 

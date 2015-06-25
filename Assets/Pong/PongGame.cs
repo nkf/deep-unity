@@ -4,7 +4,7 @@ namespace Pong {
     class PongGame : MonoBehaviour {
     
         //Set in editor
-        public Rect Border;
+        public Bounds Border;
 
         private readonly int[] _score = new int[2];
 
@@ -18,28 +18,31 @@ namespace Pong {
 
 
         void Update () {
-            DebugDrawRect(Border, Color.yellow);
+            DebugDrawBounds(Border, Color.yellow);
         }
 
-        public static void DebugDrawRect(Rect r, Color c) {
-            var nw = new Vector3(r.xMin, r.yMin);
-            var ne = new Vector3(r.xMax, r.yMin);
-            var sw = new Vector3(r.xMin, r.yMax);
-            var se = new Vector3(r.xMax, r.yMax);
+        public static void DebugDrawBounds(Bounds b, Color c) {
+            var min = b.min; var max = b.max;
+            var nw = new Vector3(min.x, min.y);
+            var ne = new Vector3(max.x, min.y);
+            var sw = new Vector3(min.x, max.y);
+            var se = new Vector3(max.x, max.y);
             Debug.DrawLine(nw, ne, c);
             Debug.DrawLine(ne, se, c);
             Debug.DrawLine(se, sw, c);
             Debug.DrawLine(sw, nw, c);
         }
 
-        public static void DebugDrawRect(Rect r) {
-            DebugDrawRect(r, Color.white);
+        public static void DebugDrawBounds(Bounds b) {
+            DebugDrawBounds(b, Color.white);
         }
 
-        public static Rect RectFromTransform(Transform t) {
+        public static Bounds BoundsFromTransform(Transform t) {
             var s = t.localScale;
             var p = t.position;
-            return new Rect(p.x - s.x / 2, p.y - s.y / 2, s.x, s.y);
+            var center = new Vector3(p.x, p.y);
+            var size = new Vector3(s.x, s.y);
+            return new Bounds(center, size);
         }
 
         public static Rect Encapsulate(Rect r, Vector3 p) {
