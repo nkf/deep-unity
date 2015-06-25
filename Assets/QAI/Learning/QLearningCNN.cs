@@ -20,11 +20,12 @@ namespace QAI.Learning {
         private readonly Param Epsilon = t => EpisilonStart - ((EpisilonEnd - EpisilonStart) / QAIManager.NumIterations()) * t;
         private const float Discount = 0.95f;
 
-        private const bool PrioritySweeping = false;
+        private const bool PrioritySweeping = true;
 
-        private const int BatchSize = 20;
+        private const int BatchSize = PrioritySweeping ? 5 : 20;
+		private const int MaxStoreSize = 100;
         private const int PredecessorCap = 6;
-        private const float PriorityThreshold = 0.01f;
+        private const float PriorityThreshold = 0.05f;
 
         private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.001f, Momentum = 0.9f };
 
@@ -111,7 +112,7 @@ namespace QAI.Learning {
                 while(_pq.Count > 100)
                     _pq.DeleteMin();
             } else {
-                _qexp.Store(sars, 1000);
+                _qexp.Store(sars, MaxStoreSize);
             }
         }
 
@@ -184,6 +185,8 @@ namespace QAI.Learning {
             int N = Mathf.Min(BatchSize, _pq.Count);
             var inp = new Matrix<float>[N][];
             var outp = new TargetIndexPair[N];
+			if(_pq.Count > 0)
+				Debug.Log("LEARNING " + _pq.Count);
             for(int i = 0; i < N; i++) {
                 var sars = _pq.DeleteMax();
                 inp[i] = sars.State.Features;
@@ -208,9 +211,9 @@ namespace QAI.Learning {
             var q = _net.Compute(s.State.Features)[_amap[s.Action.ActionId]];
             if(!s.NextState.IsTerminal) {
                 var a0max = _net.Compute(s.NextState.Features).Max();
-                s.Priority = s.Reward + Discount * a0max - q;
+                s.Priority = Mathf.Abs(s.Reward + Discount * a0max - q);
             } else {
-                s.Priority = s.Reward - q;
+                s.Priority = Mathf.Abs(s.Reward - q);
             }
             if(s.Priority > PriorityThreshold)
                 _pq.Add(s);
@@ -219,6 +222,12 @@ namespace QAI.Learning {
         private void PutPredecessor(SARS sars) {
             if(!_preds.ContainsKey(sars.NextState))
                 _preds[sars.NextState] = new List<SARS>();
+			if(sars.NextState.Equals(sars.State)) {
+				Debug.Log ("SELF REFERENCE. IS TERM : " + sars.State.IsTerminal + " - " + sars.NextState.IsTerminal 
+				           + " ;r " + sars.State.Reward + " - " + sars.NextState.Reward 
+				           + " ;h " + sars.State.GetHashCode() + " - " + sars.NextState.GetHashCode());
+				return;
+			}
             var p = _preds[sars.NextState];
             if(!p.Contains(sars))
                 p.Add(sars);
