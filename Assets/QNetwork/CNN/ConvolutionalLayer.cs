@@ -1,6 +1,7 @@
 ﻿using System.Xml;
 using MathNet.Numerics.Distributions;
 using MathNet.Numerics.LinearAlgebra;
+using Math = UnityEngine.Mathf;
 
 namespace QNetwork.CNN {
 	public class ConvolutionalLayer : SpatialLayer {
@@ -8,11 +9,12 @@ namespace QNetwork.CNN {
 	    public Vector<float> Biases { get; set; }
 	    public Matrix<float>[][] Weights { get; set; }
         public int Stride { get; set; }
-        
-        private readonly Matrix<float> _cache, _buffer;
+
+        private readonly Matrix<float> _cache, _buffer, _conv;
+        private readonly int _fsize, _offset;
 
 	    public ConvolutionalLayer(int fsize, int numf, int stride, SpatialLayer prev, ActivationFunction<Matrix<float>> activation)
-            : base((prev.SideLength - fsize) / stride + 1, numf) {
+            : base(prev.SideLength / stride, numf) {
             Activation = activation;
             var vb = Vector<float>.Build;
             var mb = Matrix<float>.Build;
@@ -29,6 +31,9 @@ namespace QNetwork.CNN {
             Prev = prev;
             Stride = stride;
             _cache = mb.Dense(fsize, fsize);
+            _conv = mb.Dense(prev.SideLength + fsize - 1, prev.SideLength + fsize - 1);
+            _fsize = fsize;
+            _offset = fsize / 2;
             if (prev.ChannelCount > 1) // No buffer needed if there is only 1 input channel.
                 _buffer = mb.Dense(SideLength, SideLength);
         }
@@ -53,9 +58,12 @@ namespace QNetwork.CNN {
         }
 
         private void Convolution(Matrix<float> source, Matrix<float> filter, Matrix<float> dest) {
+            // Copy into padded matrix so that all valid convolutions are legal.
+            _conv.SetSubMatrix(_offset, source.RowCount, _offset, source.ColumnCount, source);
+            // Apply valid convolutions.
             for (int m = 0; m < dest.RowCount; m++)
                 for (int n = 0; n < dest.ColumnCount; n++) {
-                    source.SubMatrix(m * Stride, filter.RowCount, n * Stride, filter.ColumnCount).PointwiseMultiply(filter, _cache);
+                    _conv.SubMatrix(m * Stride, _fsize, n * Stride, _fsize).PointwiseMultiply(filter, _cache);
                     dest.At(m, n, _cache.RowSums().Sum());
                 }
         }

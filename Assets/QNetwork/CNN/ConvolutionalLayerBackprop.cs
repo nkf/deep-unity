@@ -1,19 +1,26 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
+using Math = UnityEngine.Mathf;
 
 namespace QNetwork.CNN {
 	public class ConvolutionalLayerBackprop : Backprop<Matrix<float>[], Matrix<float>[]> {
         private readonly ConvolutionalLayer _unit;
         private readonly Matrix<float> _fbuf, _ebuf;
-        private readonly Matrix<float>[] _outgoing;
+        private readonly Matrix<float>[] _outgoing, _padded, _input;
         private readonly Matrix<float>[][] _deltas;
 
         public ConvolutionalLayerBackprop(ConvolutionalLayer unit) {
+            int fsize = unit.Weights[0][0].RowCount;
             _unit = unit;
             _outgoing = new Matrix<float>[unit.Prev.ChannelCount];
             for (int i = 0; i < _outgoing.Length; i++)
                 _outgoing[i] = Matrix<float>.Build.Dense(unit.Prev.SideLength, unit.Prev.SideLength);
+            _padded = new Matrix<float>[unit.Prev.ChannelCount];
+            for (int i = 0; i < _padded.Length; i++)
+                _padded[i] = Matrix<float>.Build.Dense(unit.Prev.SideLength + fsize - 1, unit.Prev.SideLength + fsize - 1);
+            _input = new Matrix<float>[unit.Prev.ChannelCount];
+            for (int i = 0; i < _input.Length; i++)
+                _input[i] = Matrix<float>.Build.Dense(unit.Prev.SideLength + fsize - 1, unit.Prev.SideLength + fsize - 1);
             _ebuf = Matrix<float>.Build.Dense(unit.SideLength, unit.SideLength);
-            int fsize = unit.Weights[0][0].RowCount;
             _fbuf = Matrix<float>.Build.Dense(fsize, fsize);
             _deltas = new Matrix<float>[unit.Prev.ChannelCount][];
             for (int i = 0; i < _deltas.Length; i++) {
@@ -26,10 +33,13 @@ namespace QNetwork.CNN {
         public Matrix<float>[] Visit(Matrix<float>[] incoming, BackpropParams par) {
             int stride = _unit.Stride;
             int fsize = _unit.Weights[0][0].RowCount;
-            var input = _unit.Prev.Output();
-            // Clear next layer's error.
-            for (int i = 0; i < _unit.Prev.ChannelCount; i++)
-                _outgoing[i].Clear();
+            int offset = fsize / 2;
+            // Clear next layer's error and cache input from previous forward pass.
+            var inp = _unit.Prev.Output();
+            for (int i = 0; i < _unit.Prev.ChannelCount; i++) {
+                _padded[i].Clear();
+                _input[i].SetSubMatrix(offset, _unit.Prev.SideLength, offset, _unit.Prev.SideLength, inp[i]);
+            }
             for (int j = 0; j < _unit.ChannelCount; j++) {
                 // Multiply incoming error term with derivative of this layer's activation function.
                 _unit.Activation.Derivatives(_unit.Output()[j], _ebuf);
@@ -41,16 +51,18 @@ namespace QNetwork.CNN {
                         for (int n = 0; n < incoming[j].ColumnCount; n++) {
                             // Propagate error.
                             _unit.Weights[i][j].Multiply(incoming[j].At(m, n), _fbuf);
-                            _outgoing[i].SubMatrix(m * stride, fsize, n * stride, fsize).Add(_fbuf, _fbuf);
-                            _outgoing[i].SetSubMatrix(m * stride, fsize, n * stride, fsize, _fbuf);
+                            _padded[i].SubMatrix(m * stride, fsize, n * stride, fsize).Add(_fbuf, _fbuf);
+                            _padded[i].SetSubMatrix(m * stride, fsize, n * stride, fsize, _fbuf);
                             // Calculate deltas.
-                            input[i].SubMatrix(m * stride, fsize, n * stride, fsize).Multiply(incoming[j].At(m, n) * par.LearningRate, _fbuf);
+                            _input[i].SubMatrix(m * stride, fsize, n * stride, fsize).Multiply(incoming[j].At(m, n) * par.LearningRate, _fbuf);
                             _deltas[i][j].Add(_fbuf, _deltas[i][j]);
                         }
                     _unit.Weights[i][j].Add(_deltas[i][j], _unit.Weights[i][j]); // Adjust weights.
                 }
                 _unit.Biases.At(j, _unit.Biases.At(j) + incoming[j].RowSums().Sum() * par.LearningRate); // Adjust biases.
             }
+            for (int i = 0; i < _unit.Prev.ChannelCount; i++)
+                _padded[i].SubMatrix(offset, _unit.Prev.SideLength, offset, _unit.Prev.SideLength).CopyTo(_outgoing[i]);
             return _outgoing;
         }
 	}
