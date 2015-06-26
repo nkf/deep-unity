@@ -9,9 +9,10 @@ namespace QNetwork.CNN {
 	    public Vector<float> Biases { get; set; }
 	    public Matrix<float>[][] Weights { get; set; }
         public int Stride { get; set; }
+        public int FilterSize { get; private set; }
 
         private readonly Matrix<float> _cache, _buffer, _conv;
-        private readonly int _fsize, _offset;
+	    private readonly int _offset;
 
 	    public ConvolutionalLayer(int fsize, int numf, int stride, SpatialLayer prev, ActivationFunction<Matrix<float>> activation)
             : base(prev.SideLength / stride, numf) {
@@ -32,7 +33,7 @@ namespace QNetwork.CNN {
             Stride = stride;
             _cache = mb.Dense(fsize, fsize);
             _conv = mb.Dense(prev.SideLength + fsize - 1, prev.SideLength + fsize - 1);
-            _fsize = fsize;
+            FilterSize = fsize;
             _offset = fsize / 2;
             if (prev.ChannelCount > 1) // No buffer needed if there is only 1 input channel.
                 _buffer = mb.Dense(SideLength, SideLength);
@@ -63,7 +64,7 @@ namespace QNetwork.CNN {
             // Apply valid convolutions.
             for (int m = 0; m < dest.RowCount; m++)
                 for (int n = 0; n < dest.ColumnCount; n++) {
-                    _conv.SubMatrix(m * Stride, _fsize, n * Stride, _fsize).PointwiseMultiply(filter, _cache);
+                    _conv.SubMatrix(m * Stride, FilterSize, n * Stride, FilterSize).PointwiseMultiply(filter, _cache);
                     dest.At(m, n, _cache.RowSums().Sum());
                 }
         }

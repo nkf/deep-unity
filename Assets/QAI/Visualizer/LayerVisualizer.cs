@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using QNetwork.CNN;
 using UnityEngine.UI;
@@ -30,8 +29,20 @@ namespace QAI.Visualizer {
 				_images.Add(mv);
 				last = m;
 			}
-		    var n = o[0].RowCount;
-            _visuals.GetComponentInChildren<Text>().text = _layer.GetType().Name.Replace("Layer", "") + " ("+n+"x"+n+"x"+o.Length+")";
+		    var info = string.Format("({0}x{1}x{2})", o[0].RowCount, o[0].ColumnCount, o.Length);
+            if (_layer is ConvolutionalLayer) {
+		        var convLayer = _layer as ConvolutionalLayer;
+		        info += string.Format(" fsize: {0} stride: {1}", convLayer.FilterSize, convLayer.Stride);
+		    }
+		    if (_layer is MeanPoolLayer) {
+		        var meanLayer = _layer as MeanPoolLayer;
+		        info += string.Format(" psize: {0}", meanLayer.PoolSize);
+		    }
+		    if (_layer is MaxPoolLayer) {
+		        var maxLayer = _layer as MaxPoolLayer;
+                info += string.Format(" psize: {0}", maxLayer.PoolSize);
+		    }
+            _visuals.GetComponentInChildren<Text>().text = _layer.GetType().Name.Replace("Layer", "") + info;
 		}
 
 		public GameObject CreateUI() {
