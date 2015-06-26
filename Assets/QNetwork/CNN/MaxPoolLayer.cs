@@ -22,13 +22,14 @@ namespace QNetwork.CNN {
                 for (int m = 0; m < _values[i].RowCount; m++)
                     for (int n = 0; n < _values[i].ColumnCount; n++) {
                         int x = -1, y = 0;
-                        float max = float.NegativeInfinity;
+                        float aMax = float.NegativeInfinity, max = 0;
                         input[i].SubMatrix(m * PoolSize, PoolSize, n * PoolSize, PoolSize).EnumerateRows().ForEach(r => {
                             float tmp = r.AbsoluteMaximum();
-                            if (tmp > max) {
+                            if (tmp > aMax) {
                                 x++;
                                 y = r.AbsoluteMaximumIndex();
-                                max = tmp;
+                                aMax = tmp;
+								max = r.At(y);
                             }
                         });
                         Distribution[i].At(m * PoolSize + x, n * PoolSize + y, 1f);
