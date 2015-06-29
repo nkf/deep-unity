@@ -139,7 +139,7 @@ namespace Pong {
 				v = bo.Intersects(controller) ? 100 : v;
                 return v;
             });
-            var state = _grid.Matrix.Clone();
+            
             //var state = MathNet.Numerics.LinearAlgebra.Vector<float>.Build.DenseOfArray(new[] { bp.x, bp.y, rbp.x, rbp.y, transform.position.y });
         
             /*
@@ -147,7 +147,7 @@ namespace Pong {
             .Concat(new double[]{rbp.x, rbp.y, topDist, botDist})
             .ToArray();
         */
-       
+            var state = _grid.Matrix.Clone();
             return new QState(new[] { state }, reward, terminal);
         }
 

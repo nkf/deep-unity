@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
-using QNetwork;
 using MathNet.Numerics.LinearAlgebra;
 
 namespace QAI.Visualizer {
@@ -14,14 +12,12 @@ namespace QAI.Visualizer {
 		public void Update(Matrix<float> matrix) {
 			for(var x = 0; x < matrix.RowCount; x++) {
 				for(var y = 0; y < matrix.ColumnCount; y++) {
-					Texture.SetPixel(x,y, GetColor(matrix[x,y]));
+					Texture.SetPixel(x,y, NetworkVisualizer.GetColor(matrix[x,y]));
 				}
 			}
 			Texture.Apply();
 		}
 
-		private Color GetColor(float value) {
-			return value > 0 ? Color.Lerp(Color.black, Color.white, value) : Color.Lerp(Color.black, Color.red, Mathf.Abs(value));
-		}
+		
 	}
 }
