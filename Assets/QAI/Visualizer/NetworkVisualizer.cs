@@ -23,7 +23,7 @@ namespace QAI.Visualizer {
 		}
 		
 		// Update is called once per frame
-		void FixedUpdate () {
+		void OnGUI () {
 			foreach(var l in _layers) l.Update();
 		}
 
