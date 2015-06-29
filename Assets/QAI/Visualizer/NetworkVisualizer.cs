@@ -25,7 +25,7 @@ namespace QAI.Visualizer {
 		
 		// Update is called once per frame
 		void OnGUI () {
-			foreach(var l in _layers) l.Update();
+			foreach(var l in _convLayers) l.Update();
 			_denseLayer.Update();
 		}
 
