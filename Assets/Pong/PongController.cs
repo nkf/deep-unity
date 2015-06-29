@@ -33,7 +33,7 @@ namespace Pong {
             _ball = FindObjectOfType<PongBall>();
             if (Side == Player.Player1) {
                 _grid = new Q2DGrid(16, transform,
-                    new GridSettings {Offset = new Vector3(9.2f, 0, 0), ResolutionX = 1.28f, ResolutionY = 1.28f});
+                    new GridSettings {Offset = new Vector3(8.3f, 0, 0), ResolutionX = 1.28f, ResolutionY = 1.28f});
                 QAIManager.InitAgent(this);
             }
         }
@@ -90,10 +90,11 @@ namespace Pong {
             var b = PongGame.BoundsFromTransform(_ball.transform);
             var controller = PongGame.BoundsFromTransform(transform);
             controller.size += new Vector3(0.2f,0,0);
+			PongGame.DebugDrawBounds(controller, Color.blue);
             if (b.Intersects(controller)) {
                 reward = 1;
                 terminal = winner.HasValue;
-                //terminal = true;
+                terminal = true;
             } else {
                 terminal = winner.HasValue;
                 reward = terminal ? (winner.Value == Side ? 1 : 0) : 0;
@@ -127,15 +128,15 @@ namespace Pong {
             //_grid.Populate((bo,c) => c.y == bpy ? 1 : 0); //one line
             //_grid.Populate((bo,c) => gbp.HasValue && gbp.Value.Equals(c) ? 1 : 0); //single
             _grid.Populate((bo, c) => {
-                var ham = gbp.HasValue ? HammingDistance(gbp.Value, c) : int.MaxValue;
-                return ham < 1 ? 255 : ham < 2 ? 128 : 0;
-                /*var x = bo.center.x;
-                var v = bo.Contains(new Vector3(x, _game.Border.yMin)) || bo.Contains(new Vector3(x, _game.Border.yMax)) ? 50 : 0f; //walls
-                v = gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 200f : v; //ball
-                v = bo.Contains(new Vector3(controller.x, controller.center.y)) 
-                    || bo.Contains(new Vector3(controller.x, controller.yMax)) 
-                    || bo.Contains(new Vector3(controller.x, controller.yMin)) 
-					? 100 : v; //controller
+//                var ham = gbp.HasValue ? HammingDistance(gbp.Value, c) : int.MaxValue;
+//                return ham < 1 ? 255 : ham < 2 ? 128 : 0;
+
+                var x = bo.center.x;
+//                var v = bo.Contains(new Vector3(x, _game.Border.min.y)) || bo.Contains(new Vector3(x, _game.Border.max.y)) ? 50 : 0f; //walls
+//				var v = !bo.Intersects(_game.Border) ? 50 : 0f;
+                var v = gbp.HasValue && HammingDistance(gbp.Value, c) < 1 ? 200f : 0f; //ball
+				v = bo.Contains(bp + _ball.Velocity.normalized * 2) ? 150f : v;
+				v = bo.Intersects(controller) ? 100 : v;
                 return v;
             });
             var state = _grid.Matrix.Clone();
