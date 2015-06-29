@@ -5,20 +5,19 @@ using UnityEngine.UI;
 using MathNet.Numerics.LinearAlgebra;
 
 namespace QAI.Visualizer {
-	public class LayerVisualizer  {
+	public class ConvLayerVisualizer  {
 
 		private List<MatrixVisualizer> _images;
 		private SpatialLayer _layer;
 		private GameObject _visuals;
 
-		public LayerVisualizer(SpatialLayer layer) {
+		public ConvLayerVisualizer(SpatialLayer layer) {
 			_layer = layer;
 		}
 
 		private void Init(Matrix<float>[] o) {
 			_images = new List<MatrixVisualizer>();
 			var p = _visuals.GetComponentInChildren<GridLayoutGroup>();
-			Matrix<float> last = null;
 
 			foreach(var m in o) {
 				var mv = new MatrixVisualizer(m.RowCount, m.ColumnCount);
@@ -27,7 +26,6 @@ namespace QAI.Visualizer {
 				r.transform.SetParent(p.transform, false);
 
 				_images.Add(mv);
-				last = m;
 			}
 		    var info = string.Format("({0}x{1}x{2})", o[0].RowCount, o[0].ColumnCount, o.Length);
             if (_layer is ConvolutionalLayer) {
@@ -46,12 +44,12 @@ namespace QAI.Visualizer {
 		}
 
 		public GameObject CreateUI() {
-			_visuals = GameObject.Instantiate(Resources.Load<GameObject>("LayerVisualizer"));
+			_visuals = GameObject.Instantiate(Resources.Load<GameObject>("ConvLayerVisualizer"));
 			return _visuals;
 		}
 
 		public void Update() {
-			var o = _layer.Output ();
+			var o = _layer.Output();
 			if(o == null || o.Length == 0) return;
 			if(_images == null) Init(o);
 

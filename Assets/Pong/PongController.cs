@@ -129,6 +129,7 @@ namespace Pong {
             _grid.Populate((bo, c) => {
                 var ham = gbp.HasValue ? HammingDistance(gbp.Value, c) : int.MaxValue;
                 return ham < 1 ? 255 : ham < 2 ? 128 : 0;
+            });
                 /*var x = bo.center.x;
                 var v = bo.Contains(new Vector3(x, _game.Border.yMin)) || bo.Contains(new Vector3(x, _game.Border.yMax)) ? 50 : 0f; //walls
                 v = gbp.HasValue && HammingDistance(gbp.Value, c) < 3 ? 200f : v; //ball
@@ -138,7 +139,7 @@ namespace Pong {
 					? 100 : v; //controller
                 return v;
             });
-            var state = _grid.Matrix.Clone();
+            
             //var state = MathNet.Numerics.LinearAlgebra.Vector<float>.Build.DenseOfArray(new[] { bp.x, bp.y, rbp.x, rbp.y, transform.position.y });
         
             /*
@@ -146,7 +147,7 @@ namespace Pong {
             .Concat(new double[]{rbp.x, rbp.y, topDist, botDist})
             .ToArray();
         */
-       
+            var state = _grid.Matrix.Clone();
             return new QState(new[] { state }, reward, terminal);
         }
 

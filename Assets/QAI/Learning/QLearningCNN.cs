@@ -234,7 +234,9 @@ namespace QAI.Learning {
         }
 
 		public NetworkVisualizer CreateVisualizer() {
-			return NetworkVisualizer.CreateVisualizer(_net);
+		    var list = _amap.Keys.ToList();
+            list.Sort((s1,s2) => _amap[s1]-_amap[s2]);
+			return NetworkVisualizer.CreateVisualizer(_net, list.ToArray());
 		}
     }
 

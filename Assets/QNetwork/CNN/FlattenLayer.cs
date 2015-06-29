@@ -2,8 +2,8 @@
 
 namespace QNetwork.CNN {
     public class FlattenLayer : TransformationLayer<Matrix<float>[], Vector<float>> {
-        private int _size;
-        private Vector<float> _values;
+        private readonly int _size;
+        private readonly Vector<float> _values;
         public int X { get; set; }
         public int Y { get; set; }
         public int Z { get; set; }
@@ -14,7 +14,7 @@ namespace QNetwork.CNN {
             Y = prev.SideLength;
             Z = prev.ChannelCount;
             _size = prev.SideLength * prev.SideLength * prev.ChannelCount;
-            _values = Vector<float>.Build.Dense(Size());
+            _values = Vector<float>.Build.Dense(_size);
         }
 
         public override int Size() {
