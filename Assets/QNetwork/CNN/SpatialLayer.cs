@@ -3,9 +3,9 @@
 namespace QNetwork.CNN {
 	public class SpatialLayer : Layer<Matrix<float>[]> {
         protected Matrix<float>[] _values;
-        public new SpatialLayer Prev { get; set; }
-        public int SideLength { get; set; }
-        public int ChannelCount { get; set; }
+        public new SpatialLayer Prev { get; protected set; }
+        public int SideLength { get; private set; }
+        public int ChannelCount { get; private set; }
 
         public SpatialLayer(int dimension, int channels) {
             SideLength = dimension;

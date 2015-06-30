@@ -1,6 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
-using Math = UnityEngine.Mathf;
 
 namespace QNetwork {
     public struct ActivationFunction<T> {
@@ -30,24 +30,24 @@ namespace QNetwork {
         };
 
         public static ActivationFunction<Vector<float>> Sigmoid = new ActivationFunction<Vector<float>> {
-            Apply = (xs, ys) => xs.Map(x => 1f / (1f + Math.Exp(-x)), ys),
+            Apply = (xs, ys) => xs.Map(x => 1f / (1f + (float)Math.Exp(-x)), ys),
             Derivatives = (ys, ds) => ys.Map(y => y * (1f - y), ds)
         };
 
         public static ActivationFunction<Vector<float>> Tanh = new ActivationFunction<Vector<float>> {
-            Apply = (xs, ys) => xs.Map(x => (float)System.Math.Tanh(x), ys),
+            Apply = (xs, ys) => xs.Map(x => (float)Math.Tanh(x), ys),
             Derivatives = (ys, ds) => ys.Map(y => 1f - y * y, ds)
         };
 
         public static ActivationFunction<Matrix<float>> Tanh2D = new ActivationFunction<Matrix<float>> {
-            Apply = (xs, ys) => xs.Map(x => (float)System.Math.Tanh(x), ys),
+            Apply = (xs, ys) => xs.Map(x => (float)Math.Tanh(x), ys),
             Derivatives = (ys, ds) => ys.Map(y => 1f - y * y, ds)
         };
 
         public static ActivationFunction<Vector<float>> Softmax = new ActivationFunction<Vector<float>> {
             Apply = (xs, ys) => {
                 var xmax = xs.Max();
-                xs.Map(x => Math.Exp(x - xmax), ys);
+                xs.Map(x => (float)Math.Exp(x - xmax), ys);
                 var sum = ys.Sum();
                 ys.Map(e => e / sum, ys);
             },

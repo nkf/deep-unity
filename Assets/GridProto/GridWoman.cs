@@ -118,6 +118,7 @@ namespace GridProto {
                  .ToArray(),
             */
                 null,
+                null,
                 //_grid.Matrix.Clone(),
                 dead ? 0 : goal ? 1 : 0,
                 dead || goal

@@ -5,6 +5,8 @@ using System.Linq;
 using QAI;
 using QAI.Agent;
 using QAI.Utility;
+using QNetwork.CNN;
+using MathNet.Numerics.LinearAlgebra;
 using UnityEngine;
 
 namespace Pong {
@@ -15,7 +17,7 @@ namespace Pong {
         PongBall _ball;
 
         Q2DGrid _grid;
-
+        Vector<float> _vect;
 
         public int Hits { get; set; } //Set by pongball
 
@@ -34,6 +36,7 @@ namespace Pong {
             if (Side == Player.Player1) {
                 _grid = new Q2DGrid(20, transform,
                     new GridSettings {Offset = new Vector3(10.2f, 0, 0), ResolutionX = 1.1f, ResolutionY = 1.1f});
+                _vect = Vector<float>.Build.Dense(new[] { 1f });
                 QAIManager.InitAgent(this);
             }
         }
@@ -146,8 +149,8 @@ namespace Pong {
             .Concat(new double[]{rbp.x, rbp.y, topDist, botDist})
             .ToArray();
         */
-       
-            return new QState(new[] { state }, reward, terminal);
+
+            return new QState(new[] { state }, _vect, reward, terminal);
         }
 
         public AIID AI_ID() {

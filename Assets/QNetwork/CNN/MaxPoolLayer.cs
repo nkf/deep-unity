@@ -1,10 +1,10 @@
-﻿using System.Linq;
+﻿using System;
 using MathNet.Numerics.LinearAlgebra;
 
 namespace QNetwork.CNN {
 	public class MaxPoolLayer : SpatialLayer {
-        public int PoolSize { get; set; }
-        public Matrix<float>[] Distribution { get; set; }
+        public int PoolSize { get; private set; }
+        public Matrix<float>[] Distribution { get; private set; }
 
         public MaxPoolLayer(int size, SpatialLayer prev) : base(prev.SideLength / size, prev.ChannelCount) {
             _values = new Matrix<float>[ChannelCount];
@@ -21,17 +21,18 @@ namespace QNetwork.CNN {
             for (int i = 0; i < _values.Length; i++)
                 for (int m = 0; m < _values[i].RowCount; m++)
                     for (int n = 0; n < _values[i].ColumnCount; n++) {
-                        int x = -1, y = 0;
-                        float max = float.NegativeInfinity;
-                        input[i].SubMatrix(m * PoolSize, PoolSize, n * PoolSize, PoolSize).EnumerateRows().ForEach(r => {
-                            float tmp = r.AbsoluteMaximum();
-                            if (tmp > max) {
-                                x++;
-                                y = r.AbsoluteMaximumIndex();
-                                max = tmp;
+                        float amax = float.NegativeInfinity, max = 0;
+                        int posx = 0, posy = 0;
+                        for (int x = 0; x < PoolSize; x++)
+                            for (int y = 0; y < PoolSize; y++) {
+                                float tmp = input[i].At(m * PoolSize + x, n * PoolSize + y);
+                                if (Math.Abs(tmp) > amax) {
+                                    posx = x;
+                                    posy = y;
+                                    amax = Math.Abs(max = tmp);
+                                }
                             }
-                        });
-                        Distribution[i].At(m * PoolSize + x, n * PoolSize + y, 1f);
+                        Distribution[i].At(m * PoolSize + posx, n * PoolSize + posy, 1f);
                         _values[i].At(m, n, max);
                     }
             return _values;

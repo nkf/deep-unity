@@ -1,22 +1,26 @@
 ﻿using System;
 using System.Linq;
+using QNetwork.CNN;
 using MathNet.Numerics.LinearAlgebra;
 
 namespace QAI.Agent {
     [Serializable]
     public struct QState {
-        public readonly Matrix<float>[] Features;
+        public readonly StatePair Features;
         public readonly float Reward;
         public readonly bool IsTerminal;
-        public int Size { get { return Features[0].RowCount; } }
-        public QState(Matrix<float>[] features, float reward, bool isTerminal) : this() {
-            Features = features;
+        public int Size { get { return Features.Spatial[0].RowCount; } }
+        public QState(Matrix<float>[] image, Vector<float> vector, float reward, bool isTerminal) : this() {
+            Features = new StatePair(image, vector);
             Reward = reward;
             IsTerminal = isTerminal;
         }
 
         public bool Equals(QState other) {
-            return Features == other.Features || (Features != null && other.Features != null && Features.SequenceEqual(other.Features));
+            var img = Features.Spatial;
+            var oimg = other.Features.Spatial;
+            return (img == oimg || (img != null && oimg != null && img.SequenceEqual(oimg)))
+                && Features.Linear.Equals(other.Features.Linear);
         }
 
         public override bool Equals(object obj) {
@@ -26,7 +30,7 @@ namespace QAI.Agent {
 
         public override int GetHashCode() {
             unchecked {
-                return Features != null ? Hash(Features) : 0;
+                return Hash(Features.Spatial) * 31 + Features.Linear.GetHashCode();
             }
         }
 

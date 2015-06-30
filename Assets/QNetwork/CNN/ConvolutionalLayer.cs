@@ -1,14 +1,13 @@
 ﻿using System.Xml;
 using MathNet.Numerics.Distributions;
 using MathNet.Numerics.LinearAlgebra;
-using Math = UnityEngine.Mathf;
 
 namespace QNetwork.CNN {
 	public class ConvolutionalLayer : SpatialLayer {
         public ActivationFunction<Matrix<float>> Activation;
-	    public Vector<float> Biases { get; set; }
-	    public Matrix<float>[][] Weights { get; set; }
-        public int Stride { get; set; }
+	    public Vector<float> Biases { get; private set; }
+	    public Matrix<float>[][] Weights { get; private set; }
+        public int Stride { get; private set; }
 
         private readonly Matrix<float> _cache, _buffer, _conv;
         private readonly int _fsize, _offset;
@@ -63,27 +62,25 @@ namespace QNetwork.CNN {
             // Apply valid convolutions.
             for (int m = 0; m < dest.RowCount; m++)
                 for (int n = 0; n < dest.ColumnCount; n++) {
-                    _conv.SubMatrix(m * Stride, _fsize, n * Stride, _fsize).PointwiseMultiply(filter, _cache);
+                    _cache.SetSubMatrix(0, m * Stride, _fsize, 0, n * Stride, _fsize, _conv);
+                    _cache.PointwiseMultiply(filter, _cache);
                     dest.At(m, n, _cache.RowSums().Sum());
                 }
         }
 
         public override void Serialize(XmlWriter writer) {
             writer.WriteStartElement(GetType().Name);
-
             for (int x = 0; x < Weights.Length; x++) {
                 for (int y = 0; y < Weights[x].Length; y++) {
                     writer.XmlSerialize(Weights[x][y].ToColumnArrays());
                 }
             }
             writer.XmlSerialize(Biases.ToArray());
-
             writer.WriteEndElement();
         }
 
         public override void Deserialize(XmlReader reader) {
             reader.ReadStartElement(GetType().Name);
-
             var mb = Matrix<float>.Build;
             for (int x = 0; x < Weights.Length; x++) {
                 for (int y = 0; y < Weights[x].Length; y++) {
@@ -92,7 +89,6 @@ namespace QNetwork.CNN {
                 }
             }
             Biases = Vector<float>.Build.Dense( reader.XmlDeserialize<float[]>() );
-
             reader.ReadEndElement();
         }
 	}
