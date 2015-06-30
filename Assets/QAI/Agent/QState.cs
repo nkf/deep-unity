@@ -21,10 +21,10 @@ namespace QAI.Agent {
             var oimg = other.Features.Spatial;
             return (IsTerminal == other.IsTerminal 
 				&& Reward == other.Reward 
-				&& (img == oimg)
+				&& ((img == oimg)
 				|| (img != null 
 					    && oimg != null 
-					    && img.SequenceEqual(oimg)))
+					    && img.SequenceEqual(oimg))))
                 && Features.Linear.Equals(other.Features.Linear);
         }
 
