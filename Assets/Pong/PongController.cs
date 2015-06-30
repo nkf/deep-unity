@@ -151,7 +151,7 @@ namespace Pong {
             .ToArray();
         */
             var state = _grid.Matrix.Clone();
-            return new QState(new[] { state }, _vect, reward, terminal);
+            return new QState(new[] { state }, _vect.Clone(), reward, terminal);
         }
 
         public AIID AI_ID() {
@@ -168,6 +168,7 @@ namespace Pong {
             return Math.Abs(a.x - b.x) + Math.Abs(a.y - b.y);
         }
     }
+
     internal enum Player {
         Player1 = 0, Player2 = 1
     }

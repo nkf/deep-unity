@@ -20,12 +20,12 @@ namespace QAI.Learning {
         private readonly Param Epsilon = t => EpisilonStart - ((EpisilonEnd - EpisilonStart) / QAIManager.NumIterations()) * t;
         private const float Discount = 0.95f;
 
-        private const bool PrioritySweeping = false;
+        private const bool PrioritySweeping = true;
 
         private const int BatchSize = PrioritySweeping ? 5 : 20;
 		private const int MaxStoreSize = 100;
         private const int PredecessorCap = 6;
-        private const float PriorityThreshold = 0.05f;
+        private const float PriorityThreshold = 0.005f;
 
         private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.01f, Momentum = 0.5f };
 
@@ -57,7 +57,7 @@ namespace QAI.Learning {
                 _amap[a.ActionId] = ix++;
             // Model.
             if(_remake) {
-                _net = new ConvolutionalNetwork(size, 1, _amap.Count, new CNNArgs { FilterSize = 5, FilterCount = 3, PoolLayerSize = 2, Stride = 2 });
+                _net = new ConvolutionalNetwork(size, 1, _amap.Count, new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 1 });
             } else {
                 _net = ConvolutionalNetwork.Load(MODEL_PATH);
             }
@@ -185,8 +185,8 @@ namespace QAI.Learning {
             int N = Mathf.Min(BatchSize, _pq.Count);
             var inp = new StatePair[N];
             var outp = new TargetIndexPair[N];
-			if(_pq.Count > 0)
-				Debug.Log("LEARNING " + _pq.Count);
+			/*if(_pq.Count > 0)
+				Debug.Log("LEARNING " + _pq.Count);*/
             for(int i = 0; i < N; i++) {
                 var sars = _pq.DeleteMax();
                 inp[i] = sars.State.Features;

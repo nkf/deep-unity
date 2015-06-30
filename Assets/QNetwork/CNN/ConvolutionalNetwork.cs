@@ -84,15 +84,15 @@ namespace QNetwork.CNN {
             Compute(input);
             labels.CopyTo(_loss);
             _loss.Subtract(Output(), _loss);
-            var pair = _split.Visit(_outback.Visit(_loss, _params), _params);
-            _backprop.BackPropagation(_unflatten.Visit(pair.left, _params), _params);
+            var img = _split.Visit(_outback.Visit(_loss, _params), _params).left;
+            _backprop.BackPropagation(_unflatten.Visit(img, _params), _params);
         }
 
         public void SGD(StatePair input, TargetIndexPair p) {
             _loss.Clear();
             _loss.At(p.Index, p.Target - Compute(input)[p.Index]);
-            var pair = _split.Visit(_outback.Visit(_loss, _params), _params);
-            _backprop.BackPropagation(_unflatten.Visit(pair.left, _params), _params);
+            var img = _split.Visit(_outback.Visit(_loss, _params), _params).left;
+            _backprop.BackPropagation(_unflatten.Visit(img, _params), _params);
         }
 
 		public IEnumerable<SpatialLayer> IterateSpatialLayers() {
