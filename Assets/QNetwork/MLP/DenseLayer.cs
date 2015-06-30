@@ -6,9 +6,9 @@ using MathNet.Numerics.LinearAlgebra;
 namespace QNetwork.MLP {
     public class DenseLayer : Layer<Vector<float>> {
         private readonly Vector<float> _values;
-        public ActivationFunction<Vector<float>> Activation { get; set; }
-        public Vector<float> Biases { get; set; }
-        public Matrix<float> Weights { get; set; }
+        public ActivationFunction<Vector<float>> Activation { get; private set; }
+        public Vector<float> Biases { get; private set; }
+        public Matrix<float> Weights { get; private set; }
 
         public DenseLayer(int size, Layer<Vector<float>> prev, ActivationFunction<Vector<float>> activation) {
             Activation = activation;
@@ -37,19 +37,15 @@ namespace QNetwork.MLP {
 
         public override void Serialize(XmlWriter writer) {
             writer.WriteStartElement(GetType().Name);
-
             writer.XmlSerialize(Weights.ToColumnArrays());
             writer.XmlSerialize(Biases.ToArray());
-
             writer.WriteEndElement();
         }
 
         public override void Deserialize(XmlReader reader) {
             reader.ReadStartElement(GetType().Name);
-            
             Weights = Matrix<float>.Build.DenseOfColumnArrays( reader.XmlDeserialize<float[][]>() );
             Biases = Vector<float>.Build.Dense( reader.XmlDeserialize<float[]>() );
-
             reader.ReadEndElement();
         }
     }

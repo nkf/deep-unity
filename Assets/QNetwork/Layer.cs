@@ -3,7 +3,7 @@ using System.Xml;
 
 namespace QNetwork {
 	public abstract class Layer<T> : Unit<T, T> {
-        public Layer<T> Prev { get; set; }
+        public Layer<T> Prev { get; protected set; }
 
         public abstract int Size();
 
@@ -21,7 +21,7 @@ namespace QNetwork {
 	}
 
     public abstract class TransformationLayer<T, U> : Layer<U>, Unit<T, U> {
-        public new Layer<T> Prev { get; set; }
+        public new Layer<T> Prev { get; protected set; }
 
         public abstract U Compute(T input);
 

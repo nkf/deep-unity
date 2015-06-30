@@ -5,25 +5,29 @@ namespace QNetwork.Experimental {
         public Vector<float> left, right;
     }
 
-	public class TreeLayer : TransformationLayer<VectorPair[], Vector<float>> {
-        private Vector<float> _buffer;
+	public class TreeLayer : TransformationLayer<VectorPair, Vector<float>> {
+        private readonly Vector<float> _values;
+        public int LeftSize { get; private set; }
+        public int RightSize { get; private set; }
 
         public TreeLayer(int leftsize, int rightsize) {
-            _buffer = Vector<float>.Build.Dense(leftsize + rightsize);
+            _values = Vector<float>.Build.Dense(leftsize + rightsize);
+            LeftSize = leftsize;
+            RightSize = rightsize;
         }
 
         public override int Size() {
-            return _buffer.Count;
+            return _values.Count;
         }
 
-        public override Vector<float> Compute(params VectorPair[] input) {
-            //_buffer.SetSubVector(0, input.left.Count, input.left);
-            //_buffer.SetSubVector(input.left.Count, input.right.Count, input.right);
-            return _buffer;
+        public override Vector<float> Compute(VectorPair input) {
+            _values.SetSubVector(0, LeftSize, input.left);
+            _values.SetSubVector(LeftSize, RightSize, input.right);
+            return _values;
         }
 
         public override Vector<float> Output() {
-            return _buffer;
+            return _values;
         }
 	}
 }

@@ -11,8 +11,9 @@ namespace GridProto {
         private Q2DGrid _grid;
         private Bin _nvectorBin;
         private void Start() {
-            _grid = new Q2DGrid(12, transform, new GridSettings { NormalAxis = Axis.Y });
+            _grid = new Q2DGrid(13, transform, new GridSettings { NormalAxis = Axis.Y });
             _nvectorBin = new Bin(-0.75f,-0.25f,0.25f,0.75f);
+            QAIManager.InitAgent(this);
         }
 
         public bool IsAboveGround() {
@@ -73,40 +74,20 @@ namespace GridProto {
 
         public QState GetState() {
             var p = PositionToState(transform.position);
-            var g = Goal.State;
-            //var state = PosAndGoal(p, g);
-            //var state = PosToGoal(transform.position, Goal.Position);
-            //var state = VectorToGoal(transform.position, new Vector3(GoalState[0], GoalState[1], GoalState[2]));
-            /*
-        double[, ,] grids = new double[1, 9, 9];
-        for (int n = 0; n < 1; n++) {
-            for (int i = 0; i < 9; i++) {
-                for (int j = 0; j < 9; j++) {
-                    var x = i + p[0] - 4;
-                    var z = j + p[2] - 4;
-                    var ray = new Ray(new Vector3(x, 2, z), Vector3.down);
-                    RaycastHit hit;
-                    if (Physics.Raycast(ray, out hit, 3.0f)) {
-                        if (n == 0) {
-                            if (hit.collider.gameObject == Goal.Instance.gameObject)
-                                grids[n, i, j] = 10.0;
-                            else if (hit.collider.gameObject != this.gameObject)
-                                grids[n, i, j] = 1.0;
-                        } else {
-                            if (hit.collider.gameObject != this.gameObject)
-                                grids[n, i, j] = 1.0;
-                        }
-                    }
-                }
-            }
-        }*/
+            var g = PositionToState(Goal.Position);
+            
             _grid.Populate(bounds => {
                 var ray = new Ray(new Vector3(bounds.center.x, 2, bounds.center.z), Vector3.down);
+                
                 RaycastHit hit;
+                int r;
                 if (Physics.Raycast(ray, out hit, 3.0f)) {
-                    return hit.collider.gameObject == Goal.Instance.gameObject ? 10 : 1;
+                    r = hit.collider.gameObject == Goal.Instance.gameObject ? 10 : 1;
                 }
-                return 0;
+                else r = 0;
+                Debug.DrawRay(ray.origin, ray.direction * 3.0f, r == 0 ? Color.red : r == 1 ? Color.gray : Color.yellow);
+
+                return r;
             });
             var dead = !IsAboveGround();
             var goal = p.SequenceEqual(g);
@@ -117,19 +98,20 @@ namespace GridProto {
                  .Concat(new double[] {v.x, v.z})
                  .ToArray(),
             */
+                new []{_grid.Matrix.Clone()},
                 null,
-                //_grid.Matrix.Clone(),
                 dead ? 0 : goal ? 1 : 0,
                 dead || goal
                 );
         }
 
         public AIID AI_ID() {
-            throw new NotImplementedException();
+            return new AIID("GridWomanAI");
         }
 
 
-        public void Update() {
+        public void FixedUpdate() {
+            QAIManager.GetAction(GetState())();
             _grid.DebugDraw(value => value == 0 ? Color.red : value == 1 ? Color.gray : Color.yellow);
             Action currentAction = null;
             if (Key(KeyCode.UpArrow, KeyCode.W)) currentAction = MoveUp;

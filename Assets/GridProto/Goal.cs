@@ -21,7 +21,6 @@ public class Goal : MonoBehaviour {
     
     public static Goal Instance;
     public static Vector3 Position;
-    public static int[] State;
 
     void Awake() {
         if (Technique == SpawnTechnique.UseGoalPosistions && GoalPositions.Count > 0) {
@@ -30,21 +29,20 @@ public class Goal : MonoBehaviour {
             if (_index >= GoalPositions.Count) _index = 0;
         } else if (Technique == SpawnTechnique.RandomAllValid || Technique == SpawnTechnique.RandomAllValidAlsoWoman) {
             if (_randomGoalPositions == null || _randomGoalPositions.Count == 0) _randomGoalPositions = AllValidPositions();
-            PickPlaceRemove(_randomGoalPositions,transform);
+            PickPlaceRemove(_randomGoalPositions,transform, new Vector3(0,-0.5f,0));
             if (Technique == SpawnTechnique.RandomAllValidAlsoWoman) {
                 if (_randomWomanPositions == null || _randomWomanPositions.Count == 0) _randomWomanPositions = AllValidPositions();
-                PickPlaceRemove(_randomWomanPositions, FindObjectOfType<GridWoman>().transform);
+                PickPlaceRemove(_randomWomanPositions, FindObjectOfType<GridWoman>().transform, Vector3.zero);
             }
         }
 
         Instance = this;
         Position = transform.position;
-        State = new[] {Mathf.RoundToInt(Position.x), 1, Mathf.RoundToInt(Position.z)};
     }
 
-    private void PickPlaceRemove(List<Vector3> list, Transform target) {
+    private void PickPlaceRemove(List<Vector3> list, Transform target, Vector3 offset) {
         var pos = list.Random().First();
-        target.position = pos;
+        target.position = pos + offset;
         list.Remove(pos);
     }
 
@@ -53,7 +51,7 @@ public class Goal : MonoBehaviour {
         var positions = new List<Vector3>();
         for (var x = MinX; x < MaxX; x++) {
             for (var y = MinY; y < MaxY; y++) {
-                var position = new Vector3(x, 0.6f, y);
+                var position = new Vector3(x, 1, y);
                 if(Physics.Raycast(position, Vector3.down, 2f)) positions.Add(position);
             }
         }

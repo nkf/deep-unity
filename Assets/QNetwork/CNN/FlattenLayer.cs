@@ -4,9 +4,9 @@ namespace QNetwork.CNN {
     public class FlattenLayer : TransformationLayer<Matrix<float>[], Vector<float>> {
         private readonly int _size;
         private readonly Vector<float> _values;
-        public int X { get; set; }
-        public int Y { get; set; }
-        public int Z { get; set; }
+        public int X { get; private set; }
+        public int Y { get; private set; }
+        public int Z { get; private set; }
 
         public FlattenLayer(SpatialLayer prev) {
             Prev = prev;

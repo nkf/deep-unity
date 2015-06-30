@@ -1,14 +1,13 @@
 ﻿using System.Xml;
 using MathNet.Numerics.Distributions;
 using MathNet.Numerics.LinearAlgebra;
-using Math = UnityEngine.Mathf;
 
 namespace QNetwork.CNN {
 	public class ConvolutionalLayer : SpatialLayer {
-        public ActivationFunction<Matrix<float>> Activation;
-	    public Vector<float> Biases { get; set; }
-	    public Matrix<float>[][] Weights { get; set; }
-        public int Stride { get; set; }
+        public ActivationFunction<Matrix<float>> Activation { get; private set; }
+	    public Vector<float> Biases { get; private set; }
+	    public Matrix<float>[][] Weights { get; private set; }
+        public int Stride { get; private set; }
         public int FilterSize { get; private set; }
 
         private readonly Matrix<float> _cache, _buffer, _conv;
@@ -31,9 +30,9 @@ namespace QNetwork.CNN {
             }
             Prev = prev;
             Stride = stride;
+            FilterSize = fsize;
             _cache = mb.Dense(fsize, fsize);
             _conv = mb.Dense(prev.SideLength + fsize - 1, prev.SideLength + fsize - 1);
-            FilterSize = fsize;
             _offset = fsize / 2;
             if (prev.ChannelCount > 1) // No buffer needed if there is only 1 input channel.
                 _buffer = mb.Dense(SideLength, SideLength);
@@ -64,27 +63,25 @@ namespace QNetwork.CNN {
             // Apply valid convolutions.
             for (int m = 0; m < dest.RowCount; m++)
                 for (int n = 0; n < dest.ColumnCount; n++) {
-                    _conv.SubMatrix(m * Stride, FilterSize, n * Stride, FilterSize).PointwiseMultiply(filter, _cache);
+                    _cache.SetSubMatrix(0, m * Stride, FilterSize, 0, n * Stride, FilterSize, _conv);
+                    _cache.PointwiseMultiply(filter, _cache);
                     dest.At(m, n, _cache.RowSums().Sum());
                 }
         }
 
         public override void Serialize(XmlWriter writer) {
             writer.WriteStartElement(GetType().Name);
-
             for (int x = 0; x < Weights.Length; x++) {
                 for (int y = 0; y < Weights[x].Length; y++) {
                     writer.XmlSerialize(Weights[x][y].ToColumnArrays());
                 }
             }
             writer.XmlSerialize(Biases.ToArray());
-
             writer.WriteEndElement();
         }
 
         public override void Deserialize(XmlReader reader) {
             reader.ReadStartElement(GetType().Name);
-
             var mb = Matrix<float>.Build;
             for (int x = 0; x < Weights.Length; x++) {
                 for (int y = 0; y < Weights[x].Length; y++) {
@@ -93,7 +90,6 @@ namespace QNetwork.CNN {
                 }
             }
             Biases = Vector<float>.Build.Dense( reader.XmlDeserialize<float[]>() );
-
             reader.ReadEndElement();
         }
 	}

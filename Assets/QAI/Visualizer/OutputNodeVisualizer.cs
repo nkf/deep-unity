@@ -7,6 +7,8 @@ namespace QAI.Visualizer {
         private readonly GameObject _outputNode;
         private readonly GameObject _selected;
         private readonly Texture2D _texture;
+        public Vector3 Position { get { return _outputNode.transform.position; } }
+
 
         public OutputNodeVisualizer(string actionName) {
             _outputNode = GameObject.Instantiate(Resources.Load<GameObject>("OutputNodeVisualizer"));
@@ -18,6 +20,7 @@ namespace QAI.Visualizer {
             value.uvRect = new Rect(0,0,2,2);
             _outputNode.GetComponentInChildren<Text>().text = actionName;
         }
+        
 
         public GameObject GetUI() {
             return _outputNode;
