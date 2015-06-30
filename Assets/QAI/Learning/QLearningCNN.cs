@@ -26,6 +26,7 @@ namespace QAI.Learning {
 		private const int MaxStoreSize = 100;
         private const int PredecessorCap = 6;
         private const float PriorityThreshold = 0.05f;
+		private const int PQSize = 30;
 
         private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.01f, Momentum = 0.9f };
 
@@ -110,7 +111,7 @@ namespace QAI.Learning {
             if(PrioritySweeping) {
                 PutPredecessor(sars);
                 EnqueueSARS(sars);
-                while(_pq.Count > 100)
+                while(_pq.Count > PQSize)
                     _pq.DeleteMin();
             } else {
                 _qexp.Store(sars, MaxStoreSize);
