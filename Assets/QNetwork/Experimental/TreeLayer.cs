@@ -6,7 +6,7 @@ namespace QNetwork.Experimental {
     }
 
 	public class TreeLayer : TransformationLayer<VectorPair, Vector<float>> {
-        private Vector<float> _values;
+        private readonly Vector<float> _values;
         public int LeftSize { get; private set; }
         public int RightSize { get; private set; }
 

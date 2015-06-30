@@ -4,13 +4,14 @@ using MathNet.Numerics.LinearAlgebra;
 
 namespace QNetwork.CNN {
 	public class ConvolutionalLayer : SpatialLayer {
-        public ActivationFunction<Matrix<float>> Activation;
+        public ActivationFunction<Matrix<float>> Activation { get; private set; }
 	    public Vector<float> Biases { get; private set; }
 	    public Matrix<float>[][] Weights { get; private set; }
         public int Stride { get; private set; }
+        public int FilterSize { get; private set; }
 
         private readonly Matrix<float> _cache, _buffer, _conv;
-        private readonly int _fsize, _offset;
+	    private readonly int _offset;
 
 	    public ConvolutionalLayer(int fsize, int numf, int stride, SpatialLayer prev, ActivationFunction<Matrix<float>> activation)
             : base(prev.SideLength / stride, numf) {
@@ -29,9 +30,9 @@ namespace QNetwork.CNN {
             }
             Prev = prev;
             Stride = stride;
+            FilterSize = fsize;
             _cache = mb.Dense(fsize, fsize);
             _conv = mb.Dense(prev.SideLength + fsize - 1, prev.SideLength + fsize - 1);
-            _fsize = fsize;
             _offset = fsize / 2;
             if (prev.ChannelCount > 1) // No buffer needed if there is only 1 input channel.
                 _buffer = mb.Dense(SideLength, SideLength);
@@ -62,7 +63,7 @@ namespace QNetwork.CNN {
             // Apply valid convolutions.
             for (int m = 0; m < dest.RowCount; m++)
                 for (int n = 0; n < dest.ColumnCount; n++) {
-                    _cache.SetSubMatrix(0, m * Stride, _fsize, 0, n * Stride, _fsize, _conv);
+                    _cache.SetSubMatrix(0, m * Stride, FilterSize, 0, n * Stride, FilterSize, _conv);
                     _cache.PointwiseMultiply(filter, _cache);
                     dest.At(m, n, _cache.RowSums().Sum());
                 }

@@ -2,8 +2,8 @@
 
 namespace QNetwork.Experimental {
 	public class TreeLayerBackprop : Backprop<Vector<float>, VectorPair> {
-        private TreeLayer _unit;
-        private VectorPair _outgoing;
+        private readonly TreeLayer _unit;
+        private readonly VectorPair _outgoing;
 
         public TreeLayerBackprop(TreeLayer unit) {
             _unit = unit;

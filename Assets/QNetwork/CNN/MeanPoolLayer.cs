@@ -2,8 +2,8 @@
 
 namespace QNetwork.CNN {
 	public class MeanPoolLayer : SpatialLayer {
+        private readonly int _area;
         public int PoolSize { get; private set; }
-        private int _area;
 
         public MeanPoolLayer(int size, SpatialLayer prev) : base(prev.SideLength / size, prev.ChannelCount) {
             _values = new Matrix<float>[ChannelCount];

@@ -19,7 +19,12 @@ namespace QAI.Agent {
         public bool Equals(QState other) {
             var img = Features.Spatial;
             var oimg = other.Features.Spatial;
-            return (img == oimg || (img != null && oimg != null && img.SequenceEqual(oimg)))
+            return (IsTerminal == other.IsTerminal 
+				&& Reward == other.Reward 
+				&& (img == oimg)
+				|| (img != null 
+					    && oimg != null 
+					    && img.SequenceEqual(oimg)))
                 && Features.Linear.Equals(other.Features.Linear);
         }
 
