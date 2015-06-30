@@ -2,6 +2,7 @@
 using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
 using QNetwork.CNN;
+using QNetwork.Experimental;
 using QNetwork.MLP;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,6 +10,7 @@ using UnityEngine.UI;
 namespace QAI.Visualizer {
     public class DenseLayerVisualizer {
         private readonly SpatialLayer _spatialLayer;
+        private readonly TreeLayer _combinationLayer;
         private readonly DenseLayer _denseLayer;
         private List<NodeMatrixVisualizer> _nodeMatrices;
         private List<OutputNodeVisualizer> _outputNodes;
@@ -16,9 +18,10 @@ namespace QAI.Visualizer {
         private readonly GameObject _outputVisuals;
         private readonly string[] _actionIndex;
 
-        public DenseLayerVisualizer(SpatialLayer spatialLayer, DenseLayer denseLayer, string[] actionIndex) {
+        public DenseLayerVisualizer(SpatialLayer spatialLayer,TreeLayer combinationLayer, DenseLayer denseLayer, string[] actionIndex) {
             _actionIndex = actionIndex;
             _spatialLayer = spatialLayer;
+            _combinationLayer = combinationLayer;
             _denseLayer = denseLayer;
             _spatialVisuals = GameObject.Instantiate(Resources.Load<GameObject>("DenseLayerVisualizer"));
             _outputVisuals = GameObject.Instantiate(Resources.Load<GameObject>("OutputLayerVisualizer"));
@@ -85,6 +88,7 @@ namespace QAI.Visualizer {
             var list = new List<Tuple<int, int, float>>();
             for (int x = 0; x < matrix.RowCount; x++) {
                 for (int y = 0; y < matrix.ColumnCount; y++) {
+                    if(y >= _combinationLayer.LeftSize) continue;
                     list.Add(new Tuple<int, int, float>(x,y, matrix.At(x,y)));
                 }
             }

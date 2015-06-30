@@ -17,7 +17,7 @@ namespace QAI.Visualizer {
 		    _convLayers = _cnn.IterateSpatialLayers().Select(sl => new ConvLayerVisualizer(sl)).ToList();
 			foreach(var l in _convLayers)
 				l.CreateUI().transform.SetParent(p.transform, false);
-            _denseLayer = new DenseLayerVisualizer(_cnn.IterateSpatialLayers().Last(), _cnn.OutputLayer, actionIndex);
+            _denseLayer = new DenseLayerVisualizer(_cnn.IterateSpatialLayers().Last(), _cnn.CombinationLayer, _cnn.OutputLayer, actionIndex);
 		    foreach (var ui in _denseLayer.GetUI()) {
 		        ui.transform.SetParent(p.transform,false);
 		    }
