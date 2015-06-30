@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using UnityEngine;
 using QNetwork.CNN;
 using System.Collections.Generic;
@@ -24,9 +24,9 @@ namespace QAI.Visualizer {
 		}
 		
 		// Update is called once per frame
-		void Update () {
+		void OnGUI () {
 			foreach(var l in _convLayers) l.Update();
-            _denseLayer.Update();
+			_denseLayer.Update();
 		}
 
 		public static NetworkVisualizer CreateVisualizer(ConvolutionalNetwork network, string[] actionIndex) {
