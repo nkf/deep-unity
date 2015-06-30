@@ -1,10 +1,9 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
-using Math = UnityEngine.Mathf;
 
 namespace QNetwork.CNN {
 	public class ConvolutionalLayerBackprop : Backprop<Matrix<float>[], Matrix<float>[]> {
         private readonly ConvolutionalLayer _unit;
-        private readonly Matrix<float> _fbuf, _ebuf;
+        private readonly Matrix<float> _fbuf, _ebuf, _subm;
         private readonly Matrix<float>[] _outgoing, _padded, _input;
         private readonly Matrix<float>[][] _deltas;
 
@@ -22,6 +21,7 @@ namespace QNetwork.CNN {
                 _input[i] = Matrix<float>.Build.Dense(unit.Prev.SideLength + fsize - 1, unit.Prev.SideLength + fsize - 1);
             _ebuf = Matrix<float>.Build.Dense(unit.SideLength, unit.SideLength);
             _fbuf = Matrix<float>.Build.Dense(fsize, fsize);
+            _subm = Matrix<float>.Build.Dense(fsize, fsize);
             _deltas = new Matrix<float>[unit.Prev.ChannelCount][];
             for (int i = 0; i < _deltas.Length; i++) {
                 _deltas[i] = new Matrix<float>[unit.ChannelCount];
@@ -51,10 +51,12 @@ namespace QNetwork.CNN {
                         for (int n = 0; n < incoming[j].ColumnCount; n++) {
                             // Propagate error.
                             _unit.Weights[i][j].Multiply(incoming[j].At(m, n), _fbuf);
-                            _padded[i].SubMatrix(m * stride, fsize, n * stride, fsize).Add(_fbuf, _fbuf);
-                            _padded[i].SetSubMatrix(m * stride, fsize, n * stride, fsize, _fbuf);
+                            _subm.SetSubMatrix(0, m * stride, fsize, 0, n * stride, fsize, _padded[i]);
+                            _subm.Add(_fbuf, _subm);
+                            _padded[i].SetSubMatrix(m * stride, fsize, n * stride, fsize, _subm);
                             // Calculate deltas.
-                            _input[i].SubMatrix(m * stride, fsize, n * stride, fsize).Multiply(incoming[j].At(m, n) * par.LearningRate, _fbuf);
+                            _subm.SetSubMatrix(0, m * stride, fsize, 0, n * stride, fsize, _input[i]);
+                            _subm.Multiply(incoming[j].At(m, n) * par.LearningRate, _fbuf);
                             _deltas[i][j].Add(_fbuf, _deltas[i][j]);
                         }
                     _unit.Weights[i][j].Add(_deltas[i][j], _unit.Weights[i][j]); // Adjust weights.
@@ -62,7 +64,7 @@ namespace QNetwork.CNN {
                 _unit.Biases.At(j, _unit.Biases.At(j) + incoming[j].RowSums().Sum() * par.LearningRate); // Adjust biases.
             }
             for (int i = 0; i < _unit.Prev.ChannelCount; i++)
-                _padded[i].SubMatrix(offset, _unit.Prev.SideLength, offset, _unit.Prev.SideLength).CopyTo(_outgoing[i]);
+                _outgoing[i].SetSubMatrix(0, offset, _unit.Prev.SideLength, 0, offset, _unit.Prev.SideLength, _padded[i]);
             return _outgoing;
         }
 	}

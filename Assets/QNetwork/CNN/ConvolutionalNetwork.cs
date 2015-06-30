@@ -2,34 +2,40 @@
 using System.IO;
 using System.Xml;
 using MathNet.Numerics.LinearAlgebra;
+using QAI.Agent;
+using QNetwork.Experimental;
 using QNetwork.MLP;
-using System.Collections.Generic;
 
 namespace QNetwork.CNN {
-	public class ConvolutionalNetwork : Unit<Matrix<float>[], Vector<float>> {
+    public class ConvolutionalNetwork : Unit<StatePair, Vector<float>> {
         // Forward propagation.
         public SpatialLayer InputLayer { get; private set; }
         public ConvolutionalLayer[] ConvolutionalLayers { get; private set; }
         public MeanPoolLayer[] SubSampleLayers { get; private set; }
         public FlattenLayer FlattenLayer { get; private set; }
+        public TreeLayer CombinationLayer { get; private set; }
         public DenseLayer OutputLayer { get; private set; }
+
+        private VectorPair _vecp;
 
         // Backpropagation.
         private BackpropParams _params;
         private Vector<float> _loss;
         private List<Backprop<Matrix<float>[], Matrix<float>[]>> _backprop;
-        private FlattenLayerBackprop _flatback;
+        private FlattenLayerBackprop _unflatten;
+        private TreeLayerBackprop _split;
         private DenseLayerBackprop _outback;
 
         // Serialization.
-	    private readonly int _inroot, _labels;
+        private readonly int _matsize, _vecsize, _labels;
 	    private readonly CNNArgs[] _args;
 
-        public ConvolutionalNetwork(int inroot, int labels, params CNNArgs[] args) {
-            _inroot = inroot;
+        public ConvolutionalNetwork(int matsize, int vecsize, int labels, params CNNArgs[] args) {
+            _matsize = matsize;
+            _vecsize = vecsize;
             _labels = labels;
             _args = args;
-            InputLayer = new SpatialLayer(inroot, 1); // TODO: Channels.
+            InputLayer = new SpatialLayer(matsize, 1); // TODO: Channels.
             ConvolutionalLayers = new ConvolutionalLayer[args.Length];
             SubSampleLayers = new MeanPoolLayer[args.Length];
             ConvolutionalLayers[0] = new ConvolutionalLayer(args[0].FilterSize, args[0].FilterCount, args[0].Stride, InputLayer, Functions.Tanh2D);
@@ -39,19 +45,22 @@ namespace QNetwork.CNN {
                 SubSampleLayers[i] = new MeanPoolLayer(args[i].PoolLayerSize, ConvolutionalLayers[i]);
             }
             FlattenLayer = new FlattenLayer(SubSampleLayers[SubSampleLayers.Length - 1]);
-            OutputLayer = new DenseLayer(labels, FlattenLayer, Functions.Sigmoid);
+            CombinationLayer = new TreeLayer(FlattenLayer.Size(), vecsize);
+            OutputLayer = new DenseLayer(labels, CombinationLayer, Functions.Sigmoid);
         }
 
         public int Size() {
             return ConvolutionalLayers.Length + SubSampleLayers.Length + 3;
         }
 
-        public Vector<float> Compute(Matrix<float>[] input) {
+        public Vector<float> Compute(StatePair input) {
             // Forward propagate.
-            input = InputLayer.Compute(input);
+            var img = InputLayer.Compute(input.Spatial);
             for (int i = 0; i < ConvolutionalLayers.Length; i++)
-                input = SubSampleLayers[i].Compute(ConvolutionalLayers[i].Compute(input));
-            return OutputLayer.Compute(FlattenLayer.Compute(input));
+                img = SubSampleLayers[i].Compute(ConvolutionalLayers[i].Compute(img));
+            _vecp.left = FlattenLayer.Compute(img);
+            _vecp.right = input.Linear;
+            return OutputLayer.Compute(CombinationLayer.Compute(_vecp));
         }
 
         public Vector<float> Output() {
@@ -66,23 +75,24 @@ namespace QNetwork.CNN {
                 _backprop.Add(new MeanPoolLayerBackprop(SubSampleLayers[i]));
                 _backprop.Add(new ConvolutionalLayerBackprop(ConvolutionalLayers[i]));
             }
-            _flatback = new FlattenLayerBackprop(FlattenLayer);
+            _unflatten = new FlattenLayerBackprop(FlattenLayer);
+            _split = new TreeLayerBackprop(CombinationLayer);
             _outback = new DenseLayerBackprop(OutputLayer);
         }
 
-        public void SGD(Matrix<float>[] features, Vector<float> labels) {
-            Compute(features);
+        public void SGD(StatePair input, Vector<float> labels) {
+            Compute(input);
             labels.CopyTo(_loss);
             _loss.Subtract(Output(), _loss);
-            var _e2d = _flatback.Visit(_outback.Visit(_loss, _params), _params);
-            _backprop.BackPropagation(_e2d, _params);
+            var img = _split.Visit(_outback.Visit(_loss, _params), _params).left;
+            _backprop.BackPropagation(_unflatten.Visit(img, _params), _params);
         }
 
-        public void SGD(Matrix<float>[] features, TargetIndexPair p) {
+        public void SGD(StatePair input, TargetIndexPair p) {
             _loss.Clear();
-            _loss.At(p.Index, p.Target - Compute(features)[p.Index]);
-            var _e2d = _flatback.Visit(_outback.Visit(_loss, _params), _params);
-            _backprop.BackPropagation(_e2d, _params);
+            _loss.At(p.Index, p.Target - Compute(input)[p.Index]);
+            var img = _split.Visit(_outback.Visit(_loss, _params), _params).left;
+            _backprop.BackPropagation(_unflatten.Visit(img, _params), _params);
         }
 
 		public IEnumerable<SpatialLayer> IterateSpatialLayers() {
@@ -98,14 +108,14 @@ namespace QNetwork.CNN {
 	        using (var writer = XmlWriter.Create(file, new XmlWriterSettings {Indent = true})) {
                 writer.WriteStartElement(GetType().Name);
                 //Constructor arguments
-                writer.WriteElementString("inroot", _inroot.ToString());
+                writer.WriteElementString("matsize", _matsize.ToString());
+                writer.WriteElementString("vecsize", _vecsize.ToString());
                 writer.WriteElementString("labels", _labels.ToString());
                 writer.XmlSerialize(_args);
                 //Layers
-	            for (int i = 0; i < ConvolutionalLayers.Length; i++)
-	                ConvolutionalLayers[i].Serialize(writer);
+                foreach (var conv in ConvolutionalLayers)
+                    conv.Serialize(writer);
 	            OutputLayer.Serialize(writer);
-
                 writer.WriteEndElement();
 	        }
             file.Close();
@@ -114,15 +124,14 @@ namespace QNetwork.CNN {
 	    public static ConvolutionalNetwork Load(string filename) {
 	        using (var reader = XmlReader.Create(File.Open(filename, FileMode.Open))) {
 	            reader.ReadStartElement(typeof(ConvolutionalNetwork).Name);
-	            
-                var inroot = int.Parse(reader.ReadElementString());
-	            var labels = int.Parse(reader.ReadElementString());
+                var matsize = int.Parse(reader.ReadElementString());
+	            var vecsize = int.Parse(reader.ReadElementString());
+                var labels = int.Parse(reader.ReadElementString());
                 var convl = reader.XmlDeserialize<CNNArgs[]>();
-	            var network = new ConvolutionalNetwork(inroot, labels, convl);
+	            var network = new ConvolutionalNetwork(matsize, vecsize, labels, convl);
                 for (int i = 0; i < network.ConvolutionalLayers.Length; i++)
                     network.ConvolutionalLayers[i].Deserialize(reader);
                 network.OutputLayer.Deserialize(reader);
-                
                 reader.ReadEndElement();
 	            return network;
 	        }

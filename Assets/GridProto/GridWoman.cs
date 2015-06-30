@@ -99,6 +99,7 @@ namespace GridProto {
                  .ToArray(),
             */
                 new []{_grid.Matrix.Clone()},
+                null,
                 dead ? 0 : goal ? 1 : 0,
                 dead || goal
                 );

@@ -5,11 +5,11 @@ using C5;
 using MathNet.Numerics.LinearAlgebra;
 using QAI.Agent;
 using QAI.Training;
+using QAI.Visualizer;
 using QNetwork;
 using QNetwork.CNN;
 using UnityEditor;
 using UnityEngine;
-using QAI.Visualizer;
 
 namespace QAI.Learning {
     public class QLearningCNN : QLearning {
@@ -25,9 +25,9 @@ namespace QAI.Learning {
         private const int BatchSize = PrioritySweeping ? 5 : 20;
 		private const int MaxStoreSize = 100;
         private const int PredecessorCap = 6;
-        private const float PriorityThreshold = 0.05f;
+        private const float PriorityThreshold = 0.005f;
 
-        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.01f, Momentum = 0.9f };
+        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.01f, Momentum = 0.5f };
 
         private ConvolutionalNetwork _net;
         private List<SARS> _imitationExps;
@@ -57,8 +57,9 @@ namespace QAI.Learning {
                 _amap[a.ActionId] = ix++;
             // Model.
             if(_remake) {
-                _net = new ConvolutionalNetwork(size, _amap.Count, new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 1 },
-																	new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 1 });
+                _net = new ConvolutionalNetwork(size, 1, _amap.Count,
+                    //new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 1 },
+                    new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 1 });
             } else {
                 _net = ConvolutionalNetwork.Load(MODEL_PATH);
             }
@@ -126,7 +127,7 @@ namespace QAI.Learning {
 
         public override ActionValueFunction Q(QState s) {
             _output = _net.Compute(s.Features);
-            Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}", _output.Average()));
+            //Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}", _output.Average()));
             return a => _output[_amap[a.ActionId]];
         }
 
@@ -154,7 +155,7 @@ namespace QAI.Learning {
 
         private void TrainModel() {
             var batch = SampleBatch(BatchSize);
-            var inp = new Matrix<float>[batch.Count][];
+            var inp = new StatePair[batch.Count];
             var outp = new TargetIndexPair[batch.Count];
             int i = 0;
             foreach(var sars in batch) {
@@ -184,10 +185,10 @@ namespace QAI.Learning {
 
         private void PrioritizedSweeping() {
             int N = Mathf.Min(BatchSize, _pq.Count);
-            var inp = new Matrix<float>[N][];
+            var inp = new StatePair[N];
             var outp = new TargetIndexPair[N];
-			if(_pq.Count > 0)
-				Debug.Log("LEARNING " + _pq.Count);
+			/*if(_pq.Count > 0)
+				Debug.Log("LEARNING " + _pq.Count);*/
             for(int i = 0; i < N; i++) {
                 var sars = _pq.DeleteMax();
                 inp[i] = sars.State.Features;
@@ -240,5 +241,4 @@ namespace QAI.Learning {
 			return NetworkVisualizer.CreateVisualizer(_net, list.ToArray());
 		}
     }
-
 }

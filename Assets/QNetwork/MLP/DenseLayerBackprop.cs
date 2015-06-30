@@ -1,7 +1,7 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 
 namespace QNetwork.MLP {
-	internal class DenseLayerBackprop : Backprop<Vector<float>, Vector<float>> {
+	public class DenseLayerBackprop : Backprop<Vector<float>, Vector<float>> {
         private readonly DenseLayer _unit;
         private readonly Vector<float> _outgoing, _vbuf;
         private readonly Matrix<float> _deltas, _mbuf;
