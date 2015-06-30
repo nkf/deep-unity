@@ -22,7 +22,7 @@ namespace QAI.Visualizer {
         }
 
         public Vector3 GetNodePosition(int x, int y) {
-            return _nodes[x, y].GetUI().transform.position;
+            return _nodes[y, x].GetUI().transform.position;
         }
 
         public GameObject GetUI() {
