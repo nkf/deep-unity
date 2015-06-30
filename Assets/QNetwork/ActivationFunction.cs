@@ -9,6 +9,16 @@ namespace QNetwork {
     }
 
     public static class Functions {
+        public static float WeightInitStdDev<T>(int fan_in_out, ActivationFunction<T> func) {
+            float interval = (float)Math.Sqrt(6.0 / fan_in_out) * (func.Apply.Equals(Sigmoid.Apply) ? 4 : 1);
+            float stddev = interval / (float)Math.Sqrt(3);
+            return stddev;
+        }
+
+        public static float BiasInitValue<T>(ActivationFunction<T> func) {
+            return func.Apply.Equals(Rectifier.Apply) || func.Apply.Equals(Rectifier2D.Apply) ? 1f : 0f;
+        }
+
         public static ActivationFunction<Vector<float>> Identity = new ActivationFunction<Vector<float>> {
             Apply = (xs, ys) => xs.CopyTo(ys),
             Derivatives = (ys, ds) => ds.MapInplace(d => 1f)
