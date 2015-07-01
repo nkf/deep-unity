@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 using System.Collections.Generic;
 using QNetwork.CNN;
 using UnityEngine.UI;
@@ -10,6 +11,8 @@ namespace QAI.Visualizer {
 		private List<MatrixVisualizer> _images;
 		private SpatialLayer _layer;
 		private GameObject _visuals;
+	    private Text _text;
+	    private string _info;
 
 		public ConvLayerVisualizer(SpatialLayer layer) {
 			_layer = layer;
@@ -40,7 +43,11 @@ namespace QAI.Visualizer {
 		        var maxLayer = _layer as MaxPoolLayer;
                 info += string.Format(" psize: {0}", maxLayer.PoolSize);
 		    }
-            _visuals.GetComponentInChildren<Text>().text = _layer.GetType().Name.Replace("Layer", "") + info;
+            _info = _layer.GetType().Name.Replace("Layer", "") + info;
+		    _text = _visuals.GetComponentInChildren<Text>();
+		    _text.text = _info;
+
+
 		}
 
 		public GameObject CreateUI() {
@@ -53,9 +60,14 @@ namespace QAI.Visualizer {
 			if(o == null || o.Length == 0) return;
 			if(_images == null) Init(o);
 
+
+		    var maxs = new List<float>();
 			for(var i = 0; i < o.Length; i++) {
 				_images[i].Update(o[i]);
+                maxs.Add(_images[i].MaxValue);
 			}
+		    var fmax = maxs.Select(f => string.Format("{0:F}", f)).ToArray();
+		    _text.text = _info + " max (" + string.Join(",", fmax) + ")";
 		}
 	}
 }

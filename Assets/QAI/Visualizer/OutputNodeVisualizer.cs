@@ -29,6 +29,7 @@ namespace QAI.Visualizer {
         public void Update(float value, bool selected) {
             _selected.SetActive(selected);
             _texture.SetPixel(0,0, NetworkVisualizer.GetColor(value));
+            _texture.Apply();
         }
 
     }
