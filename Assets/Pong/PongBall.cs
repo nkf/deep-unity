@@ -9,7 +9,7 @@ namespace Pong {
         private PongController Player1;
         private PongController Player2;
 
-        private static readonly float[] pos = { 0.6f, 0.4f, 0.2f, -0.2f, -0.4f, -0.6f };
+        //private static readonly float[] pos = { 0.6f, 0.4f, 0.2f, -0.2f, -0.4f, -0.6f };
 
         void Awake() {
             _game = FindObjectOfType<PongGame>();
