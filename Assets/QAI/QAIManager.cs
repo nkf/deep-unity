@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using QAI.Agent;
 using QAI.Learning;
 using QAI.Training;
@@ -39,6 +40,8 @@ namespace QAI {
 
         private bool _sceneIsOver;
 
+        private Stopwatch _stopwatch;
+
         public static int NumIterations() {
             return _instance == null ? 1 : _instance.Terminator;
         }
@@ -50,6 +53,7 @@ namespace QAI {
             }
             _instance._sceneIsOver = false;
             _instance._agent = agent;
+            _instance._stopwatch = Stopwatch.StartNew();
             if(_instance.Mode != QAIMode.Imitating) 
                 _instance._qlearning.Agent = agent;
         }
@@ -89,6 +93,10 @@ namespace QAI {
             if (_sceneIsOver) return;
             if(_qlearning.Iteration >= Terminator) {
                 _qlearning.SaveModel();
+                
+                BenchmarkSave.WriteRunTime(_stopwatch.Elapsed.TotalSeconds);
+                UnityEngine.Debug.Log("Learning over after "+_stopwatch.Elapsed.TotalSeconds +" secounds");
+                
                 EditorApplication.isPlaying = false;
             } else {
                 Application.LoadLevel(Application.loadedLevel);

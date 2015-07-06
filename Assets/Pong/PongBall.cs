@@ -14,16 +14,16 @@ namespace Pong {
         void Awake() {
             _game = FindObjectOfType<PongGame>();
             _speed = 5f;
-            //_velocity = new Vector3(-1, Random.Range(-1f, 1f)).normalized * _speed;
+            _velocity = new Vector3(-1, Random.Range(-1f, 1f)).normalized * _speed;
             //_velocity = new Vector3(-1, -.6f).normalized * _speed;
-            _velocity = new Vector3(-1, pos.Random().First()).normalized * _speed;
+            //_velocity = new Vector3(-1, pos.Random().First()).normalized * _speed;
+            transform.position += new Vector3(9, Random.Range(-6f,6f));
             var pcs = FindObjectsOfType<PongController>();
             Player1 = pcs.First(pc => pc.Side == Player.Player1);
             Player2 = pcs.First(pc => pc.Side == Player.Player2);
         }
         void FixedUpdate () {
             var ball = PongGame.BoundsFromTransform(transform);
-//            var ball = GetComponent<Renderer>().bounds;
             var p = transform.position + _velocity * Time.fixedDeltaTime;
             p.x -= ball.size.x/2;
             p.y -= ball.size.y/2;

@@ -59,10 +59,10 @@ namespace QAI.Learning {
             // Model.
             if(_remake) {
                 _net = new ConvolutionalNetwork(size, 1, _amap.Count,
-                    //new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 1 },
-                    new CNNArgs { FilterSize = 4, FilterCount = 1, PoolLayerSize = 2, Stride = 1 });
+                    //new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2 },
+                    new CNNArgs { FilterSize = 4, FilterCount = 1, PoolLayerSize = 2, Stride = 2 });
             } else {
-                _net = ConvolutionalNetwork.Load(MODEL_PATH);
+                _net = ConvolutionalNetwork.Load(BenchmarkSave.ModelPath);
             }
             _net.InitializeTraining(LearningParams);
             // Experience replay.
@@ -75,7 +75,7 @@ namespace QAI.Learning {
         }
 
         public override void SaveModel() {
-            _net.Save(MODEL_PATH);
+            _net.Save(BenchmarkSave.ModelPath);
         }
 
         public override void RemakeModel() {
