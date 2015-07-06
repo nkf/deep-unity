@@ -2,9 +2,13 @@
 
 namespace Pong {
     class PongGame : MonoBehaviour {
-    
-        //Set in editor
-        public Bounds Border;
+        public GameObject Background;
+
+        void Awake() {
+            Border = Background.GetComponent<Renderer>().bounds;
+        }
+
+        public Bounds Border { get; private set; }
 
         private readonly int[] _score = new int[2];
 
