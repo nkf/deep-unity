@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
 using QNetwork.CNN;
@@ -71,28 +72,32 @@ namespace QAI.Visualizer {
 
             var weights = _denseLayer.Weights;
             var connections = SortedIndices(weights);
-            var n = weights.RowCount * weights.ColumnCount * 0.10f;
 
             var matrixSize = _nodeMatrices[0].Size;
             var matrixCount = matrixSize*matrixSize;
-            for (int i = 0; i < n; i++) {
-                var connection = connections[i];
-                var nodeIndex = CalculateNodeIndex(connection.Item2, matrixSize, matrixCount);
-                var from = _nodeMatrices[nodeIndex.Item1].GetNodePosition(nodeIndex.Item2, nodeIndex.Item3);
-                var to = _outputNodes[connection.Item1].Position;
-                Draw2D.DrawLine(from,to,ConnectionColor(connection.Item3),2,false);
+            var maxN = matrixCount*_nodeMatrices.Count;
+            var maxValue = Mathf.Abs(connections[0].Weight);
+            int n = 0;
+            var from = Vector3.zero;
+            while (maxValue - Mathf.Abs(connections[n].Weight) < 1f && n < 25) {
+                var connection = connections[n++];
+                if (connection.FromIndex < _combinationLayer.LeftSize) {
+                    var nodeIndex = CalculateNodeIndex(connection.FromIndex, matrixSize, matrixCount);
+                    from = _nodeMatrices[nodeIndex.Item1].GetNodePosition(nodeIndex.Item2, nodeIndex.Item3);
+                }
+                var to = _outputNodes[connection.ToIndex].Position;
+                Draw2D.DrawLine(from, to, ConnectionColor(connection.Weight), 2, false);
             }
         }
 
-        private List<Tuple<int,int,float>> SortedIndices(Matrix<float> matrix) {
-            var list = new List<Tuple<int, int, float>>();
+        private List<Connection> SortedIndices(Matrix<float> matrix) {
+            var list = new List<Connection>();
             for (int x = 0; x < matrix.RowCount; x++) {
                 for (int y = 0; y < matrix.ColumnCount; y++) {
-                    if(y >= _combinationLayer.LeftSize) continue;
-                    list.Add(new Tuple<int, int, float>(x,y, matrix.At(x,y)));
+                    list.Add(new Connection(y,x, matrix.At(x,y)));
                 }
             }
-            list.Sort((t1,t2) => Mathf.Abs(t2.Item3).CompareTo(Mathf.Abs(t1.Item3)));
+            list.Sort((c1,c2) => Mathf.Abs(c2.Weight).CompareTo(Mathf.Abs(c1.Weight)));
             return list;
         }
 
@@ -106,6 +111,17 @@ namespace QAI.Visualizer {
 
         private Color ConnectionColor(float value) {
             return value > 0 ? Color.Lerp(Color.white, Color.green, value) : Color.Lerp(Color.white, Color.red, Mathf.Abs(value));
+        }
+
+        private struct Connection {
+            public readonly int FromIndex;
+            public readonly int ToIndex;
+            public readonly float Weight;
+            public Connection(int from, int to, float weight) {
+                FromIndex = from;
+                ToIndex = to;
+                Weight = weight;
+            }
         }
     }
 }

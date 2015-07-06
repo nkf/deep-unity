@@ -61,12 +61,10 @@ namespace QAI.Visualizer {
 			if(_images == null) Init(o);
 
 
-		    var maxs = new List<float>();
 			for(var i = 0; i < o.Length; i++) {
 				_images[i].Update(o[i]);
-                maxs.Add(_images[i].MaxValue);
 			}
-		    var fmax = maxs.Select(f => string.Format("{0:F}", f)).ToArray();
+		    var fmax = _images.Select(i => string.Format("{0:F}", i.MaxValue)).ToArray();
 		    _text.text = _info + " max (" + string.Join(",", fmax) + ")";
 		}
 	}
