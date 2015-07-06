@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-using UnityEditor;
 
 public class BenchmarkSave {
     public enum Game {
