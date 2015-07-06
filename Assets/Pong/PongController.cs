@@ -131,16 +131,16 @@ namespace Pong {
             //_grid.Populate((bo,c) => c.y == bpy ? 1 : 0); //one line
             //_grid.Populate((bo,c) => gbp.HasValue && gbp.Value.Equals(c) ? 1 : 0); //single
             _grid.Populate((bo, c) => {
-//                var ham = gbp.HasValue ? HammingDistance(gbp.Value, c) : int.MaxValue;
-//                return ham < 1 ? 255 : ham < 2 ? 128 : 0;
-
+                var ham = gbp.HasValue ? HammingDistance(gbp.Value, c) : int.MaxValue;
+                return ham < 1 ? 1f : ham < 2 ? 0.5f : 0;
+/*
                 var x = bo.center.x;
-//                var v = bo.Contains(new Vector3(x, _game.Border.min.y)) || bo.Contains(new Vector3(x, _game.Border.max.y)) ? 50 : 0f; //walls
+//              var v = bo.Contains(new Vector3(x, _game.Border.min.y)) || bo.Contains(new Vector3(x, _game.Border.max.y)) ? 50 : 0f; //walls
 //				var v = !bo.Intersects(_game.Border) ? 50 : 0f;
                 var v = gbp.HasValue && HammingDistance(gbp.Value, c) < 1 ? 200f : 0f; //ball
 				v = bo.Contains(bp + _ball.Velocity.normalized * 2) ? 150f : v;
 				v = bo.Intersects(controller) ? 100 : v;
-                return v;
+                return v;*/
             });
             
             //var state = MathNet.Numerics.LinearAlgebra.Vector<float>.Build.DenseOfArray(new[] { bp.x, bp.y, rbp.x, rbp.y, transform.position.y });

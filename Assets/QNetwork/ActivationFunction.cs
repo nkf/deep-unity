@@ -10,7 +10,7 @@ namespace QNetwork {
 
     public static class Functions {
         public static float WeightInitStdDev<T>(int fan_in_out, ActivationFunction<T> func) {
-            float interval = (float)Math.Sqrt(6.0 / fan_in_out) * (func.Apply.Equals(Sigmoid.Apply) ? 4 : 1);
+            float interval = (float)Math.Sqrt(6.0 / fan_in_out);
             float stddev = interval / (float)Math.Sqrt(3);
             return stddev;
         }
@@ -40,24 +40,24 @@ namespace QNetwork {
         };
 
         public static ActivationFunction<Vector<float>> Sigmoid = new ActivationFunction<Vector<float>> {
-            Apply = (xs, ys) => xs.Map(x => 1f / (1f + (float)Math.Exp(-x)), ys),
+            Apply = (xs, ys) => xs.Map(x => 1f / (1f + (float)Math.Exp(-x)), ys, Zeros.Include),
             Derivatives = (ys, ds) => ys.Map(y => y * (1f - y), ds)
         };
 
         public static ActivationFunction<Vector<float>> Tanh = new ActivationFunction<Vector<float>> {
             Apply = (xs, ys) => xs.Map(x => (float)Math.Tanh(x), ys),
-            Derivatives = (ys, ds) => ys.Map(y => 1f - y * y, ds)
+            Derivatives = (ys, ds) => ys.Map(y => 1f - y * y, ds, Zeros.Include)
         };
 
         public static ActivationFunction<Matrix<float>> Tanh2D = new ActivationFunction<Matrix<float>> {
             Apply = (xs, ys) => xs.Map(x => (float)Math.Tanh(x), ys),
-            Derivatives = (ys, ds) => ys.Map(y => 1f - y * y, ds)
+            Derivatives = (ys, ds) => ys.Map(y => 1f - y * y, ds, Zeros.Include)
         };
 
         public static ActivationFunction<Vector<float>> Softmax = new ActivationFunction<Vector<float>> {
             Apply = (xs, ys) => {
                 var xmax = xs.Max();
-                xs.Map(x => (float)Math.Exp(x - xmax), ys);
+                xs.Map(x => (float)Math.Exp(x - xmax), ys, Zeros.Include);
                 var sum = ys.Sum();
                 ys.Map(e => e / sum, ys);
             },

@@ -59,6 +59,7 @@ namespace QNetwork.CNN {
                             _subm.Multiply(incoming[j].At(m, n) * par.LearningRate, _fbuf);
                             _deltas[i][j].Add(_fbuf, _deltas[i][j]);
                         }
+                    _unit.Weights[i][j].Multiply(1f - par.Decay, _unit.Weights[i][j]); // Weight decay.
                     _unit.Weights[i][j].Add(_deltas[i][j], _unit.Weights[i][j]); // Adjust weights.
                 }
                 _unit.Biases.At(j, _unit.Biases.At(j) + incoming[j].RowSums().Sum() * par.LearningRate); // Adjust biases.

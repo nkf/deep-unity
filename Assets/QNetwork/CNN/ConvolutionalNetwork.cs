@@ -38,15 +38,15 @@ namespace QNetwork.CNN {
             InputLayer = new SpatialLayer(matsize, 1); // TODO: Channels.
             ConvolutionalLayers = new ConvolutionalLayer[args.Length];
             SubSampleLayers = new MeanPoolLayer[args.Length];
-            ConvolutionalLayers[0] = new ConvolutionalLayer(args[0].FilterSize, args[0].FilterCount, args[0].Stride, InputLayer, Functions.Tanh2D);
+            ConvolutionalLayers[0] = new ConvolutionalLayer(args[0].FilterSize, args[0].FilterCount, args[0].Stride, InputLayer, Functions.Rectifier2D);
             SubSampleLayers[0] = new MeanPoolLayer(args[0].PoolLayerSize, ConvolutionalLayers[0]);
             for (int i = 1; i < args.Length; i++) {
-                ConvolutionalLayers[i] = new ConvolutionalLayer(args[i].FilterSize, args[i].FilterCount, args[i].Stride, SubSampleLayers[i - 1], Functions.Tanh2D);
+                ConvolutionalLayers[i] = new ConvolutionalLayer(args[i].FilterSize, args[i].FilterCount, args[i].Stride, SubSampleLayers[i - 1], Functions.Rectifier2D);
                 SubSampleLayers[i] = new MeanPoolLayer(args[i].PoolLayerSize, ConvolutionalLayers[i]);
             }
             FlattenLayer = new FlattenLayer(SubSampleLayers[SubSampleLayers.Length - 1]);
             CombinationLayer = new TreeLayer(FlattenLayer.Size(), vecsize);
-            OutputLayer = new DenseLayer(labels, CombinationLayer, Functions.Sigmoid);
+            OutputLayer = new DenseLayer(labels, CombinationLayer, Functions.Identity);
         }
 
         public int Size() {

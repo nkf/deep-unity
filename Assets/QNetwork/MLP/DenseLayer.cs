@@ -15,7 +15,6 @@ namespace QNetwork.MLP {
             var vb = Vector<float>.Build;
             var mb = Matrix<float>.Build;
             _values = vb.Dense(size);
-            //Biases = vb.Random(size, Normal.WithMeanStdDev(0.0, 0.05));
             Biases = vb.Dense(size, Functions.BiasInitValue(activation));
             Weights = mb.Random(size, prev.Size(), Normal.WithMeanStdDev(0.0, Functions.WeightInitStdDev(prev.Size(), activation)));
             Prev = prev;

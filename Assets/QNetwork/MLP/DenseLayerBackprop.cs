@@ -26,6 +26,7 @@ namespace QNetwork.MLP {
             _deltas.Multiply(par.Momentum, _deltas);
             _deltas.Add(_mbuf, _deltas);
             // Adjust weights and biases.
+            _unit.Weights.Multiply(1f - par.Decay, _unit.Weights);
             _unit.Weights.Add(_deltas, _unit.Weights);
             incoming.Multiply(par.LearningRate, _vbuf);
             _unit.Biases.Add(_vbuf, _unit.Biases);

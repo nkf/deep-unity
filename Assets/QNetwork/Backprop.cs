@@ -5,6 +5,7 @@ namespace QNetwork {
     public struct BackpropParams {
         public float LearningRate;
         public float Momentum;
+        public float Decay;
     }
 
 	public interface Backprop<T, U> {

@@ -21,7 +21,6 @@ namespace QNetwork.CNN {
             _values = new Matrix<float>[ChannelCount];
             for (int i = 0; i < _values.Length; i++)
                 _values[i] = Matrix<float>.Build.Dense(SideLength, SideLength);
-            //Biases = vb.Random(ChannelCount, Normal.WithMeanStdDev(0.0, 0.05));
             Biases = vb.Dense(ChannelCount, Functions.BiasInitValue(activation));
             Weights = new Matrix<float>[prev.ChannelCount][];
             for (int i = 0; i < Weights.Length; i++) {
