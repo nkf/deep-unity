@@ -9,12 +9,18 @@ public class BenchmarkSave {
 
     public const string TestFolder = "Benchmarks";
 
-    //Change these accordingly when doing new tests
+    //--------------Change these accordingly when doing new tests------------
+    //Name of test
     public const string CurrentTestID = "A1";
+    //Iteration of test
+    public const int TestN = 1;
+    //The Game
     public const Game CurrentGame = Game.Pong;
+    //enable/disable saving
     public const bool SaveBenchmarks = true;
+    //-----------------------------------------------------------------------
 
-    public static string ModelPath { get { return Path.Combine(TestFolder, CurrentTestID) + ".xml"; } }
+    public static string ModelPath { get { return Path.Combine(TestFolder, CurrentTestID+"-"+TestN) + ".xml"; } }
 
     public static Dictionary<Game, string[]> Header = new Dictionary<Game, string[]> {
         {Game.Pong, new []{"Runtime", "Paddle Hits", "Victories", "Avg. miss distance"}},
