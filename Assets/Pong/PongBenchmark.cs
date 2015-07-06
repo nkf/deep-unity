@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using QAI.Agent;
 using QAI.Training;
@@ -16,6 +16,8 @@ namespace Pong {
             _iteration++;
             FindObjectOfType<PongBall>().Reset(new Vector2(-1, y));
             y += 0.2f;
+            if (Math.Abs(y) < 0.01) //y == 0
+                y += 0.2f;
             return y <= 1;
         }
 
