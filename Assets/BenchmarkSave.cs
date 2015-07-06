@@ -16,6 +16,8 @@ public class BenchmarkSave {
     public const Game CurrentGame = Game.Pong;
     public const bool SaveBenchmarks = true;
 
+    public static string ModelPath { get { return Path.Combine(TestFolder, CurrentTestID) + ".xml"; } }
+
     public static Dictionary<Game, string[]> Header = new Dictionary<Game, string[]> {
         {Game.Pong, new []{"Runtime", "Paddle Hits", "Victories", "Avg. miss distance"}},
         {Game.Grid, new []{"Runtime", "!!!!!!!!!!!!!!!!!!   TODO   !!!!!!!!!!!!!!!!!!"}},

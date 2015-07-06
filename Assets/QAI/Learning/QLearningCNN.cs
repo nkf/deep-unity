@@ -17,7 +17,7 @@ namespace QAI.Learning {
 
         private const float EpisilonStart = 0.5f;
         private const float EpisilonEnd = 0.1f;
-        private readonly Param Epsilon = t => EpisilonStart - ((EpisilonEnd - EpisilonStart) / QAIManager.NumIterations()) * t;
+        private readonly Param Epsilon = t => EpisilonStart + ((EpisilonEnd - EpisilonStart) / QAIManager.NumIterations()) * t;
         private const float Discount = 0.95f;
 
         private const bool PrioritySweeping = true;
@@ -59,10 +59,9 @@ namespace QAI.Learning {
             // Model.
             if(_remake) {
                 _net = new ConvolutionalNetwork(size, 1, _amap.Count,
-                    //new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 1 },
-                    new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 1 });
+                    new CNNArgs { FilterSize = 3, FilterCount = 1, PoolLayerSize = 2, Stride = 1 });
             } else {
-                _net = ConvolutionalNetwork.Load(MODEL_PATH);
+                _net = ConvolutionalNetwork.Load(BenchmarkSave.ModelPath);
             }
             _net.InitializeTraining(LearningParams);
             // Experience replay.
@@ -75,7 +74,7 @@ namespace QAI.Learning {
         }
 
         public override void SaveModel() {
-            _net.Save(MODEL_PATH);
+            _net.Save(BenchmarkSave.ModelPath);
         }
 
         public override void RemakeModel() {
