@@ -50,10 +50,10 @@ namespace QAI {
             if (_instance == null) {
                 _instance = FindObjectOfType<QAIManager>();
                 _instance.Init(agent);
+                _instance._stopwatch = Stopwatch.StartNew();
             }
             _instance._sceneIsOver = false;
             _instance._agent = agent;
-            _instance._stopwatch = Stopwatch.StartNew();
             if(_instance.Mode != QAIMode.Imitating) 
                 _instance._qlearning.Agent = agent;
         }
