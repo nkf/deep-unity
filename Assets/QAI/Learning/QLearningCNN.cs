@@ -60,7 +60,7 @@ namespace QAI.Learning {
             if(_remake) {
                 _net = new ConvolutionalNetwork(size, 1, _amap.Count,
                     //new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2 },
-                    new CNNArgs { FilterSize = 4, FilterCount = 1, PoolLayerSize = 2, Stride = 2 });
+                    new CNNArgs { FilterSize = 4, FilterCount = 3, PoolLayerSize = 2, Stride = 2 });
             } else {
                 _net = ConvolutionalNetwork.Load(BenchmarkSave.ModelPath);
             }
