@@ -35,7 +35,7 @@ namespace Pong {
             _ball = FindObjectOfType<PongBall>();
             if (Side == Player.Player1) {
                 _grid = new Q2DGrid(16, transform,
-                    new GridSettings {Offset = new Vector3(8.3f, 0, 0), ResolutionX = 1.28f, ResolutionY = 1.28f});
+                    new GridSettings {Offset = new Vector3(9.3f, 0, 0), ResolutionX = 1.28f, ResolutionY = 1.28f});
                 _vect = Vector<float>.Build.Dense(new[] { 1f });
                 QAIManager.InitAgent(this);
             }
@@ -96,8 +96,8 @@ namespace Pong {
 			PongGame.DebugDrawBounds(controller, Color.blue);
             if (b.Intersects(controller)) {
                 reward = 1;
-                terminal = winner.HasValue;
                 terminal = true;
+                if(PongBenchmark.Running) terminal = winner.HasValue;
             } else {
                 terminal = winner.HasValue;
                 reward = terminal ? (winner.Value == Side ? 1 : 0) : 0;

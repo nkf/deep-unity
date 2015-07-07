@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using UnityEditor;
 
 public class BenchmarkSave {
     public enum Game {
@@ -45,6 +46,7 @@ public class BenchmarkSave {
         using (var writer = GetSaveFile()) {
             writer.Write("{0:F},", time);
         }
+        EditorApplication.Beep();
     }
 
     //Must be called second

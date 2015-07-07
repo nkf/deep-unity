@@ -8,10 +8,13 @@ using UnityEngine;
 
 namespace Pong {
     public class PongBenchmark : QTester {
+        public static bool Running = false;
         readonly List<TestScore> _scores = new List<TestScore>();
         private int _iteration = -1;
         private float y = -1;
         public override bool SetupNextTest(QAgent agent) {
+            Running = true;
+            Time.timeScale = 3;
             _scores.Add(new TestScore());
             _iteration++;
             FindObjectOfType<PongBall>().Reset(new Vector2(-1, y));
