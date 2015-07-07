@@ -28,7 +28,7 @@ namespace QAI.Learning {
         private const float PriorityThreshold = 0.005f;
 		private const int PQSize = 30;
 
-        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.01f, Momentum = 0.9f, Decay = 0.0001f };
+        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.005f, Momentum = 0.9f, Decay = 0.000001f };
 
         private ConvolutionalNetwork _net;
         private List<SARS> _imitationExps;
