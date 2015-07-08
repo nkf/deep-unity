@@ -12,13 +12,13 @@ public class BenchmarkSave {
 
     //--------------Change these accordingly when doing new tests------------
     //Name of test
-    public const string CurrentTestID = "1";
+    public const string CurrentTestID = "test";
     //Iteration of test
-    public const int TestN = 1;
+    public const int TestN = 9000;
     //The Game
     public const Game CurrentGame = Game.Pong;
     //enable/disable saving
-    public const bool SaveBenchmarks = true;
+    public const bool SaveBenchmarks = false;
     //-----------------------------------------------------------------------
 
     public static string ModelPath { get { return Path.Combine(TestFolder, CurrentTestID+"-"+TestN) + ".xml"; } }
@@ -36,7 +36,7 @@ public class BenchmarkSave {
             return new StreamWriter(File.Open(filepath, FileMode.Append));
         var writer = new StreamWriter(File.Open(filepath, FileMode.CreateNew));
         //Write header
-        writer.Write(string.Join(",", Header[CurrentGame]) + Environment.NewLine); 
+        writer.Write(string.Join(";", Header[CurrentGame]) + Environment.NewLine); 
         return writer;
     }
 
@@ -44,7 +44,7 @@ public class BenchmarkSave {
     public static void WriteRunTime(double time) {
         if(!SaveBenchmarks) return;
         using (var writer = GetSaveFile()) {
-            writer.Write("{0:F},", time);
+            writer.Write("{0:F};", time);
         }
         EditorApplication.Beep();
     }
@@ -54,7 +54,7 @@ public class BenchmarkSave {
         if(!SaveBenchmarks) return;
         if(CurrentGame != Game.Pong) throw new Exception("Current Test game was set to <" + CurrentGame + "> but we are running Pong");
         using (var writer = GetSaveFile()) {
-            var line = string.Format("{0},{1},{2:F3},", hits, victories, avgMissDist) + Environment.NewLine;
+            var line = string.Format("{0};{1};{2:F3}", hits, victories, avgMissDist) + Environment.NewLine;
             writer.Write(line);
         }
     }
