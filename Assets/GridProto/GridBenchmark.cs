@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEngine;
 
 namespace GridProto {
-    public class GridStateCreator : QTester {
+    public class GridBenchmark : QTester {
 
         private static List<Vector3> Positions;
 
