@@ -12,15 +12,15 @@ public class BenchmarkSave {
 
     //--------------Change these accordingly when doing new tests------------
     //Name of test
-    public const string CurrentTestID = "test";
-    //Iteration of test
-    public const int TestN = 9000;
+    public const string CurrentTestID = "TEST_ID_GOES_HERE";
+    //Number of runs (learn -> test -> reset = 1 run)
+    public const int Runs = 10;
     //The Game
     public const Game CurrentGame = Game.Pong;
-    //enable/disable saving
-    public const bool SaveBenchmarks = false;
     //-----------------------------------------------------------------------
 
+    public static bool SaveBenchmarks = true;
+    public static int TestN = 1;
     public static string ModelPath { get { return Path.Combine(TestFolder, CurrentTestID+"-"+TestN) + ".xml"; } }
 
     public static Dictionary<Game, string[]> Header = new Dictionary<Game, string[]> {
@@ -28,6 +28,10 @@ public class BenchmarkSave {
         {Game.Grid, new []{"Runtime", "!!!!!!!!!!!!!!!!!!   TODO   !!!!!!!!!!!!!!!!!!"}},
         {Game.Doll, new []{"Runtime", "!!!!!!!!!!!!!!!!!!   TODO   !!!!!!!!!!!!!!!!!!"}},
     };
+
+    public static bool HaveRunsLeft {
+        get { return TestN < Runs; }
+    }
 
     private static StreamWriter GetSaveFile() {
         var filepath = Path.Combine(TestFolder, CurrentTestID + ".csv");
@@ -38,6 +42,10 @@ public class BenchmarkSave {
         //Write header
         writer.Write(string.Join(";", Header[CurrentGame]) + Environment.NewLine); 
         return writer;
+    }
+
+    public static void NextRun() {
+        TestN++;
     }
 
     //Must be called first

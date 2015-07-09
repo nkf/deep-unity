@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using MathNet.Numerics.LinearAlgebra;
 using QAI;
 using QAI.Agent;
 using QAI.Utility;
@@ -10,9 +11,11 @@ namespace GridProto {
     
         private Q2DGrid _grid;
         private Bin _nvectorBin;
+        private Vector<float> _linearState; 
         private void Start() {
             _grid = new Q2DGrid(13, transform, new GridSettings { NormalAxis = Axis.Y });
             _nvectorBin = new Bin(-0.75f,-0.25f,0.25f,0.75f);
+            _linearState = Vector<float>.Build.Dense(2);
             QAIManager.InitAgent(this);
         }
 
@@ -43,7 +46,6 @@ namespace GridProto {
         private int[] PositionToState(Vector3 p) {
             return new[] {
                 Mathf.RoundToInt(p.x),
-                Mathf.RoundToInt(p.y),
                 Mathf.RoundToInt(p.z),
             };
         }
@@ -80,18 +82,20 @@ namespace GridProto {
                 var ray = new Ray(new Vector3(bounds.center.x, 2, bounds.center.z), Vector3.down);
                 
                 RaycastHit hit;
-                int r;
+                float r;
                 if (Physics.Raycast(ray, out hit, 3.0f)) {
-                    r = hit.collider.gameObject == Goal.Instance.gameObject ? 10 : 1;
+                    r = hit.collider.gameObject == Goal.Instance.gameObject ? 1f : 0.1f;
                 }
-                else r = 0;
-                Debug.DrawRay(ray.origin, ray.direction * 3.0f, r == 0 ? Color.red : r == 1 ? Color.gray : Color.yellow);
+                else r = 0f;
+                Debug.DrawRay(ray.origin, ray.direction * 3.0f, r == 0f ? Color.red : r == 0.1f ? Color.gray : Color.yellow);
 
                 return r;
             });
             var dead = !IsAboveGround();
             var goal = p.SequenceEqual(g);
             var v = VectorToGoal(transform.position, Goal.Position).normalized;
+            _linearState.At(0, v.x);
+            _linearState.At(1, v.z);
             return new QState(
                 /*
             _grid.State
@@ -99,8 +103,8 @@ namespace GridProto {
                  .ToArray(),
             */
                 new []{_grid.Matrix.Clone()},
-                null,
-                dead ? 0 : goal ? 1 : 0,
+                _linearState,
+                goal ? 1 : 0,
                 dead || goal
                 );
         }

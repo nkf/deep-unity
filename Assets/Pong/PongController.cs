@@ -5,7 +5,6 @@ using System.Linq;
 using QAI;
 using QAI.Agent;
 using QAI.Utility;
-using QNetwork.CNN;
 using MathNet.Numerics.LinearAlgebra;
 using UnityEngine;
 
@@ -132,9 +131,9 @@ namespace Pong {
             //_grid.Populate((bo,c) => gbp.HasValue && gbp.Value.Equals(c) ? 1 : 0); //single
             _grid.Populate((bo, c) => {
                 var x = bo.center.x;
-                var v = bo.Contains(new Vector3(x, _game.Border.min.y)) || bo.Contains(new Vector3(x, _game.Border.max.y)) ? 0.3f : 0; // walls
+                //var v = bo.Contains(new Vector3(x, _game.Border.min.y)) || bo.Contains(new Vector3(x, _game.Border.max.y)) ? 0.3f : 0; // walls
                 var ham = gbp.HasValue ? HammingDistance(gbp.Value, c) : int.MaxValue; // Hamming distance
-                v = ham < 1 ? 1f : ham < 2 ? 0.5f : v; // ball
+                var v = ham < 1 ? 1f : ham < 2 ? 0.5f : 0; // ball
 				//v = bo.Contains(bp + _ball.Velocity.normalized * 2) ? 150f : v;
 				//v = bo.Intersects(controller) ? 100 : v;
                 return v;

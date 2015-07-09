@@ -9,7 +9,8 @@ namespace QAI.Agent {
         public readonly StatePair Features;
         public readonly float Reward;
         public readonly bool IsTerminal;
-        public int Size { get { return Features.Spatial[0].RowCount; } }
+        public int GridSize { get { return Features.Spatial[0].RowCount; } }
+        public int VectorSize { get { return Features.Linear.Count; } }
         public QState(Matrix<float>[] image, Vector<float> vector, float reward, bool isTerminal) : this() {
             Features = new StatePair(image, vector);
             Reward = reward;

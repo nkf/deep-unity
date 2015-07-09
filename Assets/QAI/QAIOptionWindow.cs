@@ -13,6 +13,7 @@ namespace QAI {
         [NonSerialized] private bool _init = false;
         private bool _initNext = false;
         private bool _remake;
+        private bool _benchmark;
         private int _term;
 		private bool _visualize;
 
@@ -34,6 +35,7 @@ namespace QAI {
         private QTester _tester;
 
         private QAIMode _mode;
+        
 
         // Add menu named "My Window" to the Window menu
         [MenuItem("QAI/Options")]
@@ -47,7 +49,6 @@ namespace QAI {
             if (_init) return;
             _init = true;
 
-            Debug.Log("Initializing window");
             _manager = CreateManager();
             _agent = _manager.ActiveAgent;
             _tester = _manager.Tester;
@@ -58,6 +59,7 @@ namespace QAI {
             Directory.CreateDirectory(STORY_PATH);
             _stories = QStory.LoadForScene(STORY_PATH, EditorApplication.currentScene); // Should read this when serialization works
             _currentStory = _currentStory == null ? null : _stories.Find(s => s.Id == _currentStory.Id);
+            _learnAllStories = false;
         }
 
         private void OnGUI() {
@@ -135,16 +137,17 @@ namespace QAI {
                || _manager.Tester != _tester
                || _manager.Mode != _mode
 			   || _manager.VisualizeNetwork != _visualize) {
-                Debug.Log ("Creating undo operation");
                 EditorApplication.MarkSceneDirty();
             }
             _manager.Remake = _remake;
+            _manager.Benchmark = _benchmark;
             _manager.Terminator = _term;
             _manager.ActiveAgent = _agent;
             _manager.Tester = _tester;
 			_manager.VisualizeNetwork = _visualize;
-
             _manager.Mode = _mode;
+
+            _manager.OptionWindow = this;
 
             if (_forceStart) {
                 _forceStart = false;
@@ -168,20 +171,25 @@ namespace QAI {
                 var start = GUILayout.Button("Start learning");
                 GUI.backgroundColor = Color.white;
                 var remake = GUILayout.Button ("Remake and learn");
+                var testButton = GUILayout.Button("Run Tester");
+                GUILayout.Space(10);
+                var benchmark = GUILayout.Button("Begin Benchmark");
+                GUILayout.Space(10);
 
-                if((start || remake) && _agent == null) {
-                    EditorUtility.DisplayDialog("QAI", "No agent is currently set. Unable to start training.", "OK");
-                } 
-
-                _remake = remake && _agent != null;
-                if((start || remake) && _agent != null) {
-                    _mode = QAIMode.Learning;
-                    _learnAllStories = true;
-                    ChangePlayMode();
+                if (start || remake || benchmark) {
+                    if (_agent == null) {
+                        EditorUtility.DisplayDialog("QAI", "No agent is currently set. Unable to start training.", "OK");
+                    } else {
+                        _mode = QAIMode.Learning;
+                        _learnAllStories = true;
+                        _remake = remake || benchmark;
+                        _benchmark = benchmark;
+                        ChangePlayMode();
+                    }
                 }
 
+
                 //TESTER
-                var testButton = GUILayout.Button("Run Tester");
                 if(testButton && _manager.Tester != null) {
                     _mode = QAIMode.Testing;
                     ChangePlayMode();
@@ -217,7 +225,6 @@ namespace QAI {
         private void PlayModeChange() {
             if (_started && !EditorApplication.isPlayingOrWillChangePlaymode && EditorApplication.isPlaying) {
                 // Stop is called within the playmode scene
-                Debug.Log("Stopping in playmode");
 
                 if (_currentStory != null) {
                     Debug.Log ("Saving imiation data");
@@ -229,7 +236,6 @@ namespace QAI {
             }
             if (_started && !EditorApplication.isPlaying) {
                 // Stop is called within the editor scene
-                Debug.Log("Stopping in editor");
                 _started = false;
 
                 // Do something that should happen on stop
@@ -256,12 +262,15 @@ namespace QAI {
             }
             if (_starting && EditorApplication.isPlaying) {
                 // Start is called within the playmode scene
-                Debug.Log("Starting");
                 _starting = false;
                 _started = true;
 
                 // Do something that should happen on start
             }
+        }
+
+        public void SetMode(QAIMode mode) {
+            _mode = mode;
         }
 
         private void LoadNextStory() {
