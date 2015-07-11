@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using C5;
@@ -22,11 +23,19 @@ namespace QAI.Learning {
 
         private const bool PrioritySweeping = false;
 
-        private const int TrainInterval = 10;
+        //Number of timesteps inbetween training sessions
+        private const int TrainInterval = 20;
+        //Number of sars being trained in each training cycle
         private const int BatchSize = PrioritySweeping ? 5 : 100;
-		private const int MaxStoreSize = 100;
+        //Number batches being trained each session
+        private const int TraningCycles = 10;
+        //Maximum number of sars being kept (only for not prio sweep?)
+		private const int MaxStoreSize = 2000;
+        //TODO: write what this is
         private const int PredecessorCap = 6;
+        //TODO: write what this is
         private const float PriorityThreshold = 0.005f;
+        //TODO: write what this is
 		private const int PQSize = 30;
 
         private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.005f, Momentum = 0.9f, Decay = 0f };
@@ -111,10 +120,17 @@ namespace QAI.Learning {
                 _trainingCounter = 0;
                 var ts = Time.timeScale;
                 Time.timeScale = 0;
-                Train();
-                Time.timeScale = ts;
+                QAIManager.RunCorotine(RunTraining(ts));
             }
             return a.Action;
+        }
+
+        private IEnumerator RunTraining(float timescale) {
+            for (int i = 0; i < TraningCycles; i++) {
+                Train();
+                yield return new WaitForEndOfFrame();
+            }
+            Time.timeScale = timescale;
         }
 
         private void StoreSARS(SARS sars) {

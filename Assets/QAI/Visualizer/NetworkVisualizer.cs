@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
 namespace QAI.Visualizer {
 	public class NetworkVisualizer : MonoBehaviour {
+        public static Color TrainingColor = new Color(0.196f, 0.541f, 0.557f, 0.4f);
+        public static Color IdleColor = new Color(1,1,1,0.4f);
+
 		private ConvolutionalNetwork _cnn;
 		private List<ConvLayerVisualizer> _convLayers = new List<ConvLayerVisualizer>();
 	    private DenseLayerVisualizer _denseLayer;
@@ -24,8 +27,8 @@ namespace QAI.Visualizer {
 		}
 
 		void OnGUI () {
-		    foreach (var l in _convLayers) l.Update();
-		    _denseLayer.Update();
+		    foreach (var l in _convLayers) l.Update(_cnn.IsOutputFromTraining);
+		    _denseLayer.Update(_cnn.IsOutputFromTraining);
 		}
 
 		public static NetworkVisualizer CreateVisualizer(ConvolutionalNetwork network, string[] actionIndex) {

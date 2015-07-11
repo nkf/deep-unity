@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using QAI.Agent;
@@ -170,6 +171,10 @@ namespace QAI {
 //	        _instance._imitation.Save(); // Saving is now done in the Option Window, where the learning is started.
                 EditorApplication.isPlaying = false;
             }
+        }
+
+        internal static void RunCorotine(IEnumerator routine) {
+            _instance.StartCoroutine(routine);
         }
 
         internal static QImitationStorage SaveImitation(string name) {
