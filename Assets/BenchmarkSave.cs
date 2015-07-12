@@ -11,7 +11,7 @@ public class BenchmarkSave {
 
     //--------------Change these accordingly when doing new tests------------
     //Name of test
-    public const string CurrentTestID = "1";
+    public const string CurrentTestID = "8";
     //Iteration of test
     public const int TestN = 1;
     //The Game

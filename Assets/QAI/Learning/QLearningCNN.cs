@@ -22,13 +22,13 @@ namespace QAI.Learning {
 
         private const bool PrioritySweeping = false;
 
-        private const int BatchSize = PrioritySweeping ? 5 : 20;
+        private const int BatchSize = PrioritySweeping ? 5 : 5;
 		private const int MaxStoreSize = 100;
         private const int PredecessorCap = 6;
         private const float PriorityThreshold = 0.005f;
 		private const int PQSize = 30;
 
-        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.01f, Momentum = 0.9f, Decay = 0.0001f };
+        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.005f, Momentum = 0.9f, Decay = 0.0f };
 
         private ConvolutionalNetwork _net;
         private List<SARS> _imitationExps;

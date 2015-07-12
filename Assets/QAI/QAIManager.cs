@@ -98,6 +98,7 @@ namespace QAI {
                 UnityEngine.Debug.Log("Learning over after "+_stopwatch.Elapsed.TotalSeconds +" secounds");
                 
                 EditorApplication.isPlaying = false;
+                EditorApplication.Beep();
             } else {
                 Application.LoadLevel(Application.loadedLevel);
                 _qlearning.Iteration++;
