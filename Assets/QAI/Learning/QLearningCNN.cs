@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using C5;
@@ -22,10 +23,19 @@ namespace QAI.Learning {
 
         private const bool PrioritySweeping = false;
 
-        private const int BatchSize = PrioritySweeping ? 5 : 5;
-		private const int MaxStoreSize = 100;
+        //Number of timesteps inbetween training sessions
+        private const int TrainInterval = 20;
+        //Number of sars being trained in each training cycle
+        private const int BatchSize = PrioritySweeping ? 5 : 100;
+        //Number batches being trained each session
+        private const int TraningCycles = 10;
+        //Maximum number of sars being kept (only for not prio sweep?)
+		private const int MaxStoreSize = 2000;
+        //TODO: write what this is
         private const int PredecessorCap = 6;
+        //TODO: write what this is
         private const float PriorityThreshold = 0.005f;
+        //TODO: write what this is
 		private const int PQSize = 30;
 
         private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.005f, Momentum = 0.9f, Decay = 0.0f };
@@ -41,6 +51,7 @@ namespace QAI.Learning {
 
         private QState _prevState;
         private QAction _prevAction;
+        private int _trainingCounter;
         private bool _isFirstTurn = true;
         private bool _remake;
 
@@ -50,7 +61,8 @@ namespace QAI.Learning {
             }
         }
 
-        private void Initialize(int size) {
+        private void Initialize(int gridSize, int vectorSize) {
+            Iteration = 1;
             // Action-index mapping.
             _amap = new Dictionary<string, int>();
             int ix = 0;
@@ -58,9 +70,9 @@ namespace QAI.Learning {
                 _amap[a.ActionId] = ix++;
             // Model.
             if(_remake) {
-                _net = new ConvolutionalNetwork(size, 1, _amap.Count,
+                _net = new ConvolutionalNetwork(gridSize, vectorSize, _amap.Count,
                     //new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2 },
-                    new CNNArgs { FilterSize = 4, FilterCount = 3, PoolLayerSize = 2, Stride = 2 });
+                    new CNNArgs { FilterSize = 4, FilterCount = 1, PoolLayerSize = 2, Stride = 2 });
             } else {
                 _net = ConvolutionalNetwork.Load(BenchmarkSave.ModelPath);
             }
@@ -71,7 +83,7 @@ namespace QAI.Learning {
 
         public override void LoadModel() {
             _remake = false;
-            Initialize(0);
+            Initialize(0,0);
         }
 
         public override void SaveModel() {
@@ -80,13 +92,14 @@ namespace QAI.Learning {
 
         public override void RemakeModel() {
             _remake = true;
-			Initialize(Agent.GetState().Size);
+            var s = Agent.GetState();
+			Initialize(s.GridSize, s.VectorSize);
         }
 
         public override IEnumerator<YieldInstruction> RunEpisode(QAIManager.EpisodeCallback callback) { throw new NotImplementedException(); }
 
         public Action GetLearningAction(QState state) {
-            if(_net == null) Initialize(state.Size);
+            if(_net == null) Initialize(state.GridSize, state.VectorSize);
             if(!_isFirstTurn) {
                 if(state.IsTerminal) {
                     StoreSARS(new SARS(_prevState, _prevAction, state));
@@ -102,10 +115,22 @@ namespace QAI.Learning {
             _prevAction = a;
             _prevState = state;
             _isFirstTurn = false;
-            return () => {
-                a.Invoke();
+            _trainingCounter++;
+            if (_trainingCounter >= TrainInterval) {
+                _trainingCounter = 0;
+                var ts = Time.timeScale;
+                Time.timeScale = 0;
+                QAIManager.RunCorotine(RunTraining(ts));
+            }
+            return a.Action;
+        }
+
+        private IEnumerator RunTraining(float timescale) {
+            for (int i = 0; i < TraningCycles; i++) {
                 Train();
-            };
+                yield return new WaitForEndOfFrame();
+            }
+            Time.timeScale = timescale;
         }
 
         private void StoreSARS(SARS sars) {

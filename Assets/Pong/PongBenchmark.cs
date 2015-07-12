@@ -8,10 +8,19 @@ using UnityEngine;
 
 namespace Pong {
     public class PongBenchmark : QTester {
-        readonly List<TestScore> _scores = new List<TestScore>();
-        private int _iteration = -1;
-        private float y = -1;
+        public static bool Running = false;
+        private List<TestScore> _scores;
+        private int _iteration;
+        private float y;
+        public override void Init() {
+            y = -1;
+            _iteration = -1;
+            _scores = new List<TestScore>();
+        }
+
         public override bool SetupNextTest(QAgent agent) {
+            Running = true;
+            Time.timeScale = 3;
             _scores.Add(new TestScore());
             _iteration++;
             FindObjectOfType<PongBall>().Reset(new Vector2(-1, y));
@@ -39,6 +48,7 @@ namespace Pong {
         }
 
         public override void OnRunComplete() {
+            Running = false;
             var hits = _scores.Select(ts => ts.Hits).Sum();
             var wins = _scores.Select(ts => ts.GameWon ? 1 : 0).Sum();
             var avgDist = _scores.Select(ts => ts.BallDistance).Average();

@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEngine;
 
 namespace GridProto {
-    public class GridStateCreator : QTester {
+    public class GridBenchmark : QTester {
 
         private static List<Vector3> Positions;
 
@@ -18,7 +18,11 @@ namespace GridProto {
         private Vector3 RunPosistion;
         private readonly LinkedList<SARS> _history = new LinkedList<SARS>();
         const int HistorySize = 30;
-    
+
+
+        public override void Init() {
+            throw new System.NotImplementedException();
+        }
 
         public override bool SetupNextTest(QAgent agent) {
             FindObjectOfType<GridResultsVisualizer>().enabled = true;

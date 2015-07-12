@@ -52,7 +52,13 @@ namespace QAI.Visualizer {
 			return new []{ _spatialVisuals, _outputVisuals };
         }
 
-        public void Update() {
+        private void setBackgroundColor(Color color) {
+            _spatialVisuals.GetComponent<Image>().color = color;
+            _outputVisuals.GetComponent<Image>().color = color;
+        }
+
+        public void Update(bool isTrainingData) {
+            setBackgroundColor(isTrainingData ? NetworkVisualizer.TrainingColor : NetworkVisualizer.IdleColor);
             var input = _spatialLayer.Output();
             if(input == null || input.Length == 0) return;
             if(_nodeMatrices == null) InitInput(input);

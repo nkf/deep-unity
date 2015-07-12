@@ -5,7 +5,6 @@ using System.Linq;
 using QAI;
 using QAI.Agent;
 using QAI.Utility;
-using QNetwork.CNN;
 using MathNet.Numerics.LinearAlgebra;
 using UnityEngine;
 
@@ -96,8 +95,8 @@ namespace Pong {
 			PongGame.DebugDrawBounds(controller, Color.blue);
             if (b.Intersects(controller)) {
                 reward = 1;
-                terminal = winner.HasValue;
                 terminal = true;
+                if(PongBenchmark.Running) terminal = winner.HasValue;
             } else {
                 terminal = winner.HasValue;
                 reward = terminal ? (winner.Value == Side ? 1 : 0) : 0;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using QAI.Agent;
@@ -7,16 +8,19 @@ using QAI.Training;
 using QAI.Utility;
 using UnityEditor;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace QAI {
     public class QAIManager : MonoBehaviour {
         public delegate void EpisodeCallback();
 
         public const float TimeStep = 0.3f;
-        [HideInInspector] 
+        [HideInInspector]
         public QAIMode Mode;
         [HideInInspector]
         public bool Remake;
+        [HideInInspector] 
+        public bool Benchmark;
         [HideInInspector]
         public int Terminator;
 		[HideInInspector]
@@ -24,6 +28,8 @@ namespace QAI {
 
         [HideInInspector]
         public List<QStory> Stories;
+        [HideInInspector]
+        public QAIOptionWindow OptionWindow;
 	
         public GameObject ActiveAgent;
         public int Iteration { get { return _qlearning == null ? 0 : _qlearning.Iteration; }}
@@ -48,11 +54,15 @@ namespace QAI {
 
         public static void InitAgent(QAgent agent) {
             if (_instance == null) {
+                Time.timeScale = 3;
                 _instance = FindObjectOfType<QAIManager>();
                 _instance.Init(agent);
                 _instance._stopwatch = Stopwatch.StartNew();
+                _instance.Tester.Init();
             }
+            BenchmarkSave.SaveBenchmarks = _instance.Benchmark;
             _instance._sceneIsOver = false;
+            _instance._testIsOver = false;
             _instance._agent = agent;
             if(_instance.Mode != QAIMode.Imitating) 
                 _instance._qlearning.Agent = agent;
@@ -76,6 +86,10 @@ namespace QAI {
         }
 
         public static Action GetAction(QState state) {
+            if (_instance == null) {
+                Debug.Log("no instance");
+                return () => {};
+            }
             switch (_instance.Mode) {
                 case QAIMode.Learning:
                     if (_instance._sceneIsOver) return () => {};
@@ -93,12 +107,16 @@ namespace QAI {
             if (_sceneIsOver) return;
             if(_qlearning.Iteration >= Terminator) {
                 _qlearning.SaveModel();
-                
                 BenchmarkSave.WriteRunTime(_stopwatch.Elapsed.TotalSeconds);
-                UnityEngine.Debug.Log("Learning over after "+_stopwatch.Elapsed.TotalSeconds +" secounds");
-                
-                EditorApplication.isPlaying = false;
-                EditorApplication.Beep();
+                Debug.Log("Learning over after "+_stopwatch.Elapsed.TotalSeconds +" secounds");
+                if (Benchmark) {
+                    Debug.Log("Running Tester");
+                    OptionWindow.SetMode(QAIMode.Testing);
+                    Application.LoadLevel(Application.loadedLevel);
+                } else {
+                    EditorApplication.isPlaying = false;
+                    EditorApplication.Beep();
+                }
             } else {
                 Application.LoadLevel(Application.loadedLevel);
                 _qlearning.Iteration++;
@@ -117,7 +135,7 @@ namespace QAI {
                 Tester.OnTestComplete(state.Reward);
                 _testIsRunning = false;
                 Application.LoadLevel(Application.loadedLevel);
-                //Take "best" action if test is running
+            //Take "best" action if test is running
             } else {
                 var sars = _agent.MakeSARS(_qlearning.GreedyPolicy(state));
                 Tester.OnActionTaken(_agent, sars);
@@ -125,15 +143,25 @@ namespace QAI {
         }
         private void SetupTest(QState state) {
             var sceneSetup = Tester.SetupNextTest(_agent);
-            //End test run if tester says its over.
-            if(!sceneSetup) {
-                Tester.OnRunComplete();
-                _testIsOver = true;
-                EditorApplication.isPlaying = false;
-                //Run Test if tester have set up scene
-            } else {
+            //Run Test if tester have set up scene
+            if(sceneSetup) {
                 _testIsRunning = true;
                 RunTest(state);
+            //End test run if tester says its over.
+            } else {
+                Tester.OnRunComplete();
+                _testIsOver = true;
+                if (Benchmark && BenchmarkSave.HaveRunsLeft) {
+                    _qlearning.RemakeModel();
+                    _stopwatch.Reset();
+                    _stopwatch.Start();
+                    Tester.Init();
+                    OptionWindow.SetMode(QAIMode.Learning);
+                    BenchmarkSave.NextRun();
+                    Application.LoadLevel(Application.loadedLevel);
+                } else {
+                    EditorApplication.isPlaying = false;
+                }
             }
         }
 
@@ -144,6 +172,10 @@ namespace QAI {
 //	        _instance._imitation.Save(); // Saving is now done in the Option Window, where the learning is started.
                 EditorApplication.isPlaying = false;
             }
+        }
+
+        internal static void RunCorotine(IEnumerator routine) {
+            _instance.StartCoroutine(routine);
         }
 
         internal static QImitationStorage SaveImitation(string name) {

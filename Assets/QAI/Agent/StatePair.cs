@@ -1,6 +1,8 @@
-﻿using MathNet.Numerics.LinearAlgebra;
+﻿using System;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace QAI.Agent {
+    [Serializable]
     public struct StatePair {
         public readonly Matrix<float>[] Spatial;
         public readonly Vector<float> Linear;
