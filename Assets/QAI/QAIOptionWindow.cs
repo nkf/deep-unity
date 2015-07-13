@@ -43,6 +43,7 @@ namespace QAI {
             // Get existing open window or if none, make a new one:
             var window = (QAIOptionWindow) GetWindow(typeof (QAIOptionWindow));
             window.Show();
+
         }
 
         private void Init() {
@@ -184,7 +185,8 @@ namespace QAI {
                         _learnAllStories = true;
                         _remake = remake || benchmark;
                         _benchmark = benchmark;
-                        ChangePlayMode();
+                        if(!benchmark) ChangePlayMode();
+						else BenchmarkDialog.OpenWindow(this, _manager);
                     }
                 }
 
@@ -212,7 +214,7 @@ namespace QAI {
             }
         }
 	
-        private void ChangePlayMode() {
+        public void ChangePlayMode() {
             if (!EditorApplication.isPlaying) {
                 _starting = true;
             }
@@ -221,6 +223,13 @@ namespace QAI {
             }
             EditorApplication.isPlaying = !EditorApplication.isPlaying;
         }
+
+		public void Reset() {
+			_initNext = true;
+			_remake = false;
+			_learnAllStories = false;
+			_mode = QAIMode.Runnning;
+		}
 
         private void PlayModeChange() {
             if (_started && !EditorApplication.isPlayingOrWillChangePlaymode && EditorApplication.isPlaying) {

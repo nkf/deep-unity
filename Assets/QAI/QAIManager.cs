@@ -30,6 +30,10 @@ namespace QAI {
         public List<QStory> Stories;
         [HideInInspector]
         public QAIOptionWindow OptionWindow;
+
+		[HideInInspector]
+		public string BenchmarkID = "TEST_ID_GOES_HERE";
+		public int BecnhmarkRuns = 10;
 	
         public GameObject ActiveAgent;
         public int Iteration { get { return _qlearning == null ? 0 : _qlearning.Iteration; }}
@@ -61,6 +65,8 @@ namespace QAI {
                 _instance.Tester.Init();
             }
             BenchmarkSave.SaveBenchmarks = _instance.Benchmark;
+			BenchmarkSave.CurrentTestID = _instance.BenchmarkID;
+			BenchmarkSave.Runs = _instance.BecnhmarkRuns;
             _instance._sceneIsOver = false;
             _instance._testIsOver = false;
             _instance._agent = agent;

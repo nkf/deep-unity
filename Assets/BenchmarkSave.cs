@@ -12,9 +12,9 @@ public class BenchmarkSave {
 
     //--------------Change these accordingly when doing new tests------------
     //Name of test
-    public const string CurrentTestID = "TEST_ID_GOES_HERE";
+    public static string CurrentTestID;
     //Number of runs (learn -> test -> reset = 1 run)
-    public const int Runs = 10;
+    public static int Runs;
     //The Game
     public const Game CurrentGame = Game.Pong;
     //-----------------------------------------------------------------------
