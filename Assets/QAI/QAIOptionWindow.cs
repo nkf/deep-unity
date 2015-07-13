@@ -60,7 +60,6 @@ namespace QAI {
             Directory.CreateDirectory(STORY_PATH);
             _stories = QStory.LoadForScene(STORY_PATH, EditorApplication.currentScene); // Should read this when serialization works
             _currentStory = _currentStory == null ? null : _stories.Find(s => s.Id == _currentStory.Id);
-            _learnAllStories = false;
         }
 
         private void OnGUI() {

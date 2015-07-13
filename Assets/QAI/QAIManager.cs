@@ -6,6 +6,7 @@ using QAI.Agent;
 using QAI.Learning;
 using QAI.Training;
 using QAI.Utility;
+using QAI.Visualizer;
 using UnityEditor;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -43,6 +44,8 @@ namespace QAI {
         private static QAIManager _instance = null;
         private QLearningCNN _qlearning;
         private QImitation _imitation;
+
+        private NetworkVisualizer _visualizer;
 
         private QAgent _agent;
         private bool _testIsRunning;
@@ -83,9 +86,12 @@ namespace QAI {
                 }
                 default: {
                     _qlearning = new QLearningCNN {Agent = agent};
+                    
                     if(Remake) _qlearning.RemakeModel();
-                    else _qlearning.LoadModel();
-					if(VisualizeNetwork) _qlearning.CreateVisualizer();
+                    else       _qlearning.LoadModel();
+
+                    if(VisualizeNetwork) 
+                        _visualizer = _qlearning.CreateVisualizer();
                     break;
                 }
             }
@@ -157,10 +163,7 @@ namespace QAI {
                 Tester.OnRunComplete();
                 _testIsOver = true;
                 if (Benchmark && BenchmarkSave.HaveRunsLeft) {
-                    _qlearning.RemakeModel();
-                    _stopwatch.Reset();
-                    _stopwatch.Start();
-                    Tester.Init();
+                    RemakeManager();
                     OptionWindow.SetMode(QAIMode.Learning);
                     BenchmarkSave.NextRun();
                     Application.LoadLevel(Application.loadedLevel);
@@ -168,6 +171,15 @@ namespace QAI {
                     EditorApplication.isPlaying = false;
                 }
             }
+        }
+
+        private void RemakeManager() {
+            _qlearning.RemakeModel();
+            Destroy(_visualizer.gameObject);
+            _visualizer = _qlearning.CreateVisualizer();
+            _stopwatch.Reset();
+            _stopwatch.Start();
+            Tester.Init();
         }
 
         public static void Imitate(QAgent agent, Action a) {
