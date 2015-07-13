@@ -80,9 +80,12 @@ namespace QAI {
                 }
                 default: {
                     _qlearning = new QLearningCNN {Agent = agent};
+                    
                     if(Remake) _qlearning.RemakeModel();
-                    else _qlearning.LoadModel();
-					if(VisualizeNetwork) _qlearning.CreateVisualizer();
+                    else       _qlearning.LoadModel();
+
+                    if(VisualizeNetwork) 
+                        _visualizer = _qlearning.CreateVisualizer();
                     break;
                 }
             }
