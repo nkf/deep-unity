@@ -55,7 +55,12 @@ namespace QAI.Visualizer {
 			return _visuals;
 		}
 
-		public void Update() {
+	    private void setBackgroundColor(Color color) {
+	        _visuals.GetComponent<Image>().color = color;
+	    }
+
+		public void Update(bool isTrainingData) {
+            setBackgroundColor(isTrainingData ? NetworkVisualizer.TrainingColor : NetworkVisualizer.IdleColor);
 			var o = _layer.Output();
 			if(o == null || o.Length == 0) return;
 			if(_images == null) Init(o);

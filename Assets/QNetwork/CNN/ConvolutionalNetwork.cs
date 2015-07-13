@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using MathNet.Numerics.LinearAlgebra;
@@ -15,6 +16,8 @@ namespace QNetwork.CNN {
         public FlattenLayer FlattenLayer { get; private set; }
         public TreeLayer CombinationLayer { get; private set; }
         public DenseLayer OutputLayer { get; private set; }
+
+        public bool IsOutputFromTraining { get; private set; }
 
         private VectorPair _vecp;
 
@@ -60,6 +63,7 @@ namespace QNetwork.CNN {
                 img = SubSampleLayers[i].Compute(ConvolutionalLayers[i].Compute(img));
             _vecp.left = FlattenLayer.Compute(img);
             _vecp.right = input.Linear;
+            IsOutputFromTraining = false;
             return OutputLayer.Compute(CombinationLayer.Compute(_vecp));
         }
 
@@ -86,6 +90,7 @@ namespace QNetwork.CNN {
             _loss.Subtract(Output(), _loss);
             var img = _split.Visit(_outback.Visit(_loss, _params), _params).left;
             _backprop.BackPropagation(_unflatten.Visit(img, _params), _params);
+            IsOutputFromTraining = true;
         }
 
         public void SGD(StatePair input, TargetIndexPair p) {
@@ -93,6 +98,7 @@ namespace QNetwork.CNN {
             _loss.At(p.Index, p.Target - Compute(input)[p.Index]);
             var img = _split.Visit(_outback.Visit(_loss, _params), _params).left;
             _backprop.BackPropagation(_unflatten.Visit(img, _params), _params);
+            IsOutputFromTraining = true;
         }
 
 		public IEnumerable<SpatialLayer> IterateSpatialLayers() {
