@@ -12,11 +12,14 @@ namespace QAI.Utility {
         public Vector3 Size { get; private set; }
         public Bounds Bounds { get { return new Bounds(Center, Size); } }
         public Axis NormalAxis { get; private set; }
-        public Matrix<float> Matrix { get; private set; }
+        private readonly Matrix<float> _matrix;
+        public Matrix<float> Matrix {
+            get { return _matrix.Clone(); }
+        }
 
         public Q2DGrid(int size, Transform transform, GridSettings gs = null) {
             if(gs == null) gs = new GridSettings();
-            Matrix = Matrix<float>.Build.Dense(size, size);
+            _matrix = Matrix<float>.Build.Dense(size, size);
             GridSize = size;
             Transform = transform;
             Offset = gs.Offset;
@@ -28,13 +31,13 @@ namespace QAI.Utility {
         }
 
         public float this[int x, int y] {
-            get { return Matrix[x, y]; }
-            set { Matrix[x, y] = value; }
+            get { return _matrix[x, y]; }
+            set { _matrix[x, y] = value; }
         }
 
         public float this[Coordinates2D c] {
-            get { return Matrix[c.x, c.y]; }
-            set { Matrix[c.x, c.y] = value; }
+            get { return _matrix[c.x, c.y]; }
+            set { _matrix[c.x, c.y] = value; }
         }
 
         public void Populate(Func<Bounds, float> populator) {
