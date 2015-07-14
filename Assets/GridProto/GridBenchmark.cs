@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using QAI.Agent;
@@ -9,30 +10,27 @@ using UnityEngine;
 
 namespace GridProto {
     public class GridBenchmark : QTester {
+        
+        //Set in editor
+        public List<Vector3> Positions;
 
-        private static List<Vector3> Positions;
-
-        private readonly SerializableDictionary<Vector3, ResultPair> _results = new SerializableDictionary<Vector3, ResultPair>();
-        private readonly List<double> _distScores = new List<double>();
+        private SerializableDictionary<Vector3, ResultPair> _results;
+        private List<double> _distScores;
 
         private Vector3 RunPosistion;
-        private readonly LinkedList<SARS> _history = new LinkedList<SARS>();
-        const int HistorySize = 30;
-
 
         public override void Init() {
-            throw new System.NotImplementedException();
+            _results = new SerializableDictionary<Vector3, ResultPair>();
+            _distScores = new List<double>();
         }
 
         public override bool SetupNextTest(QAgent agent) {
             FindObjectOfType<GridResultsVisualizer>().enabled = true;
-            if (Positions == null) Positions = Goal.AllValidPositions();
             if (Positions.Count == 0) return false;
             RunPosistion = Positions[0];
             RunPosistion.y = 1;
             ((GridWoman)agent).transform.position = RunPosistion;
             Positions.RemoveAt(0);
-            _history.Clear();
             return true;
         }
 
@@ -40,13 +38,6 @@ namespace GridProto {
             var state = sars.NextState.Features;
             //var distToGoal = new Vector2((float)state[0], (float)state[1]).magnitude;
             //_distScores.Add( 1/(distToGoal+1) );
-            _history.AddFirst(sars);
-            if (_history.Count >= HistorySize) {
-                if (DetectCycle(_history)) {
-                    //QAIManager.EndTestRun();
-                }
-                _history.RemoveLast();
-            }
         }
 
         public override void OnTestComplete(double reward) {
@@ -64,11 +55,6 @@ namespace GridProto {
         private void WriteResults() {
             var path = Path.Combine("TestResults", QData.EscapeScenePath(EditorApplication.currentScene))+".xml";
             QData.Save(path, _results);
-        }
-
-        //TODO: we might need a better method for this.
-        private bool DetectCycle(ICollection<SARS> sarss) {
-            return sarss.Distinct().Count() <= HistorySize/3f;
         }
 
     }

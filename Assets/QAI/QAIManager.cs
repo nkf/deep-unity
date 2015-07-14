@@ -57,7 +57,7 @@ namespace QAI {
 
         public static void InitAgent(QAgent agent) {
             if (_instance == null) {
-                Time.timeScale = 3;
+                Time.timeScale = 3f;
                 _instance = FindObjectOfType<QAIManager>();
                 _instance.Init(agent);
                 _instance._stopwatch = Stopwatch.StartNew();
@@ -151,7 +151,6 @@ namespace QAI {
             //Run Test if tester have set up scene
             if(sceneSetup) {
                 _testIsRunning = true;
-                RunTest(state);
             //End test run if tester says its over.
             } else {
                 Tester.OnRunComplete();
