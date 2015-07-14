@@ -21,7 +21,9 @@ public class BenchmarkSave {
 
     public static bool SaveBenchmarks = true;
     public static int TestN = 1;
-    public static string ModelPath { get { return Path.Combine(TestFolder, CurrentTestID+"-"+TestN) + ".xml"; } }
+	private static string _modelPath = null;
+    public static string ModelPath { get { return _modelPath != null && !_modelPath.Equals("") ? _modelPath : Path.Combine(TestFolder, CurrentTestID+"-"+TestN) + ".xml"; }
+									 set { _modelPath = value; }}
 
     public static Dictionary<Game, string[]> Header = new Dictionary<Game, string[]> {
         {Game.Pong, new []{"Runtime", "Paddle Hits", "Victories", "Avg. miss distance"}},
