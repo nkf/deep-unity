@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using QAI.Agent;
 
 namespace QAI.Training {
@@ -25,6 +26,12 @@ namespace QAI.Training {
                 hashCode = (hashCode * 397) ^ Action.GetHashCode();
                 return hashCode;
             }
+        }
+    }
+
+    public class SARSPrioritizer : IComparer<SARS> {
+        public int Compare(SARS x, SARS y) {
+            return (int)(x.Priority - y.Priority);
         }
     }
 }
