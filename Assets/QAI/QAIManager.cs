@@ -13,7 +13,6 @@ using Debug = UnityEngine.Debug;
 
 namespace QAI {
     public class QAIManager : MonoBehaviour {
-        public delegate void EpisodeCallback();
 
         public const float TimeStep = 0.3f;
         [HideInInspector]

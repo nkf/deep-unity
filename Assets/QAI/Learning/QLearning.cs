@@ -28,7 +28,7 @@ namespace QAI.Learning {
         //Number of sars being trained in each training cycle
         public const int BatchSize = PrioritySweeping ? 5 : 100;
         //Maximum number of sars being kept
-        public const int MaxStoreSize = PrioritySweeping ? 30 : 100;
+        public const int MaxStoreSize = PrioritySweeping ? 30 : 2000;
         //TODO: write what this is
         public const int PredecessorCap = 6;
         //TODO: write what this is
@@ -120,7 +120,7 @@ namespace QAI.Learning {
         public QAction ProbabilisticPolicy(QState state) {
             var q = Q(state);
             var vas = ValidActions();
-            var es = vas.Select(v => Math.Exp(q(v)));
+            var es = vas.Select(v => Math.Exp(q(v) / 0.25));
             double sum = es.Sum();
             var aux = es.Select((e, i) => new { p = e / sum, a = vas[i] }).OrderBy(x => x.p);
             double rng = Random.value;
