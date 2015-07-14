@@ -21,12 +21,12 @@ namespace QAI.Learning {
         private readonly Param Epsilon = t => EpisilonStart + ((EpisilonEnd - EpisilonStart) / QAIManager.NumIterations()) * t;
         private const float Discount = 0.95f;
 
-        private const bool PrioritySweeping = false;
+        private bool PrioritySweeping = false;
 
         //Number of timesteps inbetween training sessions
         private const int TrainInterval = 20;
         //Number of sars being trained in each training cycle
-        private const int BatchSize = PrioritySweeping ? 5 : 100;
+        private static int BatchSize;
         //Number batches being trained each session
         private const int TraningCycles = 10;
         //Maximum number of sars being kept (only for not prio sweep?)
@@ -34,7 +34,7 @@ namespace QAI.Learning {
         //TODO: write what this is
         private const int PredecessorCap = 6;
         //TODO: write what this is
-        private const float PriorityThreshold = 0.005f;
+        private const float PriorityThreshold = 0.001f;
         //TODO: write what this is
 		private const int PQSize = 30;
 
@@ -60,6 +60,11 @@ namespace QAI.Learning {
                 return (int)(x.Priority - y.Priority);
             }
         }
+
+		public QLearningCNN(bool prioritySweep) {
+			PrioritySweeping = prioritySweep;
+			BatchSize = PrioritySweeping ? 15 : 100;
+		}
 
         private void Initialize(int gridSize, int vectorSize) {
             Iteration = 1;

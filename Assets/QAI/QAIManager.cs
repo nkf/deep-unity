@@ -36,6 +36,9 @@ namespace QAI {
 		public string BenchmarkID = "TEST_ID_GOES_HERE";
 		[HideInInspector]
 		public int BenchmarkRuns = 10;
+
+		[HideInInspector]
+		public bool PrioritySweeping;
 	
         public GameObject ActiveAgent;
         public static int Iteration { get { return _instance == null || _instance._qlearning == null ? 0 : _instance._qlearning.Iteration; }}
@@ -95,7 +98,7 @@ namespace QAI {
                     break;
                 }
                 default: {
-                    _qlearning = new QLearningCNN {Agent = agent};
+                    _qlearning = new QLearningCNN(PrioritySweeping) {Agent = agent};
                     
                     if(Remake) _qlearning.RemakeModel();
                     else       _qlearning.LoadModel();
