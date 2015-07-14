@@ -24,13 +24,13 @@ namespace QAI.Learning {
         private const bool PrioritySweeping = false;
 
         //Number of timesteps inbetween training sessions
-        private const int TrainInterval = 20;
+        private const int TrainInterval = 8;
         //Number of sars being trained in each training cycle
-        private const int BatchSize = PrioritySweeping ? 5 : 100;
-        //Number batches being trained each session
+        private const int BatchSize = PrioritySweeping ? 5 : 32;
+        //Number of batches being trained each session
         private const int TraningCycles = 10;
-        //Maximum number of sars being kept (only for not prio sweep?)
-		private const int MaxStoreSize = 2000;
+        //Maximum number of sars being kept (only for normal training)
+		private const int MaxStoreSize = 100;
         //TODO: write what this is
         private const int PredecessorCap = 6;
         //TODO: write what this is
@@ -38,7 +38,7 @@ namespace QAI.Learning {
         //TODO: write what this is
 		private const int PQSize = 30;
 
-        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.005f, Momentum = 0.9f, Decay = 0.0f };
+        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.0025f, Momentum = 0.9f, Decay = 0.0f };
 
         private ConvolutionalNetwork _net;
         private List<SARS> _imitationExps;
@@ -164,19 +164,12 @@ namespace QAI.Learning {
                 .SelectMany(e => e).ToList();
             Debug.Log("Loading " + _imitationExps.Count + " imitation experiences");
             _qexp = new QExperience();
-            foreach(var imitationExp in _imitationExps) {
-                _qexp.Store(imitationExp);
-                PutPredecessor(imitationExp);
-                EnqueueSARS(imitationExp);
-            }
+            foreach (var imitationExp in _imitationExps)
+                StoreSARS(imitationExp);
         }
 
         public List<SARS> SampleBatch(int size) {
-            //var r = _imitationExps.Random().Concat(_qexp.Random()).ToList();
-            //var r = _imitationExps.Concat(_qexp).Shuffle().Take(size).ToList();
-            var r = _qexp.Shuffle().Take(size).ToList();
-            //var r = _imitationExps.Shuffle().ToList();
-            return r;
+            return _qexp.Shuffle().Take(size).ToList();
         }
 
         private void TrainModel() {
@@ -193,15 +186,6 @@ namespace QAI.Learning {
                 } else {
                     target = sars.Reward;
                 }
-                /*
-                // ATTENTION: Not Q-learning.
-                // Delete from here.
-                var ideal = Vector<float>.Build.Dense(3);
-                for (int n = 0; n < ideal.Count; n++)
-                    ideal[n] = 0f;
-                var target = 1f;
-                // To here.
-                */
                 outp[i++] = new TargetIndexPair(target, _amap[sars.Action.ActionId]);
             }
             for(int j = 0; j < batch.Count; j++) {
