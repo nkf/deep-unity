@@ -54,4 +54,24 @@ public static class LinqExtension {
                group item by i++ % parts into part
                select part.AsEnumerable();
     }
+
+    public static IEnumerable<List<T>> Partition<T>(this IList<T> source, int parts) {
+        var max = source.Count/parts;
+        var evenLists = source.Count%parts;
+        var toReturn = new List<T>(max);
+        var n = 1;
+        var evenMax = max + 1;
+        var oddMax = max;
+        max = evenMax;
+        foreach(var item in source) {
+            toReturn.Add(item);
+            if(toReturn.Count == max) {
+                yield return toReturn;
+                n++;
+                if (n > evenLists)
+                    max = oddMax;
+                toReturn = new List<T>(max);
+            }
+        }
+    }
 }

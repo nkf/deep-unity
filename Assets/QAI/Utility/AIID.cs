@@ -7,7 +7,7 @@ namespace QAI.Utility {
         public AIID(string id) : this() {
             if(ReferenceEquals(null, id)) 
                 throw new ArgumentException("id may not be null");
-            if(id.IndexOfAny(Path.GetInvalidFileNameChars()) == -1)
+            if(id.IndexOfAny(Path.GetInvalidFileNameChars()) != -1)
                 throw new ArgumentException("id may not contain invalid file name characters. See System.IO.Path.GetInvalidFileNameChars");
             ID = id;
         }

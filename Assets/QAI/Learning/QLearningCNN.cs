@@ -120,14 +120,23 @@ namespace QAI.Learning {
                 _trainingCounter = 0;
                 var ts = Time.timeScale;
                 Time.timeScale = 0;
-                QAIManager.RunCorotine(RunTraining(ts));
+                QAIManager.RunCorotine(PrioritySweeping ? RunPriotizedTraining(ts) : RunTraining(ts));
             }
             return a.Action;
         }
 
         private IEnumerator RunTraining(float timescale) {
-            for (int i = 0; i < TraningCycles; i++) {
-                Train();
+            var batches = FullBatch().Partition(TraningCycles);
+            foreach (var batch in batches) {
+                TrainModel(batch);
+                yield return new WaitForEndOfFrame();
+            }
+            Time.timeScale = timescale;
+        }
+
+        private IEnumerator RunPriotizedTraining(float timescale) {
+            for(int i = 0; i < TraningCycles; i++) {
+                PrioritizedSweeping();
                 yield return new WaitForEndOfFrame();
             }
             Time.timeScale = timescale;
@@ -142,13 +151,6 @@ namespace QAI.Learning {
             } else {
                 _qexp.Store(sars, MaxStoreSize);
             }
-        }
-
-        private void Train() {
-            if(PrioritySweeping)
-                PrioritizedSweeping();
-            else
-                TrainModel();
         }
 
         public override ActionValueFunction Q(QState s) {
@@ -172,8 +174,11 @@ namespace QAI.Learning {
             return _qexp.Shuffle().Take(size).ToList();
         }
 
-        private void TrainModel() {
-            var batch = SampleBatch(BatchSize);
+        public List<SARS> FullBatch() {
+            return _qexp.Shuffle().ToList();
+        } 
+
+        private void TrainModel(List<SARS> batch) {
             var inp = new StatePair[batch.Count];
             var outp = new TargetIndexPair[batch.Count];
             int i = 0;
