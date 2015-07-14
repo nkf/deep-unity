@@ -34,7 +34,7 @@ namespace Pong {
             _ball = FindObjectOfType<PongBall>();
             if (Side == Player.Player1) {
                 _grid = new Q2DGrid(16, transform,
-                    new GridSettings {Offset = new Vector3(9.3f, 0, 0), ResolutionX = 1.28f, ResolutionY = 1.28f});
+                    new GridSettings {Offset = new Vector3(9.8f, 0, 0), ResolutionX = 1.28f, ResolutionY = 1.28f});
                 _vect = Vector<float>.Build.Dense(new[] { 1f });
                 QAIManager.InitAgent(this);
             }
@@ -131,7 +131,7 @@ namespace Pong {
             //_grid.Populate((bo,c) => c.y == bpy ? 1 : 0); //one line
             //_grid.Populate((bo,c) => gbp.HasValue && gbp.Value.Equals(c) ? 1 : 0); //single
             _grid.Populate((bo, c) => {
-                var x = bo.center.x;
+                //var x = bo.center.x;
                 //var v = bo.Contains(new Vector3(x, _game.Border.min.y)) || bo.Contains(new Vector3(x, _game.Border.max.y)) ? 0.3f : 0; // walls
                 var ham = gbp.HasValue ? HammingDistance(gbp.Value, c) : int.MaxValue; // Hamming distance
                 var v = ham < 1 ? 1f : ham < 2 ? 0.5f : 0; // ball

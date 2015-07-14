@@ -43,7 +43,7 @@ namespace QAI {
         public QTester Tester;
 
         private static QAIManager _instance = null;
-        private QLearningCNN _qlearning;
+        private QLearning _qlearning;
         private QImitation _imitation;
 
         private NetworkVisualizer _visualizer;
@@ -72,8 +72,8 @@ namespace QAI {
             _instance._sceneIsOver = false;
             _instance._testIsOver = false;
             _instance._agent = agent;
-            if(_instance.Mode != QAIMode.Imitating) 
-                _instance._qlearning.Agent = agent;
+            if (_instance.Mode != QAIMode.Imitating)
+                _instance._qlearning.Reset(agent);
         }
 
 		private void Init(QAgent agent) {
@@ -95,9 +95,10 @@ namespace QAI {
                     break;
                 }
                 default: {
-                    _qlearning = new QLearningCNN {Agent = agent};
+                    _qlearning = new QLearningCNN();
+                    _qlearning.Reset(agent);
                     
-                    if(Remake) _qlearning.RemakeModel();
+                    if(Remake) _qlearning.RemakeModel(agent.GetState());
                     else       _qlearning.LoadModel();
 
                     if(VisualizeNetwork) 
@@ -137,6 +138,7 @@ namespace QAI {
                     Application.LoadLevel(Application.loadedLevel);
                 } else {
                     EditorApplication.isPlaying = false;
+                    EditorApplication.Beep();
                 }
             } else {
                 Application.LoadLevel(Application.loadedLevel);
@@ -150,6 +152,7 @@ namespace QAI {
             if(_testIsRunning) RunTest(state);
             else               SetupTest(state);
         }
+
         private void RunTest(QState state) {
             //End run if terminal
             if(state.IsTerminal) {
@@ -162,6 +165,7 @@ namespace QAI {
                 Tester.OnActionTaken(_agent, sars);
             }
         }
+
         private void SetupTest(QState state) {
             var sceneSetup = Tester.SetupNextTest(_agent);
             //Run Test if tester have set up scene
@@ -183,7 +187,7 @@ namespace QAI {
         }
 
         private void RemakeManager() {
-            _qlearning.RemakeModel();
+            _qlearning.RemakeModel(_agent.GetState());
             Destroy(_visualizer.gameObject);
             _visualizer = _qlearning.CreateVisualizer();
             _stopwatch.Reset();
@@ -200,7 +204,7 @@ namespace QAI {
             }
         }
 
-        internal static void RunCorotine(IEnumerator routine) {
+        internal static void RunCoroutine(IEnumerator routine) {
             _instance.StartCoroutine(routine);
         }
 
