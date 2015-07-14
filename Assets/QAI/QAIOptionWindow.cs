@@ -60,6 +60,7 @@ namespace QAI {
             Directory.CreateDirectory(STORY_PATH);
             _stories = QStory.LoadForScene(STORY_PATH, EditorApplication.currentScene); // Should read this when serialization works
             _currentStory = _currentStory == null ? null : _stories.Find(s => s.Id == _currentStory.Id);
+			_benchmark = _manager.Benchmark;
         }
 
         private void OnGUI() {
@@ -189,11 +190,23 @@ namespace QAI {
                     }
                 }
 
-
                 //TESTER
                 if(testButton && _manager.Tester != null) {
                     _mode = QAIMode.Testing;
-                    ChangePlayMode();
+					_manager.BenchmarkID = null;
+					if(!Event.current.alt)
+						ChangePlayMode();
+					else {
+						var path = EditorUtility.OpenFilePanel("Open brain", BenchmarkSave.TestFolder, "xml");
+						if(path.Equals("")) Reset();
+	                    else {
+							var fullFile = path.Substring(path.LastIndexOf(Path.DirectorySeparatorChar)+1);
+							var fileEnd = fullFile.LastIndexOf('-');
+							var filename = fullFile.Substring(0, fileEnd);
+							_manager.BenchmarkID = path;
+							ChangePlayMode();
+						}
+					}
                 } else if(testButton && _manager.Tester == null) {
                     EditorUtility.DisplayDialog("QAI", "No tester is set. Please create a testing manager and assign it in the editor.", "OK");
                 } 
@@ -224,9 +237,11 @@ namespace QAI {
         }
 
 		public void Reset() {
+			Debug.Log ("Resetting");
 			_initNext = true;
 			_remake = false;
 			_learnAllStories = false;
+			_benchmark = false;
 			_mode = QAIMode.Runnning;
 		}
 
@@ -264,6 +279,7 @@ namespace QAI {
                 }
                 else {
                     _learnAllStories = false;
+					_benchmark = false;
                     _learningStory = 0;
                     _remake = false;
                 }

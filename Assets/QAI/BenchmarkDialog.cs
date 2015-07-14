@@ -23,7 +23,7 @@ public class BenchmarkDialog : EditorWindow {
 	private void OnGUI() {
 		EditorGUILayout.LabelField("You are about to start benchmarking. Be advised that this can take several hours to complete.", EditorStyles.wordWrappedLabel);
 		_manager.BenchmarkID = EditorGUILayout.TextField("Benchmark report name", _manager.BenchmarkID);
-		_manager.BecnhmarkRuns = EditorGUILayout.IntField("Benchmark rounds", _manager.BecnhmarkRuns);
+		_manager.BenchmarkRuns = EditorGUILayout.IntField("Benchmark rounds", _manager.BenchmarkRuns);
 		GUILayout.BeginHorizontal();
 		if(GUILayout.Button("Close")) {
 			_optionWindow.Reset();

@@ -34,7 +34,8 @@ namespace QAI {
 
 		[HideInInspector]
 		public string BenchmarkID = "TEST_ID_GOES_HERE";
-		public int BecnhmarkRuns = 10;
+		[HideInInspector]
+		public int BenchmarkRuns = 10;
 	
         public GameObject ActiveAgent;
         public int Iteration { get { return _qlearning == null ? 0 : _qlearning.Iteration; }}
@@ -68,8 +69,6 @@ namespace QAI {
                 _instance.Tester.Init();
             }
             BenchmarkSave.SaveBenchmarks = _instance.Benchmark;
-			BenchmarkSave.CurrentTestID = _instance.BenchmarkID;
-			BenchmarkSave.Runs = _instance.BecnhmarkRuns;
             _instance._sceneIsOver = false;
             _instance._testIsOver = false;
             _instance._agent = agent;
@@ -77,7 +76,18 @@ namespace QAI {
                 _instance._qlearning.Agent = agent;
         }
 
-        private void Init(QAgent agent) {
+		private void Init(QAgent agent) {
+			if(Benchmark) {
+				BenchmarkSave.CurrentTestID = _instance.BenchmarkID;
+				BenchmarkSave.Runs = _instance.BenchmarkRuns;
+			} else if(Mode == QAIMode.Testing && BenchmarkID != null && !BenchmarkID.Equals("")) {
+				BenchmarkSave.ModelPath = _instance.BenchmarkID;
+			} else {
+				BenchmarkSave.CurrentTestID = agent.AI_ID().ID;
+				BenchmarkSave.Runs = 1;
+			}
+			Debug.Log ("Running " + BenchmarkSave.ModelPath);
+
             DontDestroyOnLoad(gameObject);
             switch (Mode) {
                 case QAIMode.Imitating: {
