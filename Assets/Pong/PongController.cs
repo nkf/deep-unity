@@ -147,7 +147,7 @@ namespace Pong {
             .Concat(new double[]{rbp.x, rbp.y, topDist, botDist})
             .ToArray();
         */
-            var state = _grid.Matrix.Clone();
+            var state = _grid.Matrix;
             return new QState(new[] { state }, _vect.Clone(), reward, terminal);
         }
 
