@@ -90,7 +90,7 @@ namespace QAI.Learning {
                 _trainingCounter = 0;
                 var ts = Time.timeScale;
                 Time.timeScale = 0;
-                QAIManager.RunCorotine(PrioritySweeping ? RunPriotizedTraining(ts) : RunTraining(ts));
+                QAIManager.RunCoroutine(PrioritySweeping ? RunPriotizedTraining(ts) : RunTraining(ts));
             }
             return a.Action;
         }
