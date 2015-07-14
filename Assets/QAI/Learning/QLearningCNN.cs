@@ -18,6 +18,12 @@ namespace QAI.Learning {
 
         private bool _remake;
 
+		public QLearningCNN(bool PrioritizedSweeping) {
+			PrioritySweeping = PrioritizedSweeping;
+			BatchSize = PrioritySweeping ? 5 : 100;
+			MaxStoreSize = PrioritySweeping ? 30 : 100;
+		}
+
         public override void Initialize(int gridSize, int vectorSize) {
             // Action-index mapping.
             _amap = new Dictionary<string, int>();
