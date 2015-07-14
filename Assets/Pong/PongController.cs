@@ -54,6 +54,7 @@ namespace Pong {
                 if (Input.GetKey(keys[0])) action = MoveUp;
                 if (Input.GetKey(keys[1])) action = MoveDown;
                 if(Side == Player.Player1) QAIManager.Imitate(this, action);
+				if(Side == Player.Player2) action();
                 yield return new WaitForFixedUpdate();
             }
         }

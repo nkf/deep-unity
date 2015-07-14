@@ -12,16 +12,18 @@ public class BenchmarkSave {
 
     //--------------Change these accordingly when doing new tests------------
     //Name of test
-    public const string CurrentTestID = "TEST_ID_GOES_HERE";
+    public static string CurrentTestID;
     //Number of runs (learn -> test -> reset = 1 run)
-    public const int Runs = 10;
+    public static int Runs;
     //The Game
     public const Game CurrentGame = Game.Pong;
     //-----------------------------------------------------------------------
 
     public static bool SaveBenchmarks = true;
     public static int TestN = 1;
-    public static string ModelPath { get { return Path.Combine(TestFolder, CurrentTestID+"-"+TestN) + ".xml"; } }
+	private static string _modelPath = null;
+    public static string ModelPath { get { return _modelPath != null && !_modelPath.Equals("") ? _modelPath : Path.Combine(TestFolder, CurrentTestID+"-"+TestN) + ".xml"; }
+									 set { _modelPath = value; }}
 
     public static Dictionary<Game, string[]> Header = new Dictionary<Game, string[]> {
         {Game.Pong, new []{"Runtime", "Paddle Hits", "Victories", "Avg. miss distance"}},
