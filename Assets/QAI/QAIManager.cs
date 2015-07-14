@@ -33,7 +33,7 @@ namespace QAI {
         public QAIOptionWindow OptionWindow;
 	
         public GameObject ActiveAgent;
-        public int Iteration { get { return _qlearning == null ? 0 : _qlearning.Iteration; }}
+        public static int Iteration { get { return _instance == null || _instance._qlearning == null ? 0 : _instance._qlearning.Iteration; }}
 
         public QTester Tester;
 

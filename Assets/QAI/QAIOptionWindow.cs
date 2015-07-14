@@ -155,7 +155,7 @@ namespace QAI {
         }
 
         private void ProgressBar() {
-            var itt = _manager.Iteration;
+            var itt = QAIManager.Iteration;
             if (_mode == QAIMode.Learning) {
                 var r = EditorGUILayout.BeginVertical();
                 EditorGUI.ProgressBar(r, itt/(float) _term, "Progress ("+itt+"/"+_term+")");
