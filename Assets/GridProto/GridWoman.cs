@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
 using QAI;
@@ -8,14 +9,18 @@ using UnityEngine;
 
 namespace GridProto {
     public class GridWoman : MonoBehaviour, QAgent {
+        //Number of states that will be saved
+        private const int MaxHistorySize = 30;
+        //If less than this number of unique states is in history, we will declare it a cycle.
+        private const int CycleSize = 6;
     
         private Q2DGrid _grid;
-        private Bin _nvectorBin;
-        private Vector<float> _linearState; 
+        private Vector<float> _linearState;
+        private LinkedList<QState> _history;
         private void Start() {
             _grid = new Q2DGrid(13, transform, new GridSettings { NormalAxis = Axis.Y });
-            _nvectorBin = new Bin(-0.75f,-0.25f,0.25f,0.75f);
             _linearState = Vector<float>.Build.Dense(2);
+            _history = new LinkedList<QState>();
             QAIManager.InitAgent(this);
         }
 
@@ -77,36 +82,39 @@ namespace GridProto {
         public QState GetState() {
             var p = PositionToState(transform.position);
             var g = PositionToState(Goal.Position);
-            
             _grid.Populate(bounds => {
                 var ray = new Ray(new Vector3(bounds.center.x, 2, bounds.center.z), Vector3.down);
-                
                 RaycastHit hit;
-                float r;
                 if (Physics.Raycast(ray, out hit, 3.0f)) {
-                    r = hit.collider.gameObject == Goal.Instance.gameObject ? 1f : 0.1f;
+                    return hit.collider.gameObject == Goal.Instance.gameObject ? 1f : 0.1f;
                 }
-                else r = 0f;
-                Debug.DrawRay(ray.origin, ray.direction * 3.0f, r == 0f ? Color.red : r == 0.1f ? Color.gray : Color.yellow);
-
-                return r;
+                return 0f;
             });
             var dead = !IsAboveGround();
             var goal = p.SequenceEqual(g);
             var v = VectorToGoal(transform.position, Goal.Position).normalized;
             _linearState.At(0, v.x);
             _linearState.At(1, v.z);
-            return new QState(
-                /*
-            _grid.State
-                 .Concat(new double[] {v.x, v.z})
-                 .ToArray(),
-            */
-                new []{_grid.Matrix.Clone()},
-                _linearState,
+
+            var terminal = dead || goal || DetectCycle();
+            var state = new QState(
+                new []{ _grid.Matrix },
+                _linearState.Clone(),
                 goal ? 1 : 0,
-                dead || goal
-                );
+                terminal
+            );
+            ArchiveState(state);
+            return state;
+        }
+
+        private void ArchiveState(QState state) {
+            if(_history.Count >= MaxHistorySize) _history.RemoveLast();
+            _history.AddFirst(state);
+        }
+
+        private bool DetectCycle() {
+            if (_history.Count < MaxHistorySize) return false;
+            return _history.Distinct().Count() <= CycleSize;
         }
 
         public AIID AI_ID() {

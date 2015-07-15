@@ -16,10 +16,10 @@ public class BenchmarkSave {
     //Number of runs (learn -> test -> reset = 1 run)
     public static int Runs;
     //The Game
-    public const Game CurrentGame = Game.Pong;
+    public const Game CurrentGame = Game.Grid;
     //-----------------------------------------------------------------------
 
-    public static bool SaveBenchmarks = true;
+    public static bool SaveBenchmarks = false;
     public static int TestN = 1;
 	private static string _modelPath = null;
     public static string ModelPath { get { return _modelPath != null && !_modelPath.Equals("") ? _modelPath : Path.Combine(TestFolder, CurrentTestID+"-"+TestN) + ".xml"; }
@@ -27,7 +27,7 @@ public class BenchmarkSave {
 
     public static Dictionary<Game, string[]> Header = new Dictionary<Game, string[]> {
         {Game.Pong, new []{"Runtime", "Paddle Hits", "Victories", "Avg. miss distance"}},
-        {Game.Grid, new []{"Runtime", "!!!!!!!!!!!!!!!!!!   TODO   !!!!!!!!!!!!!!!!!!"}},
+        {Game.Grid, new []{"Runtime", "Accuracy", "Avg. Distance Score"}},
         {Game.Doll, new []{"Runtime", "!!!!!!!!!!!!!!!!!!   TODO   !!!!!!!!!!!!!!!!!!"}},
     };
 
@@ -56,7 +56,6 @@ public class BenchmarkSave {
         using (var writer = GetSaveFile()) {
             writer.Write("{0:F};", time);
         }
-        EditorApplication.Beep();
     }
 
     //Must be called second
@@ -70,12 +69,11 @@ public class BenchmarkSave {
     }
 
     //Must be called second
-    public static void WriteGridResult(int jewsdidnineeleven) {
+    public static void WriteGridResult(double accuracy, double distScore) {
         if(!SaveBenchmarks) return;
         if(CurrentGame != Game.Grid) throw new Exception("Current Test game was set to <" + CurrentGame + "> but we are running Grid");
-        throw new NotImplementedException();
         using(var writer = GetSaveFile()) {
-            var line = string.Format("") + Environment.NewLine;
+            var line = string.Format("{0:F};{1:F}", accuracy, distScore) + Environment.NewLine;
             writer.Write(line);
         }
     }

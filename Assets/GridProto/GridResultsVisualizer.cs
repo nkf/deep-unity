@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,19 +9,25 @@ namespace GridProto {
         private readonly Color _lose = new Color(1,0,0,0.2f); //red
 
         void Start () {
+            /*
             var path = Path.Combine("TestResults", QData.EscapeScenePath(EditorApplication.currentScene)) + ".xml";
             var results = new SerializableDictionary<Vector3, ResultPair>();
             QData.Load(path, results);
 	    
-            var rewardLayer = new GameObject{name = "Reward"};
+            DrawResults(results);
+            */
+        } 
+
+        public void DrawResults(IEnumerable<KeyValuePair<Vector3, ResultPair>> results) {
+            var rewardLayer = new GameObject { name = "Reward" };
             rewardLayer.transform.parent = transform;
-            rewardLayer.transform.position = new Vector3(0,-0.49f,0);
+            rewardLayer.transform.position = new Vector3(0, -0.49f, 0);
 
-            var distLayer = new GameObject{name = "DistanceScore"};
+            var distLayer = new GameObject { name = "DistanceScore" };
             distLayer.transform.parent = transform;
-            distLayer.transform.position = new Vector3(0,0.5f,0);
+            distLayer.transform.position = new Vector3(0, 0.5f, 0);
 
-            foreach (var result in results) {
+            foreach(var result in results) {
                 AddMarker((float)result.Value.Reward, result.Key, rewardLayer);
                 //AddMarker((float)result.Value.DistScore, result.Key, distLayer);
             }
