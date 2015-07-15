@@ -22,9 +22,9 @@ namespace QAI.Learning {
         public bool PrioritySweeping = false;
 
         //Number of timesteps inbetween training sessions
-        public const int TrainInterval = 8;
+        public const int TrainInterval = 20;
         //Number of batches being trained each session
-        public const int TraningCycles = 5;
+        public const int TraningCycles = 10;
         //Number of sars being trained in each training cycle
         public static int BatchSize;
         //Maximum number of sars being kept
