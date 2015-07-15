@@ -55,7 +55,7 @@ public static class LinqExtension {
                select part.AsEnumerable();
     }
 
-    public static IEnumerable<List<T>> Partition<T>(IList<T> source, int parts) {
+    public static IEnumerable<List<T>> Partition<T>(this IList<T> source, int parts) {
         var max = source.Count/parts;
         max = Math.Max(max, 1);
         var evenLists = source.Count%parts; //the number of lists which will have an extra element in
