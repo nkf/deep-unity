@@ -18,7 +18,7 @@ namespace QAI.Learning {
 
         private bool _remake;
 
-        public override void Initialize(int gridSize, int vectorSize) {
+        public override void Initialize(int gridSize, int vectorSize, int depth) {
             // Action-index mapping.
             _amap = new Dictionary<string, int>();
             int ix = 0;
@@ -26,7 +26,7 @@ namespace QAI.Learning {
                 _amap[a.ActionId] = ix++;
             // Model.
             if (_remake) {
-                _net = new ConvolutionalNetwork(gridSize, vectorSize, _amap.Count,
+                _net = new ConvolutionalNetwork(gridSize, vectorSize, depth, _amap.Count,
                     //new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2 },
                     new CNNArgs { FilterSize = 4, FilterCount = 1, PoolLayerSize = 2, Stride = 1 });
             } else {
@@ -39,7 +39,7 @@ namespace QAI.Learning {
 
         public override void LoadModel() {
             _remake = false;
-            Initialize(0, 0);
+            Initialize(0, 0, 0);
         }
 
         public override void SaveModel() {
@@ -48,7 +48,7 @@ namespace QAI.Learning {
 
         public override void RemakeModel(QState exampleState) {
             _remake = true;
-			Initialize(exampleState.GridSize, exampleState.VectorSize);
+			Initialize(exampleState.GridSize, exampleState.VectorSize, exampleState.Depth);
         }
 
         public override bool ModelReady() {

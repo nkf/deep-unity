@@ -22,9 +22,9 @@ namespace QAI.Learning {
         public const bool PrioritySweeping = false;
 
         //Number of timesteps inbetween training sessions
-        public const int TrainInterval = 8;
+        public const int TrainInterval = 20;
         //Number of batches being trained each session
-        public const int TraningCycles = 5;
+        public const int TraningCycles = 10;
         //Number of sars being trained in each training cycle
         public const int BatchSize = PrioritySweeping ? 5 : 100;
         //Maximum number of sars being kept
@@ -40,7 +40,7 @@ namespace QAI.Learning {
         public delegate float Param(float t);
         public delegate float ActionValueFunction(QAction a);
 
-        public abstract void Initialize(int gridsize, int vectorsize);
+        public abstract void Initialize(int gridsize, int vectorsize, int depth);
 
         public abstract void SaveModel();
         public abstract void LoadModel();
@@ -68,7 +68,7 @@ namespace QAI.Learning {
         public Action GetLearningAction(QState state) {
             if (!ModelReady()) {
                 Iteration = 1;
-                Initialize(state.GridSize, state.VectorSize);
+                Initialize(state.GridSize, state.VectorSize, state.Depth);
             }
             if (!_isFirstTurn) {
                 if (state.IsTerminal) {
