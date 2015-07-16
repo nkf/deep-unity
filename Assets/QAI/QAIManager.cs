@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -42,6 +42,7 @@ namespace QAI {
 	
         public GameObject ActiveAgent;
         public static int Iteration { get { return _instance == null || _instance._qlearning == null ? 0 : _instance._qlearning.Iteration; }}
+        public static QAIMode CurrentMode { get { return _instance == null ? QAIMode.Runnning : _instance.Mode; } }
 
         public QTester Tester;
 
@@ -65,7 +66,6 @@ namespace QAI {
 
         public static void InitAgent(QAgent agent) {
             if (_instance == null) {
-                Time.timeScale = 3f;
                 _instance = FindObjectOfType<QAIManager>();
                 _instance.Init(agent);
             }
@@ -99,6 +99,7 @@ namespace QAI {
                     break;
                 }
                 default: {
+                    Time.timeScale = 3f;
                     _qlearning = new QLearningCNN(PrioritizedSweeping);
                     _qlearning.Reset(agent);
                     

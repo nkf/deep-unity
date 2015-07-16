@@ -73,7 +73,7 @@ namespace QAI {
             EditorApplication.playmodeStateChanged += PlayModeChange;
 
             //PROGRESS BAR
-            ProgressBar();
+            ProgressBars();
 
             //SETUP
             GUILayout.Space(10);
@@ -157,9 +157,17 @@ namespace QAI {
             }
         }
 
-        private void ProgressBar() {
-            var itt = QAIManager.Iteration;
+        private void ProgressBars() {
+            if (_benchmark) {
+                var itt = BenchmarkSave.TestN;
+                var total = BenchmarkSave.Runs;
+                var r = EditorGUILayout.BeginVertical();
+                EditorGUI.ProgressBar(r, itt / (float)total, "Benchmark (" + itt + "/" + total + ")");
+                GUILayout.Space(18);
+                EditorGUILayout.EndVertical();
+            }
             if (_mode == QAIMode.Learning) {
+                var itt = QAIManager.Iteration;
                 var r = EditorGUILayout.BeginVertical();
                 EditorGUI.ProgressBar(r, itt/(float) _term, "Progress ("+itt+"/"+_term+")");
                 GUILayout.Space(18);
