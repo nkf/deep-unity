@@ -123,15 +123,18 @@ namespace GridProto {
 
 
         public void FixedUpdate() {
-            QAIManager.GetAction(GetState())();
             _grid.DebugDraw(value => value == 0 ? Color.red : value == 1 ? Color.gray : Color.yellow);
-            Action currentAction = null;
-            if (Key(KeyCode.UpArrow, KeyCode.W)) currentAction = MoveUp;
-            if (Key(KeyCode.DownArrow, KeyCode.S)) currentAction = MoveDown;
-            if (Key(KeyCode.RightArrow, KeyCode.D)) currentAction = MoveRight;
-            if (Key(KeyCode.LeftArrow, KeyCode.A)) currentAction = MoveLeft;
-            if (currentAction != null)
-                QAIManager.Imitate(this, currentAction);
+            if (QAIManager.CurrentMode != QAIMode.Imitating) {
+                QAIManager.GetAction(GetState())();
+            } else {
+                Action currentAction = null;
+                if (Key(KeyCode.UpArrow,    KeyCode.W)) currentAction = MoveUp;
+                if (Key(KeyCode.DownArrow,  KeyCode.S)) currentAction = MoveDown;
+                if (Key(KeyCode.RightArrow, KeyCode.D)) currentAction = MoveRight;
+                if (Key(KeyCode.LeftArrow,  KeyCode.A)) currentAction = MoveLeft;
+                if (currentAction != null)
+                    QAIManager.Imitate(this, currentAction);
+            }
         }
 
         private bool Key(params KeyCode[] keys) {

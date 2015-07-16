@@ -6,7 +6,7 @@ namespace QAI.Visualizer {
     public class OutputNodeVisualizer {
         private readonly GameObject _outputNode;
         private readonly GameObject _selected;
-        private readonly Texture2D _texture;
+        private readonly Text _value;
         public Vector3 Position { get { return _outputNode.transform.position; } }
 
 
@@ -14,11 +14,9 @@ namespace QAI.Visualizer {
             _outputNode = GameObject.Instantiate(Resources.Load<GameObject>("OutputNodeVisualizer"));
             var images = _outputNode.GetComponentsInChildren<RawImage>();
             _selected = images.First(i => i.gameObject.name == "Selected").gameObject;
-            _texture = new Texture2D(1, 1);
-            var value = images.First(i => i.gameObject.name == "Value");
-            value.texture = _texture;
-            value.uvRect = new Rect(0,0,2,2);
-            _outputNode.GetComponentInChildren<Text>().text = actionName;
+            var texts = _outputNode.GetComponentsInChildren<Text>();
+            texts.First(t => t.gameObject.name == "ActionName").text = actionName;
+            _value = texts.First(t => t.gameObject.name == "Value");
         }
         
 
@@ -28,8 +26,7 @@ namespace QAI.Visualizer {
 
         public void Update(float value, bool selected) {
             _selected.SetActive(selected);
-            _texture.SetPixel(0,0, NetworkVisualizer.GetColor(value));
-            _texture.Apply();
+            _value.text = string.Format("{0:F}",value);
         }
 
     }

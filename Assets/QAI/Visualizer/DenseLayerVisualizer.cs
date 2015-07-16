@@ -73,7 +73,7 @@ namespace QAI.Visualizer {
 
             var max = output.MaximumIndex();
             for(var i = 0; i < output.Count; i++) {
-                _outputNodes[i].Update(output[i], i == max);
+                _outputNodes[i].Update(output[i], i == max && !isTrainingData);
             }
 
             var weights = _denseLayer.Weights;
