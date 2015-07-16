@@ -15,7 +15,7 @@ namespace Pong {
         PongGame _game;
         PongBall _ball;
 
-        Q2DGrid _grid;
+        Q2DGrid _grid, _past1, _past2;
         Vector<float> _vect;
 
         public int Hits { get; set; } //Set by pongball
@@ -35,6 +35,8 @@ namespace Pong {
             if (Side == Player.Player1) {
                 _grid = new Q2DGrid(16, transform,
                     new GridSettings {Offset = new Vector3(9.8f, 0, 0), ResolutionX = 1.28f, ResolutionY = 1.28f});
+                _past1 = new Q2DGrid(_grid);
+                _past2 = new Q2DGrid(_grid);
                 _vect = Vector<float>.Build.Dense(new[] { 1f });
                 QAIManager.InitAgent(this);
             }
@@ -85,6 +87,12 @@ namespace Pong {
 
         private List<Coordinates2D?> _prevPositions = new List<Coordinates2D?>(); 
         public QState GetState() {
+            // Frame stacking
+            /*var tmp = _grid;
+            _grid = _past2;
+            _past2 = _past1;
+            _past1 = tmp;*/
+
             var winner = _ball.IsTerminal();
             float reward;
             bool terminal;
@@ -147,8 +155,8 @@ namespace Pong {
             .Concat(new double[]{rbp.x, rbp.y, topDist, botDist})
             .ToArray();
         */
-            var state = _grid.Matrix;
-            return new QState(new[] { state }, _vect.Clone(), reward, terminal);
+            return new QState(new[] { _grid.Matrix }, _vect.Clone(), reward, terminal);
+            //return new QState(new[] { _grid.Matrix, _past1.Matrix, _past2.Matrix }, _vect.Clone(), reward, terminal);
         }
 
         public AIID AI_ID() {

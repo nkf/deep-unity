@@ -57,19 +57,16 @@ public static class LinqExtension {
 
     public static IEnumerable<List<T>> Partition<T>(this IList<T> source, int parts) {
         var max = source.Count/parts;
-        var evenLists = source.Count%parts;
+        max = Math.Max(max, 1);
+        var evenLists = source.Count%parts; //the number of lists which will have an extra element in
         var toReturn = new List<T>(max);
-        var n = 1;
-        var evenMax = max + 1;
-        var oddMax = max;
-        max = evenMax;
+        var n = 0;
         foreach(var item in source) {
             toReturn.Add(item);
             if(toReturn.Count == max) {
                 yield return toReturn;
                 n++;
-                if (n > evenLists)
-                    max = oddMax;
+                if (n == parts - evenLists && evenLists != 0) max++;
                 toReturn = new List<T>(max);
             }
         }

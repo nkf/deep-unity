@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using MathNet.Numerics.LinearAlgebra;
@@ -30,15 +29,16 @@ namespace QNetwork.CNN {
         private DenseLayerBackprop _outback;
 
         // Serialization.
-        private readonly int _matsize, _vecsize, _labels;
+        private readonly int _matsize, _vecsize, _labels, _depth;
 	    private readonly CNNArgs[] _args;
 
-        public ConvolutionalNetwork(int matsize, int vecsize, int labels, params CNNArgs[] args) {
+        public ConvolutionalNetwork(int matsize, int vecsize, int depth, int labels, params CNNArgs[] args) {
             _matsize = matsize;
             _vecsize = vecsize;
+            _depth = depth;
             _labels = labels;
             _args = args;
-            InputLayer = new SpatialLayer(matsize, 1); // TODO: Channels.
+            InputLayer = new SpatialLayer(matsize, depth);
             ConvolutionalLayers = new ConvolutionalLayer[args.Length];
             SubSampleLayers = new MeanPoolLayer[args.Length];
             ConvolutionalLayers[0] = new ConvolutionalLayer(args[0].FilterSize, args[0].FilterCount, args[0].Stride, InputLayer, Functions.Rectifier2D);
@@ -117,6 +117,7 @@ namespace QNetwork.CNN {
                 writer.WriteElementString("matsize", _matsize.ToString());
                 writer.WriteElementString("vecsize", _vecsize.ToString());
                 writer.WriteElementString("labels", _labels.ToString());
+                writer.WriteElementString("depth", _depth.ToString());
                 writer.XmlSerialize(_args);
                 //Layers
                 foreach (var conv in ConvolutionalLayers)
@@ -127,19 +128,32 @@ namespace QNetwork.CNN {
             file.Close();
 	    }
 
-	    public static ConvolutionalNetwork Load(string filename) {
-	        using (var reader = XmlReader.Create(File.Open(filename, FileMode.Open))) {
+	    public static ConvolutionalNetwork Load(string filename, bool oldnetwork = false) {
+            var file = File.Open(filename, FileMode.Open);
+	        using (var reader = XmlReader.Create(file)) {
 	            reader.ReadStartElement(typeof(ConvolutionalNetwork).Name);
                 var matsize = int.Parse(reader.ReadElementString());
 	            var vecsize = int.Parse(reader.ReadElementString());
                 var labels = int.Parse(reader.ReadElementString());
+                int depth = 1;
+                if (!oldnetwork) {
+                    try {
+                        depth = int.Parse(reader.ReadElementString());
+                    } catch (XmlException e) {
+                        // For backwards compatibility with depth-1 networks.
+                        file.Close();
+                        reader.Close();
+                        return Load(filename, true);
+                    }
+                }
                 var convl = reader.XmlDeserialize<CNNArgs[]>();
-	            var network = new ConvolutionalNetwork(matsize, vecsize, labels, convl);
+                var network = new ConvolutionalNetwork(matsize, vecsize, depth, labels, convl);
                 for (int i = 0; i < network.ConvolutionalLayers.Length; i++)
                     network.ConvolutionalLayers[i].Deserialize(reader);
                 network.OutputLayer.Deserialize(reader);
                 reader.ReadEndElement();
-	            return network;
+                file.Close();
+                return network;
 	        }
 	    }
 	}

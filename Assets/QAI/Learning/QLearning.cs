@@ -19,16 +19,16 @@ namespace QAI.Learning {
         public readonly Param Epsilon = t => EpisilonStart + ((EpisilonEnd - EpisilonStart) / QAIManager.NumIterations()) * t;
         public const float Discount = 0.95f;
 
-        public const bool PrioritySweeping = false;
+        public bool PrioritySweeping = false;
 
         //Number of timesteps inbetween training sessions
         public const int TrainInterval = 20;
         //Number of batches being trained each session
         public const int TraningCycles = 10;
         //Number of sars being trained in each training cycle
-        public const int BatchSize = PrioritySweeping ? 5 : 100;
+        public static int BatchSize;
         //Maximum number of sars being kept
-        public const int MaxStoreSize = PrioritySweeping ? 30 : 2000;
+        public static int MaxStoreSize;
         //TODO: write what this is
         public const int PredecessorCap = 6;
         //TODO: write what this is

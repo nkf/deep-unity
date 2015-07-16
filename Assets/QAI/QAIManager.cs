@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -35,6 +35,9 @@ namespace QAI {
 		public string BenchmarkID = "TEST_ID_GOES_HERE";
 		[HideInInspector]
 		public int BenchmarkRuns = 10;
+
+		[HideInInspector]
+		public bool PrioritizedSweeping;
 	
         public GameObject ActiveAgent;
         public static int Iteration { get { return _instance == null || _instance._qlearning == null ? 0 : _instance._qlearning.Iteration; }}
@@ -61,11 +64,9 @@ namespace QAI {
 
         public static void InitAgent(QAgent agent) {
             if (_instance == null) {
-                Time.timeScale = 3;
+                Time.timeScale = 3f;
                 _instance = FindObjectOfType<QAIManager>();
                 _instance.Init(agent);
-                _instance._stopwatch = Stopwatch.StartNew();
-                _instance.Tester.Init();
             }
             BenchmarkSave.SaveBenchmarks = _instance.Benchmark;
             _instance._sceneIsOver = false;
@@ -87,6 +88,9 @@ namespace QAI {
 			}
 			Debug.Log ("Running " + BenchmarkSave.ModelPath);
 
+            _stopwatch = Stopwatch.StartNew();
+            Tester.Init();
+
             DontDestroyOnLoad(gameObject);
             switch (Mode) {
                 case QAIMode.Imitating: {
@@ -94,7 +98,7 @@ namespace QAI {
                     break;
                 }
                 default: {
-                    _qlearning = new QLearningCNN();
+                    _qlearning = new QLearningCNN(PrioritizedSweeping);
                     _qlearning.Reset(agent);
                     
                     if(Remake) _qlearning.RemakeModel(agent.GetState());
@@ -149,7 +153,7 @@ namespace QAI {
         private void TesterAction(QState state) {
             if(Application.isLoadingLevel || _testIsOver) return;
             if(_testIsRunning) RunTest(state);
-            else               SetupTest(state);
+            else               SetupTest();
         }
 
         private void RunTest(QState state) {
@@ -165,12 +169,11 @@ namespace QAI {
             }
         }
 
-        private void SetupTest(QState state) {
+        private void SetupTest() {
             var sceneSetup = Tester.SetupNextTest(_agent);
             //Run Test if tester have set up scene
             if(sceneSetup) {
                 _testIsRunning = true;
-                RunTest(state);
             //End test run if tester says its over.
             } else {
                 Tester.OnRunComplete();
@@ -178,6 +181,7 @@ namespace QAI {
                 if (Benchmark && BenchmarkSave.HaveRunsLeft) {
                     RemakeManager();
                     OptionWindow.SetMode(QAIMode.Learning);
+                    Mode = QAIMode.Learning;
                     BenchmarkSave.NextRun();
                     Application.LoadLevel(Application.loadedLevel);
                 } else {
@@ -187,9 +191,12 @@ namespace QAI {
         }
 
         private void RemakeManager() {
+            _qlearning.Iteration = 1;
             _qlearning.RemakeModel(_agent.GetState());
-            Destroy(_visualizer.gameObject);
-            _visualizer = _qlearning.CreateVisualizer();
+            if (_visualizer != null) {
+                Destroy(_visualizer.gameObject);
+                _visualizer = _qlearning.CreateVisualizer();
+            }
             _stopwatch.Reset();
             _stopwatch.Start();
             Tester.Init();

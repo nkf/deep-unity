@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using GridProto;
+using QAI;
 using UnityEngine;
 
 public class Goal : MonoBehaviour {
@@ -23,6 +24,8 @@ public class Goal : MonoBehaviour {
     public static Vector3 Position;
 
     void Awake() {
+        if(FindObjectOfType<QAIManager>().Mode == QAIMode.Testing) 
+            Technique = SpawnTechnique.None;
         if (Technique == SpawnTechnique.UseGoalPosistions && GoalPositions.Count > 0) {
             transform.position = GoalPositions[_index];
             _index++;

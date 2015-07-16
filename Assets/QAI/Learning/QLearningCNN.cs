@@ -10,13 +10,19 @@ using QNetwork.CNN;
 namespace QAI.Learning {
     public class QLearningCNN : QLearning {
 
-        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.0025f, Momentum = 0.9f, Decay = 0.0f };
+        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.005f, Momentum = 0.9f, Decay = 0.0f };
 
         private ConvolutionalNetwork _net;
         private Dictionary<string, int> _amap;
         private Vector<float> _output;
 
         private bool _remake;
+
+		public QLearningCNN(bool PrioritizedSweeping) {
+			PrioritySweeping = PrioritizedSweeping;
+			BatchSize = PrioritySweeping ? 5 : 100;
+			MaxStoreSize = PrioritySweeping ? 30 : 2000;
+		}
 
         public override void Initialize(int gridSize, int vectorSize, int depth) {
             // Action-index mapping.
@@ -57,7 +63,6 @@ namespace QAI.Learning {
 
         public override ActionValueFunction Q(QState s) {
             _output = _net.Compute(s.Features);
-            //Debug.Log(string.Join(";", _output.Select(v => string.Format("{0:.00}", v)).ToArray()) + " ~ " + string.Format("{0:.000}", _output.Average()));
             return a => _output[_amap[a.ActionId]];
         }
 

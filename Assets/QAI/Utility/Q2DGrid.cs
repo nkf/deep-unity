@@ -18,7 +18,7 @@ namespace QAI.Utility {
         }
 
         public Q2DGrid(int size, Transform transform, GridSettings gs = null) {
-            if(gs == null) gs = new GridSettings();
+            if (gs == null) gs = new GridSettings();
             _matrix = Matrix<float>.Build.Dense(size, size);
             GridSize = size;
             Transform = transform;
@@ -28,6 +28,18 @@ namespace QAI.Utility {
             ResolutionX = gs.ResolutionX;
             ResolutionY = gs.ResolutionY;
             ResolutionZ = gs.ResolutionZ;
+        }
+
+        public Q2DGrid(Q2DGrid other) {
+            _matrix = other.Matrix;
+            GridSize = other.GridSize;
+            Transform = other.Transform;
+            Offset = other.Offset;
+            Size = other.Size;
+            NormalAxis = other.NormalAxis;
+            ResolutionX = other.ResolutionX;
+            ResolutionY = other.ResolutionY;
+            ResolutionZ = other.ResolutionZ;
         }
 
         public float this[int x, int y] {

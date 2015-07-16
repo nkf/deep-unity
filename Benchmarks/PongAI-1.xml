@@ -3,6 +3,7 @@
   <matsize>16</matsize>
   <vecsize>1</vecsize>
   <labels>3</labels>
+  <depth>3</depth>
   <ArrayOfCNNArgs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
     <CNNArgs>
       <FilterSize>4</FilterSize>
@@ -14,366 +15,418 @@
   <ConvolutionalLayer>
     <ArrayOfArrayOfFloat xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <ArrayOfFloat>
-        <float>0.0582982078</float>
-        <float>-0.09209569</float>
-        <float>-0.135572374</float>
-        <float>-0.0141920941</float>
+        <float>-0.0157051776</float>
+        <float>0.0252772514</float>
+        <float>-0.07006955</float>
+        <float>0.0169616546</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.009750901</float>
-        <float>-0.00168095285</float>
-        <float>-0.0431169271</float>
-        <float>-0.084111996</float>
+        <float>-0.131761655</float>
+        <float>0.067473</float>
+        <float>0.0533219874</float>
+        <float>-0.06077195</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.0136858849</float>
-        <float>0.009661772</float>
-        <float>-0.1298944</float>
-        <float>-0.0073322705</float>
+        <float>-3.4032837E-05</float>
+        <float>-0.00524991238</float>
+        <float>-0.04591069</float>
+        <float>0.0446723364</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.125065982</float>
-        <float>0.0296747442</float>
-        <float>-0.06739316</float>
-        <float>-0.0286911111</float>
+        <float>-0.036873512</float>
+        <float>0.00360237877</float>
+        <float>0.0893733</float>
+        <float>-0.0642350838</float>
+      </ArrayOfFloat>
+    </ArrayOfArrayOfFloat>
+    <ArrayOfArrayOfFloat xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <ArrayOfFloat>
+        <float>0.0612627864</float>
+        <float>-0.0418255851</float>
+        <float>0.008239223</float>
+        <float>-0.00162596744</float>
+      </ArrayOfFloat>
+      <ArrayOfFloat>
+        <float>-0.06744819</float>
+        <float>0.047558818</float>
+        <float>-0.0045877113</float>
+        <float>0.01578758</float>
+      </ArrayOfFloat>
+      <ArrayOfFloat>
+        <float>-0.0300451145</float>
+        <float>0.03230743</float>
+        <float>0.0299805216</float>
+        <float>-0.0130660255</float>
+      </ArrayOfFloat>
+      <ArrayOfFloat>
+        <float>-0.06295021</float>
+        <float>0.0705102161</float>
+        <float>-0.0210144352</float>
+        <float>0.0300494581</float>
+      </ArrayOfFloat>
+    </ArrayOfArrayOfFloat>
+    <ArrayOfArrayOfFloat xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <ArrayOfFloat>
+        <float>0.07482956</float>
+        <float>-0.05986936</float>
+        <float>0.0463994779</float>
+        <float>-0.000466121623</float>
+      </ArrayOfFloat>
+      <ArrayOfFloat>
+        <float>-0.0126890512</float>
+        <float>-0.06271824</float>
+        <float>0.0471988432</float>
+        <float>-0.06909919</float>
+      </ArrayOfFloat>
+      <ArrayOfFloat>
+        <float>-0.06215613</float>
+        <float>0.0826335549</float>
+        <float>0.009668744</float>
+        <float>-0.009033536</float>
+      </ArrayOfFloat>
+      <ArrayOfFloat>
+        <float>-0.003256613</float>
+        <float>0.0129788192</float>
+        <float>-0.00256141834</float>
+        <float>-0.0080135325</float>
       </ArrayOfFloat>
     </ArrayOfArrayOfFloat>
     <ArrayOfFloat xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <float>0.641352654</float>
+      <float>0.506533444</float>
     </ArrayOfFloat>
   </ConvolutionalLayer>
   <DenseLayer>
     <ArrayOfArrayOfFloat xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <ArrayOfFloat>
-        <float>-0.205623657</float>
-        <float>0.127735943</float>
-        <float>-0.145989284</float>
+        <float>0.217702791</float>
+        <float>-0.184995666</float>
+        <float>0.270791262</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.0557077862</float>
-        <float>0.111802578</float>
-        <float>0.186824962</float>
+        <float>0.126852438</float>
+        <float>0.312532246</float>
+        <float>0.1277591</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.134620667</float>
-        <float>0.08061909</float>
-        <float>-0.00125668233</float>
+        <float>0.00143501034</float>
+        <float>0.237020567</float>
+        <float>-0.03098496</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.237620085</float>
-        <float>-0.0244441982</float>
-        <float>-0.197300777</float>
+        <float>-0.180594578</float>
+        <float>0.09876212</float>
+        <float>0.273964673</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.2015055</float>
-        <float>-0.411005</float>
-        <float>-0.6710037</float>
+        <float>0.06430677</float>
+        <float>0.0238081533</float>
+        <float>0.189391747</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.000513990351</float>
-        <float>-0.03643102</float>
-        <float>-0.298888922</float>
+        <float>0.225844786</float>
+        <float>-0.00354197458</float>
+        <float>-0.211807087</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.212539628</float>
-        <float>-0.26894176</float>
-        <float>0.157436445</float>
+        <float>-0.10894715</float>
+        <float>0.008191991</float>
+        <float>-0.246219426</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.177850544</float>
-        <float>-0.0113118449</float>
-        <float>-0.298415482</float>
+        <float>0.0356360562</float>
+        <float>0.106352895</float>
+        <float>0.181205675</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.0437611341</float>
-        <float>0.0476117246</float>
-        <float>-0.0886888057</float>
+        <float>-0.136700451</float>
+        <float>-0.093003124</float>
+        <float>-0.06036732</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.160925627</float>
-        <float>0.103382021</float>
-        <float>0.374206841</float>
+        <float>-0.2557442</float>
+        <float>0.206184447</float>
+        <float>-0.0004378453</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.0262537189</float>
-        <float>0.167125568</float>
-        <float>-0.20940651</float>
+        <float>0.08336434</float>
+        <float>-0.365247637</float>
+        <float>0.269738972</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.06903748</float>
-        <float>0.18985109</float>
-        <float>0.0360551476</float>
+        <float>-0.07998522</float>
+        <float>-0.266012967</float>
+        <float>-0.0506456941</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.0374136642</float>
-        <float>0.168914363</float>
-        <float>-0.318815</float>
+        <float>-0.387577474</float>
+        <float>0.2778387</float>
+        <float>-0.3171458</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.005441044</float>
-        <float>0.10065113</float>
-        <float>-0.02958909</float>
+        <float>0.260757685</float>
+        <float>-0.305971056</float>
+        <float>0.17639412</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.0531692281</float>
-        <float>-0.1692081</float>
-        <float>-0.0411252044</float>
+        <float>0.24644199</float>
+        <float>0.375903934</float>
+        <float>-0.0358190648</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.229503974</float>
-        <float>0.3935713</float>
-        <float>-0.108247124</float>
+        <float>-0.133167908</float>
+        <float>0.28484717</float>
+        <float>-0.158965424</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.155159652</float>
-        <float>-0.181673229</float>
-        <float>-0.0839720145</float>
+        <float>-0.221819863</float>
+        <float>0.120514</float>
+        <float>0.155751631</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.223341435</float>
-        <float>0.0639309958</float>
-        <float>0.274115384</float>
+        <float>-0.0123310722</float>
+        <float>0.152005225</float>
+        <float>-0.0354064554</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.0748656</float>
-        <float>0.310115784</float>
-        <float>-0.0549254231</float>
+        <float>0.0427379236</float>
+        <float>-0.000573487661</float>
+        <float>-0.146430641</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.1623325</float>
-        <float>-0.176291764</float>
-        <float>0.314361185</float>
+        <float>-0.2847803</float>
+        <float>-0.0247599576</float>
+        <float>-0.06097428</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.0243694913</float>
-        <float>0.082490705</float>
-        <float>-0.06907273</float>
+        <float>-0.22489123</float>
+        <float>0.178119734</float>
+        <float>-0.180778041</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.203010812</float>
-        <float>-0.06836466</float>
-        <float>0.00567257358</float>
+        <float>0.103737012</float>
+        <float>-0.0169138256</float>
+        <float>0.09484683</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.368076682</float>
-        <float>-0.0483189</float>
-        <float>-0.213316172</float>
+        <float>0.37076503</float>
+        <float>-0.0195063036</float>
+        <float>0.152703971</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.0033468334</float>
-        <float>-0.05328004</float>
-        <float>0.20773083</float>
+        <float>-0.0198184587</float>
+        <float>-0.233171538</float>
+        <float>0.03599567</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.184606731</float>
-        <float>-0.108643457</float>
-        <float>-0.0620444119</float>
+        <float>0.367484063</float>
+        <float>0.18415007</float>
+        <float>0.407768756</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.110774249</float>
-        <float>0.4438317</float>
-        <float>-0.04527924</float>
+        <float>-0.118539892</float>
+        <float>-0.0555221327</float>
+        <float>0.142150789</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.0487154461</float>
-        <float>-0.0492923632</float>
-        <float>0.0565083846</float>
+        <float>-0.00388118625</float>
+        <float>0.0806026757</float>
+        <float>-0.06745824</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.08655151</float>
-        <float>-0.06726539</float>
-        <float>0.00600643968</float>
+        <float>0.0849114954</float>
+        <float>-0.163051143</float>
+        <float>0.10162849</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.05673538</float>
-        <float>-0.3211321</float>
-        <float>-0.08949537</float>
+        <float>0.02634369</float>
+        <float>-0.108048685</float>
+        <float>0.006609686</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.142923892</float>
-        <float>0.18352811</float>
-        <float>-0.08848964</float>
+        <float>0.0472190678</float>
+        <float>0.368546784</float>
+        <float>0.100643776</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.371186227</float>
-        <float>-0.06023972</float>
-        <float>0.02746241</float>
+        <float>-0.24621892</float>
+        <float>0.004939375</float>
+        <float>0.03683947</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.2818752</float>
-        <float>0.313710719</float>
-        <float>-0.00115786179</float>
+        <float>0.181890592</float>
+        <float>0.185723349</float>
+        <float>-0.117836729</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.0196549725</float>
-        <float>0.226934642</float>
-        <float>-0.04285909</float>
+        <float>-0.0402596965</float>
+        <float>0.2084908</float>
+        <float>0.231515855</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.152079284</float>
-        <float>-0.00087777985</float>
-        <float>-0.011963862</float>
+        <float>-0.119430616</float>
+        <float>0.0786159</float>
+        <float>-0.101303339</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.0787247</float>
-        <float>-0.0399343073</float>
-        <float>0.0659531951</float>
+        <float>0.161246166</float>
+        <float>0.177884668</float>
+        <float>-0.09494048</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.322862</float>
-        <float>0.0723411143</float>
-        <float>0.0357234664</float>
+        <float>0.102438852</float>
+        <float>-0.372395217</float>
+        <float>0.217753068</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.0003993599</float>
-        <float>0.327242374</float>
-        <float>0.0580348559</float>
+        <float>-0.223753214</float>
+        <float>-0.24326092</float>
+        <float>-0.153204754</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.2270739</float>
-        <float>0.00304118567</float>
-        <float>-0.028370494</float>
+        <float>-0.10306485</float>
+        <float>0.0346215144</float>
+        <float>0.0171561223</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.172900856</float>
-        <float>0.2755674</float>
-        <float>0.094862</float>
+        <float>-0.06237216</float>
+        <float>0.138659745</float>
+        <float>-0.08276321</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.186375022</float>
-        <float>-0.235640928</float>
-        <float>0.339393</float>
+        <float>0.0211697519</float>
+        <float>0.185348809</float>
+        <float>0.05705831</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.270639181</float>
-        <float>-0.127252087</float>
-        <float>0.169526488</float>
+        <float>0.2838632</float>
+        <float>0.06283594</float>
+        <float>0.256919324</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.0410287865</float>
-        <float>-0.0246459972</float>
-        <float>0.137145951</float>
+        <float>0.05415058</float>
+        <float>0.218326941</float>
+        <float>-0.350990742</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.0352095328</float>
-        <float>-0.235174313</float>
-        <float>0.00772248767</float>
+        <float>0.0472020768</float>
+        <float>0.104508184</float>
+        <float>0.220234</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.138496</float>
-        <float>-0.271158725</float>
-        <float>0.0434279665</float>
+        <float>-0.167856112</float>
+        <float>-0.0138461543</float>
+        <float>-0.1307626</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.08358449</float>
-        <float>0.08168913</float>
-        <float>0.329025954</float>
+        <float>0.222442418</float>
+        <float>-0.11550989</float>
+        <float>0.0409297757</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.0533157922</float>
-        <float>0.257624239</float>
-        <float>-0.0837692246</float>
+        <float>0.2142191</float>
+        <float>-0.0634862</float>
+        <float>0.125062689</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.236913115</float>
-        <float>-0.30603838</float>
-        <float>0.0515170135</float>
+        <float>-0.158497125</float>
+        <float>-0.130018011</float>
+        <float>0.03983746</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.3588445</float>
-        <float>-0.166173249</float>
-        <float>-0.06426979</float>
+        <float>0.2610143</float>
+        <float>-0.08689971</float>
+        <float>0.0654128</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.0246907659</float>
-        <float>-0.03956898</float>
-        <float>-0.00603596773</float>
+        <float>0.1319811</float>
+        <float>-0.2726229</float>
+        <float>0.0586180761</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.1875682</float>
-        <float>-0.07296195</float>
-        <float>-0.05797227</float>
+        <float>0.0493658781</float>
+        <float>-0.06228693</float>
+        <float>-0.012412617</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.007940751</float>
-        <float>0.0334314555</float>
-        <float>-0.150103942</float>
+        <float>-0.0425301753</float>
+        <float>0.07101729</float>
+        <float>-0.157424882</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.2996872</float>
-        <float>-0.0759786</float>
-        <float>0.101343967</float>
+        <float>-0.116762176</float>
+        <float>0.100362271</float>
+        <float>-0.0361175239</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.09392685</float>
-        <float>-0.190041035</float>
-        <float>-0.10537757</float>
+        <float>-0.06974606</float>
+        <float>-0.0581290424</float>
+        <float>-0.146280259</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.09527541</float>
-        <float>0.03183793</float>
-        <float>0.0238210373</float>
+        <float>0.0252707172</float>
+        <float>-0.156189531</float>
+        <float>-0.236164466</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.0582182668</float>
-        <float>-0.2777413</float>
-        <float>-0.0936960354</float>
+        <float>0.113892704</float>
+        <float>-0.324622422</float>
+        <float>0.206755847</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.163399741</float>
-        <float>-0.38175568</float>
-        <float>0.0261573568</float>
+        <float>-0.04269939</float>
+        <float>-0.0550579019</float>
+        <float>0.235681415</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.145794913</float>
-        <float>0.371756464</float>
-        <float>0.319249332</float>
+        <float>0.193812549</float>
+        <float>0.09651225</float>
+        <float>-0.00687913</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.253295779</float>
-        <float>-0.206746861</float>
-        <float>-0.0590825751</float>
+        <float>0.0525022261</float>
+        <float>-0.20184651</float>
+        <float>0.205690429</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.293334872</float>
-        <float>0.272628874</float>
-        <float>0.00674644345</float>
+        <float>-0.0473225</float>
+        <float>-0.0291890055</float>
+        <float>-0.09445599</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.127845868</float>
-        <float>-0.1268098</float>
-        <float>0.03665333</float>
+        <float>-0.120435104</float>
+        <float>0.0552515</float>
+        <float>-0.330634356</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.0950663462</float>
-        <float>0.00264029554</float>
-        <float>0.216004461</float>
+        <float>-0.060960222</float>
+        <float>0.160916179</float>
+        <float>-0.185300112</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.266178966</float>
-        <float>0.0745652542</float>
-        <float>0.07295217</float>
+        <float>0.141109571</float>
+        <float>-0.103739642</float>
+        <float>0.207946569</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.05546409</float>
-        <float>-0.017168615</float>
-        <float>-0.3555614</float>
+        <float>-0.223070771</float>
+        <float>0.119117916</float>
+        <float>-0.0187791642</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>-0.151799276</float>
-        <float>0.1102442</float>
-        <float>-0.188406</float>
+        <float>-0.215988025</float>
+        <float>-0.129988611</float>
+        <float>0.121117808</float>
       </ArrayOfFloat>
       <ArrayOfFloat>
-        <float>0.207857728</float>
-        <float>0.31793046</float>
-        <float>0.36051932</float>
+        <float>0.2849569</float>
+        <float>0.0520017669</float>
+        <float>-0.154827431</float>
       </ArrayOfFloat>
     </ArrayOfArrayOfFloat>
     <ArrayOfFloat xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <float>0</float>
-      <float>0.00237606838</float>
-      <float>-0.0003412888</float>
+      <float>-0.00321087753</float>
+      <float>-0.00173178175</float>
+      <float>0.00500252144</float>
     </ArrayOfFloat>
   </DenseLayer>
 </ConvolutionalNetwork>

@@ -124,9 +124,10 @@ namespace QAI {
 
             EditorGUILayout.EndScrollView();
 
-			if(_showAdvanced = EditorGUILayout.Toggle("Advanced options", _showAdvanced)) {
+			if(_showAdvanced = EditorGUILayout.Foldout(_showAdvanced, "Advanced options")) {
 				EditorGUI.indentLevel++;
 				_visualize = EditorGUILayout.Toggle("Visualize Network", _visualize);
+				_manager.PrioritizedSweeping = EditorGUILayout.Toggle ("Priority Sweeping", _manager.PrioritizedSweeping);
 			}
 
 
