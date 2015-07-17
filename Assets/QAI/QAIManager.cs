@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using QAI.Agent;
 using QAI.Learning;
 using QAI.Training;
@@ -202,6 +203,13 @@ namespace QAI {
             _stopwatch.Reset();
             _stopwatch.Start();
             Tester.Init();
+        }
+        
+        public static Dictionary<QAction, float> Query(QState state) {
+            var q = _instance._qlearning.Q(state);
+            return _instance._qlearning.Actions
+                .Select(a => new { A = a, Q = q(a)})
+                .ToDictionary(qa => qa.A, qa => qa.Q);
         }
 
         public static void Imitate(QAgent agent, Action a) {
