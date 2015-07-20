@@ -13,6 +13,8 @@ namespace GridProto {
         private const int MaxHistorySize = 30;
         //If less than this number of unique states is in history, we will declare it a cycle.
         private const int CycleSize = 6;
+
+        private bool _testModel = false;
     
         private Q2DGrid _grid;
         private Vector<float> _linearState;
@@ -123,6 +125,10 @@ namespace GridProto {
 
 
         public void FixedUpdate() {
+            if (_testModel) {
+                Instantiate(Resources.Load<ModelTest>("ModelTest"));
+                _testModel = false;
+            }
             _grid.DebugDraw(value => value == 0 ? Color.red : value == 1 ? Color.gray : Color.yellow);
             if (QAIManager.CurrentMode != QAIMode.Imitating) {
                 QAIManager.GetAction(GetState())();
