@@ -15,6 +15,6 @@ public class CircleCalculator {
     public float CalculateAngle(Vector2 p1, Vector2 p2, Vector2 p3) {
         var center = CalculateCircleCenter(p1, p2, p3);
         var r = (center - p1).magnitude;
-        return 2*Mathf.Acos((0.5f*(p1 - p3).magnitude)/r);
+        return 2*Mathf.Acos((0.5f*(p1 - p3).magnitude)/r); 
     }
 }
