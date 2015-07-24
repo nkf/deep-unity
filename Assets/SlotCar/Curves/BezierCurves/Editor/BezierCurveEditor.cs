@@ -44,10 +44,9 @@ public class BezierCurveEditor : Editor
 			
 			if(GUILayout.Button("Add Point"))
 			{
-				Undo.RegisterSceneUndo("Add Point");
-				
 				GameObject pointObject = new GameObject("Point "+pointsProp.arraySize);
-				pointObject.transform.parent = curve.transform;
+                Undo.RegisterCreatedObjectUndo(pointObject, "Add Point");
+                pointObject.transform.parent = curve.transform;
 				pointObject.transform.localPosition = Vector3.zero;
 				BezierPoint newPoint = pointObject.AddComponent<BezierPoint>();
 				
@@ -87,10 +86,9 @@ public class BezierCurveEditor : Editor
 		
 		if(GUILayout.Button("X", GUILayout.Width(20)))
 		{
-			Undo.RegisterSceneUndo("Remove Point");
 			pointsProp.MoveArrayElement(curve.GetPointIndex(point), curve.pointCount - 1);
 			pointsProp.arraySize--;
-			DestroyImmediate(point.gameObject);
+            Undo.DestroyObjectImmediate(point.gameObject);
 			return;
 		}
 
@@ -150,7 +148,7 @@ public class BezierCurveEditor : Editor
 		Vector3 newPointPos = EditorGUILayout.Vector3Field("Position : ", point.transform.localPosition);
 		if(newPointPos != point.transform.localPosition)
 		{
-			Undo.RegisterUndo(point.transform, "Move Bezier Point");
+			Undo.RecordObject(point.transform, "Move Bezier Point");
 			point.transform.localPosition = newPointPos;
 		}
 		
@@ -198,7 +196,7 @@ public class BezierCurveEditor : Editor
 		
 		if(newPosition != point.position)
 		{
-			Undo.RegisterUndo(point.transform, "Move Point");
+			Undo.RecordObject(point.transform, "Move Point");
 			point.transform.position = newPosition;
 		}
 		
@@ -208,7 +206,7 @@ public class BezierCurveEditor : Editor
 			Vector3 newGlobal1 = Handles.FreeMoveHandle(point.globalHandle1, point.transform.rotation, HandleUtility.GetHandleSize(point.globalHandle1)*0.075f, Vector3.zero, Handles.CircleCap);
 			if(point.globalHandle1 != newGlobal1)
 			{
-				Undo.RegisterUndo(point, "Move Handle");
+				Undo.RecordObject(point, "Move Handle");
 				point.globalHandle1 = newGlobal1;
 				if(point.handleStyle == BezierPoint.HandleStyle.Connected) point.globalHandle2 = -(newGlobal1 - point.position) + point.position;
 			}
@@ -216,7 +214,7 @@ public class BezierCurveEditor : Editor
 			Vector3 newGlobal2 = Handles.FreeMoveHandle(point.globalHandle2, point.transform.rotation, HandleUtility.GetHandleSize(point.globalHandle2)*0.075f, Vector3.zero, Handles.CircleCap);
 			if(point.globalHandle2 != newGlobal2)
 			{
-				Undo.RegisterUndo(point, "Move Handle");
+				Undo.RecordObject(point, "Move Handle");
 				point.globalHandle2 = newGlobal2;
 				if(point.handleStyle == BezierPoint.HandleStyle.Connected) point.globalHandle1 = -(newGlobal2 - point.position) + point.position;
 			}
@@ -239,7 +237,7 @@ public class BezierCurveEditor : Editor
 	public static void CreateCurve(MenuCommand command)
 	{
 		GameObject curveObject = new GameObject("BezierCurve");
-		Undo.RegisterUndo(curveObject, "Undo Create Curve");
+        Undo.RecordObject(curveObject, "Undo Create Curve");
 		BezierCurve curve = curveObject.AddComponent<BezierCurve>();
 		
 		BezierPoint p1 = curve.AddPointAt(Vector3.forward * 0.5f);
