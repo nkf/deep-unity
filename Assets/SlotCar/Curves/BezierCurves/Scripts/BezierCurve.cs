@@ -510,7 +510,7 @@ public class BezierCurve : MonoBehaviour {
 	
 	#endregion
 	
-	/* needs testing
+	// needs testing
 	public Vector3 GetPointAtDistance(float distance)
 	{
 		if(close)
@@ -551,7 +551,6 @@ public class BezierCurve : MonoBehaviour {
 		}
 		
 		distance -= totalLength;
-		return GetPoint(distance / curveLength, firstPoint, secondPoint);
+		return GetPoint(firstPoint, secondPoint, distance / curveLength);
 	}
-	*/
 }
