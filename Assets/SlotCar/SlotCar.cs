@@ -6,17 +6,18 @@ public class SlotCar : MonoBehaviour {
 	public BezierCurve Track;
 	public AnimationCurve Acc;
 	public float Speed;
-	public float Velocity;
 	public bool AutoDrive;
 	public int LapNumber;
 	public GameObject CtrlPoint1;
 	public GameObject CtrlPoint2;
 	public GameObject Center;
-	public float Force;
+
+	protected float velocity;
+	protected float force;
+	protected float forceSensetivity = 5.5f;
 	protected float position = 1;
 	protected float speederPosition = 0;
 	protected float distanceTravelled = 0;
-	protected float reduction = 0.1f;
 
 	protected int prevLap = 0;
 	protected float lapTime;
@@ -28,12 +29,12 @@ public class SlotCar : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate() {
-		speederPosition = Mathf.Clamp01(speederPosition + (Input.GetKey(KeyCode.Space) || AutoDrive ? 0.01f : -0.02f));
-		Velocity = Acc.Evaluate(speederPosition) * Speed;
+		speederPosition = Mathf.Clamp01(speederPosition + (Input.GetKey(KeyCode.Space) || AutoDrive ? 1f : -1.5f) * Time.fixedDeltaTime);
+		velocity = Acc.Evaluate(speederPosition) * Speed * Time.fixedDeltaTime;
 
 		var current = transform.position;
-		var mid = Track.GetPointAtDistance(distanceTravelled + Velocity/2f);
-		var next = Track.GetPointAtDistance(distanceTravelled += Velocity);
+		var mid = Track.GetPointAtDistance(distanceTravelled + velocity/2f);
+		var next = Track.GetPointAtDistance(distanceTravelled += velocity);
 
 		CtrlPoint2.transform.position = current;
 		CtrlPoint1.transform.position = mid;
@@ -48,14 +49,16 @@ public class SlotCar : MonoBehaviour {
 		var curvature = CircleCalculator.CalculateCurvature(current, mid, next);
 		var dirValue = dir == CircleCalculator.Direction.Left ? -1
 			: dir == CircleCalculator.Direction.Right ? 1 : 0;
-		Force = curvature * Velocity * 6f * dirValue;
 
-		Debug.DrawRay(mid, (mid - Center.transform.position).normalized * Mathf.Abs(Force), Color.green);
+		force = curvature * velocity * forceSensetivity * dirValue;
 
-		if(Mathf.Abs(Force) > 1f) {
-			Debug.Log (Force);
+		Debug.DrawRay(mid, (mid - Center.transform.position).normalized * Mathf.Abs(force), Color.green);
+
+		if(Mathf.Abs(force) > 1f) {
+			Debug.Log (force);
 			CarOffTrack();
 		}
+
 		LapNumber = (int)(distanceTravelled / Track.length);
 		if(LapNumber != prevLap && LapNumber != 0) {
 			prevLap = LapNumber;
