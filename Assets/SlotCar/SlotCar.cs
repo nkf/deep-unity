@@ -5,6 +5,8 @@ using UnityEditor;
 public class SlotCar : MonoBehaviour {
 	public BezierCurve Track;
 	public AnimationCurve Acc;
+	public int StartPosition;
+	public KeyCode SpeederKey;
 	public float Speed;
 	public bool AutoDrive;
 	public int LapNumber;
@@ -17,19 +19,20 @@ public class SlotCar : MonoBehaviour {
 	protected float forceSensetivity = 5.5f;
 	protected float position = 1;
 	protected float speederPosition = 0;
-	protected float distanceTravelled = 0;
+	public float distanceTravelled = 0;
 
 	protected int prevLap = 0;
 	protected float lapTime;
 
 	// Use this for initialization
 	void Start () {
-	
+		distanceTravelled = StartPosition;
+		Track.GetPointAtDistance(distanceTravelled);
 	}
 	
 	// Update is called once per frame
 	void FixedUpdate() {
-		speederPosition = Mathf.Clamp01(speederPosition + (Input.GetKey(KeyCode.Space) || AutoDrive ? 1f : -1.5f) * Time.fixedDeltaTime);
+		speederPosition = Mathf.Clamp01(speederPosition + (Input.GetKey(SpeederKey) || AutoDrive ? 1f : -1.5f) * Time.fixedDeltaTime);
 		velocity = Acc.Evaluate(speederPosition) * Speed * Time.fixedDeltaTime;
 
 		var current = transform.position;
@@ -59,7 +62,7 @@ public class SlotCar : MonoBehaviour {
 			CarOffTrack();
 		}
 
-		LapNumber = (int)(distanceTravelled / Track.length);
+		LapNumber = (int)(Mathf.Abs(distanceTravelled - StartPosition) / Track.length);
 		if(LapNumber != prevLap && LapNumber != 0) {
 			prevLap = LapNumber;
 			Debug.Log ("Time: " + lapTime);
@@ -72,6 +75,6 @@ public class SlotCar : MonoBehaviour {
 	}
 
 	void CarOffTrack() {
-		Application.LoadLevel(Application.loadedLevel);
+//		Application.LoadLevel(Application.loadedLevel);
 	}
 }
