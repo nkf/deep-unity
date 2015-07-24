@@ -1,11 +1,25 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEditor;
 
 public class SlotCar : MonoBehaviour {
 	public BezierCurve Track;
 	public AnimationCurve Acc;
+	public float Speed;
+	public float Velocity;
+	public bool AutoDrive;
+	public int LapNumber;
+	public GameObject CtrlPoint1;
+	public GameObject CtrlPoint2;
+	public GameObject Center;
+	public float Force;
 	protected float position = 1;
 	protected float speederPosition = 0;
+	protected float distanceTravelled = 0;
+	protected float reduction = 0.1f;
+
+	protected int prevLap = 0;
+	protected float lapTime;
 
 	// Use this for initialization
 	void Start () {
@@ -13,14 +27,48 @@ public class SlotCar : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void FixedUpdate () {
-//		var trackPoint = track[position];
-//		transform.position = trackPoint.transform.position;
-//		transform.rotation = trackPoint.transform.rotation;
-		speederPosition = Mathf.Clamp01(speederPosition + (Input.GetKey(KeyCode.Space) ? 0.01f : -0.01f));
-		position += Acc.Evaluate(speederPosition) * 0.002f;
-//		GetComponent<Rigidbody2D>().MovePosition(Track.GetPointAt(position%1f));
-		transform.position = Track.GetPointAt(position%1f);
-		Debug.Log (position%1);
+	void FixedUpdate() {
+		speederPosition = Mathf.Clamp01(speederPosition + (Input.GetKey(KeyCode.Space) || AutoDrive ? 0.01f : -0.02f));
+		Velocity = Acc.Evaluate(speederPosition) * Speed;
+
+		var current = transform.position;
+		var mid = Track.GetPointAtDistance(distanceTravelled + Velocity/2f);
+		var next = Track.GetPointAtDistance(distanceTravelled += Velocity);
+
+		CtrlPoint2.transform.position = current;
+		CtrlPoint1.transform.position = mid;
+		transform.LookAt(next);
+		transform.position = next;
+
+		var dir = CircleCalculator.Direction.Straight;
+		var c = CircleCalculator.CalculateCircleCenter(current, mid, next, out dir);
+		if(c.HasValue)
+			Center.transform.position = c.Value;
+
+		var curvature = CircleCalculator.CalculateCurvature(current, mid, next);
+		var dirValue = dir == CircleCalculator.Direction.Left ? -1
+			: dir == CircleCalculator.Direction.Right ? 1 : 0;
+		Force = curvature * Velocity * 6f * dirValue;
+
+		Debug.DrawRay(mid, (mid - Center.transform.position).normalized * Mathf.Abs(Force), Color.green);
+
+		if(Mathf.Abs(Force) > 1f) {
+			Debug.Log (Force);
+			CarOffTrack();
+		}
+		LapNumber = (int)(distanceTravelled / Track.length);
+		if(LapNumber != prevLap && LapNumber != 0) {
+			prevLap = LapNumber;
+			Debug.Log ("Time: " + lapTime);
+			Debug.Log ("Score: " + Track.length / lapTime);
+			lapTime = 0;
+		} else {
+			lapTime += Time.deltaTime;
+		}
+
+	}
+
+	void CarOffTrack() {
+		Application.LoadLevel(Application.loadedLevel);
 	}
 }

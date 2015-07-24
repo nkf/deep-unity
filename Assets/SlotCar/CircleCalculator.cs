@@ -2,19 +2,37 @@
 using System.Collections;
 
 public class CircleCalculator {
-
-    public Vector2 CalculateCircleCenter(Vector2 p1, Vector2 p2, Vector2 p3) {
-        Vector2 center = new Vector2();
-        var ma = (p2.y - p1.y) / (p2.x - p1.x);
-        var mb = (p3.y - p2.y) / (p3.x - p2.x);
-        center.x = (ma * mb * (p1.y - p3.y) + mb * (p1.x - p2.x) - ma * (p2.x + p3.x)) / (2 * (mb - ma));
-        center.y = (-1 / ma) * (center.x - (p1.x + p2.x) / 2) + (p1.y + p2.y) / 2;
-        return center;
+	public enum Direction { Straight, Right, Left }
+    public static Vector2? CalculateCircleCenter(Vector2 p1, Vector2 p2, Vector2 p3, out Direction dir) {
+		float t = p2.x*p2.x+p2.y*p2.y;
+		float bc = (p1.x*p1.x + p1.y*p1.y - t)/2.0f;
+		float cd = (t - p3.x*p3.x - p3.y*p3.y)/2.0f;
+		float det = (p1.x-p2.x)*(p2.y-p3.y)-(p2.x-p3.x)*(p1.y-p2.y);
+		
+		if (Mathf.Abs(det) > 1.0e-6) {
+			dir = det > 0 ? Direction.Left : Direction.Right;
+			det = 1/det;
+			float x = (bc*(p2.y - p3.y) - cd*(p1.y - p2.y))*det;
+			float y = ((p1.x - p2.x)*cd - (p2.x - p3.x)*bc)*det;			
+			return new Vector2(x, y);
+		}
+		dir = Direction.Straight;
+        return null;
     }
 
-    public float CalculateAngle(Vector2 p1, Vector2 p2, Vector2 p3) {
-        var center = CalculateCircleCenter(p1, p2, p3);
+    public static float CalculateAngle(Vector2 p1, Vector2 p2, Vector2 p3) {
+		var dir = Direction.Straight;
+        var center = CalculateCircleCenter(p1, p2, p3, out dir).Value;
         var r = (center - p1).magnitude;
         return 2*Mathf.Acos((0.5f*(p1 - p3).magnitude)/r); 
     }
+
+	public static float CalculateCurvature(Vector2 p1, Vector2 p2, Vector2 p3) {
+		var dir = Direction.Straight;
+		var center = CalculateCircleCenter(p1, p2, p3, out dir);
+		if(!center.HasValue)
+			return 0;
+		var r = (center.Value - p1).magnitude;
+		return 1f/r;
+	}
 }
