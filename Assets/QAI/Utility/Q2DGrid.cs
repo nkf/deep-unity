@@ -69,6 +69,14 @@ namespace QAI.Utility {
             return null;
         }
 
+        public void SetAll(float value) {
+            for (int x = 0; x < _matrix.RowCount; x++) {
+                for (int y = 0; y < _matrix.ColumnCount; y++) {
+                    _matrix[x, y] = value;
+                }
+            }
+        }
+
         public void DebugDraw(Func<float, Color> colorFunc = null) {
             const float skin = 0.01f; //in order to avoid drawing over the previous cell wall
             var rX = ResolutionX / 2 - skin;

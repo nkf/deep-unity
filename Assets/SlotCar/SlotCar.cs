@@ -1,10 +1,18 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
+using QAI;
+using QAI.Agent;
+using QAI.Utility;
 using UnityEditor;
+using UnityEngine.Rendering;
 
-public class SlotCar : MonoBehaviour {
+
+public class SlotCar : MonoBehaviour, QAgent {
 	public BezierCurve Track;
 	public AnimationCurve Acc;
+	public int StartPosition;
+	public KeyCode SpeederKey;
 	public float Speed;
 	public bool AutoDrive;
 	public int LapNumber;
@@ -14,7 +22,7 @@ public class SlotCar : MonoBehaviour {
 
 	protected float Velocity;
 	protected float Force;
-	protected float ForceSensetivity = 5.5f;
+	protected float ForceSensetivity = 0.12f;
 	protected float Position = 1;
 	protected float SpeederPosition = 0;
 	protected float DistanceTravelled = 0;
@@ -23,17 +31,25 @@ public class SlotCar : MonoBehaviour {
 	protected float LapTime;
     protected bool OnTrack;
 
+    private Q2DGrid _grid;
     // Use this for initialization
 	void Start () {
+	    GetComponentInChildren<SpriteRenderer>().shadowCastingMode = ShadowCastingMode.On;
 	    OnTrack = true;
+		DistanceTravelled = StartPosition;
+		Track.GetPointAtDistance(DistanceTravelled);
+        _grid = new Q2DGrid(16, transform);
+        
+        QAIManager.InitAgent(this);
 	}
 	
 	// Update is called once per frame
 	void FixedUpdate() {
+	    QAIManager.GetAction(GetState())();
 	    if (OnTrack) {
 	        UpdatePosistion();
 	    }
-	    LapNumber = (int)(DistanceTravelled / Track.length);
+	    LapNumber = (int)(DistanceTravelled - StartPosition / Track.length);
 		if(LapNumber != PrevLap && LapNumber != 0) {
 			PrevLap = LapNumber;
 			Debug.Log ("Time: " + LapTime);
@@ -45,14 +61,16 @@ public class SlotCar : MonoBehaviour {
 	}
 
     void UpdatePosistion() {
-        SpeederPosition = Mathf.Clamp01(SpeederPosition + (Input.GetKey(KeyCode.Space) || AutoDrive ? 1f : -1.5f) * Time.fixedDeltaTime);
-        Velocity = Acc.Evaluate(SpeederPosition) * Speed * Time.fixedDeltaTime;
+        SpeederPosition = Mathf.Clamp01(SpeederPosition + (Input.GetKey(SpeederKey) || AutoDrive ? 1f : -1.5f) * Time.fixedDeltaTime);
+        if(Math.Abs(SpeederPosition) < 0.001f) return;
+        Velocity = Acc.Evaluate(SpeederPosition)*Speed;
 
+        var distUpdate = Velocity*Time.fixedDeltaTime;
         var current = transform.position;
-        var mid = Track.GetPointAtDistance(DistanceTravelled + Velocity / 2f);
-        var next = Track.GetPointAtDistance(DistanceTravelled += Velocity);
+        var mid = Track.GetPointAtDistance(DistanceTravelled + distUpdate / 2f);
+        var next = Track.GetPointAtDistance(DistanceTravelled += distUpdate);
 
-        transform.LookAt(next);
+        LookAt2D(next);
         transform.position = next;
 
         var dir = CircleCalculator.Direction.Straight;
@@ -69,27 +87,64 @@ public class SlotCar : MonoBehaviour {
         Debug.DrawRay(mid, (mid - Center.transform.position).normalized * Mathf.Abs(Force), Color.green);
 
         if (Mathf.Abs(Force) > 1f) {
-            CarOffTrack();
+            CarOffTrack(dirValue);
         }
     }
 
-	void CarOffTrack() {
+	void CarOffTrack(int dir) {
 	    OnTrack = false;
-	    StartCoroutine(DerailAnimation());
+	    StartCoroutine(DerailAnimation(dir));
 	}
 
-    IEnumerator DerailAnimation() {
+    IEnumerator DerailAnimation(int dir) {
+        var collider = GetComponentInChildren<Collider2D>();
+        var layer = collider.gameObject.layer;
+        collider.gameObject.layer = LayerMask.NameToLayer("Default");
         var position = transform.position;
+        var rotation = transform.rotation;
         var body = GetComponent<Rigidbody2D>();
-        for (int i = 0; i < 10; i++) {
-            body.AddRelativeForce(Vector2.right * Velocity * 1000);
-            yield return new WaitForSeconds(0.1f);
-        }
+        body.AddRelativeForce(Vector3.up * Velocity, ForceMode2D.Impulse);
+        body.angularVelocity = Velocity * 200 * -dir;
         yield return new WaitForSeconds(2);
+        body.velocity = Vector2.zero;
+        body.angularVelocity = 0;
         transform.position = position;
+        transform.rotation = rotation;
+        collider.gameObject.layer = layer;
         Velocity = 0;
         SpeederPosition = 0;
         Force = 0;
         OnTrack = true;
+    }
+
+    void LookAt2D(Vector3 point) {
+        Vector3 diff = (point - transform.position).normalized;
+        float rot_z = Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0f, 0f, rot_z - 90);
+    }
+
+    [QBehavior]
+    private void CruiseControlOn() {
+        AutoDrive = true;
+    }
+    [QBehavior]
+    private void CruiseControlOff() {
+        AutoDrive = false;
+    }
+
+    public QState GetState() {
+        _grid.SetAll(0f);
+        for (int i = -10; i < 10; i++) {
+            var point = Track.GetPointAtDistance(DistanceTravelled + i*0.1f);
+            var coordinates = _grid.Locate(point);
+            if (coordinates.HasValue) {
+                _grid[coordinates.Value] = 1f;
+            }
+        }
+        return new QState(new []{_grid.Matrix}, 0, false);
+    }
+
+    public AIID AI_ID() {
+        return new AIID("SlotCar");
     }
 }
