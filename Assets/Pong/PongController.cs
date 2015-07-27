@@ -83,7 +83,7 @@ namespace Pong {
         [QBehavior]
         public void Idle() {}
 
-        private List<Coordinates2D?> _prevPositions = new List<Coordinates2D?>(); 
+        private List<Coordinates?> _prevPositions = new List<Coordinates?>(); 
         public QState GetState() {
             var winner = _ball.IsTerminal();
             float reward;
@@ -116,7 +116,7 @@ namespace Pong {
         var nbp2 = bp + _ball.Velocity.normalized * 3;
         var nbp3 = bp + _ball.Velocity.normalized * 4;
 
-        var positions = new List<Coordinates2D?> { _grid.Locate(bp), _grid.Locate(nbp),
+        var positions = new List<Coordinates?> { _grid.Locate(bp), _grid.Locate(nbp),
             _grid.Locate(nbp1), _grid.Locate(nbp2), _grid.Locate(nbp3) };
 
         SetGridValues(_grid, _prevPositions, 0);
@@ -155,13 +155,13 @@ namespace Pong {
             return new AIID("PongAI");
         }
 
-        private void SetGridValues(QGrid grid, IEnumerable<Coordinates2D?> coords, float value) {
+        private void SetGridValues(QGrid grid, IEnumerable<Coordinates?> coords, float value) {
             foreach (var coord in coords.Where(c => c.HasValue).Select(c => c.Value)) {
                 grid[coord] = value;
             }
         }
 
-        private int HammingDistance(Coordinates2D a, Coordinates2D b) {
+        private int HammingDistance(Coordinates a, Coordinates b) {
             return Math.Abs(a.x - b.x) + Math.Abs(a.y - b.y);
         }
     }
