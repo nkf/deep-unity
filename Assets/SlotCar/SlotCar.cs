@@ -96,7 +96,7 @@ public class SlotCar : MonoBehaviour, QAgent {
     }
 
 	public void Update() {
-		_grid.DebugDraw();
+		_grid.DebugDraw(f => f > 0 ? Color.white : Color.black);
 	}
 
 	void CarOffTrack(int dir) {
