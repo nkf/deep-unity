@@ -10,7 +10,7 @@ namespace QAI.Utility {
         public Vector3 Offset { get; private set; }
         public Vector3 Center { get { return Transform.position + Offset; } }
         public Vector3 Size { get; private set; }
-        public Bounds Bounds { get { return new Bounds(Center, Size); } }
+        public BoxBounds Bounds { get { return new BoxBounds(Center, Size, Transform.rotation); } }
         public Axis NormalAxis { get; private set; }
         private readonly Matrix<float> _matrix;
         public Matrix<float> Matrix {
@@ -40,11 +40,11 @@ namespace QAI.Utility {
             set { _matrix[c.x, c.y] = value; }
         }
 
-        public void Populate(Func<Bounds, float> populator) {
+        public void Populate(Func<BoxBounds, float> populator) {
             Iterate((c, b) => this[c] = populator(b));
         }
 
-        public void Populate(Func<Bounds, Coordinates, float> populator) {
+        public void Populate(Func<BoxBounds, Coordinates, float> populator) {
             Iterate((c, b) => this[c] = populator(b,c));
         }
 
@@ -83,34 +83,16 @@ namespace QAI.Utility {
             var rY = ResolutionY / 2 - skin;
             var rZ = ResolutionZ / 2 - skin;
             Iterate((coor, b) => {
-                var c = b.center;
                 var color = colorFunc == null ? Color.white : colorFunc(this[coor]);
-                var points = NormalAxis == Axis.Z ? DebugDrawXY(c, rX, rY) : DebugDrawXZ(c, rX, rZ);
-                Debug.DrawLine(points[0], points[1], color); //down
-                Debug.DrawLine(points[1], points[2], color); //left
-                Debug.DrawLine(points[2], points[3], color); //up
-                Debug.DrawLine(points[3], points[0], color); //right
+                if (NormalAxis == Axis.Z) {
+                    b.DebugDrawXY(color);
+                } else {
+                    b.DebugDrawXZ(color);
+                }
             });
         }
 
-        private Vector3[] DebugDrawXY(Vector3 c, float rX, float rY) {
-            return new[] {
-                new Vector3(c.x + rX, c.y + rY, 0),
-                new Vector3(c.x + rX, c.y - rY, 0),
-                new Vector3(c.x - rX, c.y - rY, 0),
-                new Vector3(c.x - rX, c.y + rY, 0)
-            };
-        }
-        private Vector3[] DebugDrawXZ(Vector3 c, float rX, float rZ) {
-            return new[] {
-                new Vector3(c.x + rX, 0, c.z + rZ),
-                new Vector3(c.x + rX, 0, c.z - rZ),
-                new Vector3(c.x - rX, 0, c.z - rZ),
-                new Vector3(c.x - rX, 0, c.z + rZ)
-            };
-        }
-
-        private void Iterate(Action<Coordinates, Bounds> f) {
+        private void Iterate(Action<Coordinates, BoxBounds> f) {
             var left = Center.x -((GridSize/2f)*ResolutionX - ResolutionX/2);
             var resolutionUp = NormalAxis == Axis.Z ? ResolutionY : ResolutionZ;
             var center = NormalAxis == Axis.Z ? Center.y : Center.z;
@@ -119,11 +101,12 @@ namespace QAI.Utility {
             var c = Vector3.zero;
             for(var x = 0; x < GridSize; x++) {
                 for(var y = 0; y < GridSize; y++) {
-                    if(NormalAxis == Axis.Z)
-                        c = new Vector3(left + x * ResolutionX, top + y * resolutionUp, 0);
-                    if(NormalAxis == Axis.Y)
-                        c = new Vector3(left + x * ResolutionX, 0, top + y * resolutionUp);
-                    f(new Coordinates(x, y), new Bounds(c, cellsize));
+                    if (NormalAxis == Axis.Z)
+                        c = new Vector3(left + x*ResolutionX, top + y*resolutionUp, 0);
+                    if (NormalAxis == Axis.Y)
+                        c = new Vector3(left + x*ResolutionX, 0, top + y*resolutionUp);
+                    c = c.RotatePoint(Transform.position, Transform.rotation);
+                    f(new Coordinates(x, y), new BoxBounds(c, cellsize, Transform.rotation));
                 }
             }
         }
