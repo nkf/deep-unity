@@ -18,9 +18,10 @@ namespace QAI.Learning {
 
         private bool _remake;
 
-		public QLearningCNN(bool PrioritizedSweeping) {
-			PrioritySweeping = PrioritizedSweeping;
-			BatchSize = PrioritySweeping ? 5 : 100;
+		public QLearningCNN(bool prioritizedSweeping, bool discretize) {
+			PrioritySweeping = prioritizedSweeping;
+			Discretize = discretize;
+			BatchSize = PrioritySweeping ? 5 : 2000;
 			MaxStoreSize = PrioritySweeping ? 30 : 2000;
 		}
 

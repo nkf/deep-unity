@@ -61,14 +61,16 @@ namespace QAI {
 
         private Stopwatch _stopwatch;
 
+		private QOption Option;
+
         public static int NumIterations() {
             return _instance == null ? 1 : _instance.Terminator;
         }
 
-        public static void InitAgent(QAgent agent) {
+        public static void InitAgent(QAgent agent, QOption option = null) {
             if (_instance == null) {
                 _instance = FindObjectOfType<QAIManager>();
-                _instance.Init(agent);
+                _instance.Init(agent, option);
             }
             BenchmarkSave.SaveBenchmarks = _instance.Benchmark;
             _instance._sceneIsOver = false;
@@ -78,7 +80,8 @@ namespace QAI {
                 _instance._qlearning.Reset(agent);
         }
 
-		private void Init(QAgent agent) {
+		private void Init(QAgent agent, QOption option) {
+			Option = option ?? new QOption();
 			if(Benchmark) {
 				BenchmarkSave.CurrentTestID = _instance.BenchmarkID;
 				BenchmarkSave.Runs = _instance.BenchmarkRuns;
@@ -91,7 +94,7 @@ namespace QAI {
 			Debug.Log ("Running " + BenchmarkSave.ModelPath);
 
             _stopwatch = Stopwatch.StartNew();
-            Tester.Init();
+            if(Tester != null) Tester.Init();
 
             DontDestroyOnLoad(gameObject);
             switch (Mode) {
@@ -100,8 +103,8 @@ namespace QAI {
                     break;
                 }
                 default: {
-                    Time.timeScale = 3f;
-                    _qlearning = new QLearningCNN(PrioritizedSweeping);
+//                    Time.timeScale = 3f;
+                    _qlearning = new QLearningCNN(PrioritizedSweeping, Option.Discretize);
                     _qlearning.Reset(agent);
                     
                     if(Remake) _qlearning.RemakeModel(agent.GetState());

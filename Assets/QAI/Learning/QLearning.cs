@@ -32,7 +32,9 @@ namespace QAI.Learning {
         //TODO: write what this is
         public const int PredecessorCap = 6;
         //TODO: write what this is
-        public const float PriorityThreshold = 0.005f;
+        public const float PriorityThreshold = 0.001f;
+
+		protected bool Discretize;
 
         public ReadOnlyCollection<QAction> Actions { get; private set; }
         public int Iteration { get; set; }
@@ -76,7 +78,7 @@ namespace QAI.Learning {
                     _isFirstTurn = true;
                     return null;
                 }
-                if (state.Equals(_prevState)) {
+                if (state.Equals(_prevState) && Discretize) {
                     return _prevAction.Action;
                 }
                 StoreSARS(new SARS(_prevState, _prevAction, state));
@@ -86,9 +88,9 @@ namespace QAI.Learning {
             _prevState = state;
             _isFirstTurn = false;
             _trainingCounter++;
-            if (_trainingCounter >= TrainInterval) {
-                _trainingCounter = 0;
+            if (_trainingCounter >= TrainInterval && Time.timeScale != 0) {
                 var ts = Time.timeScale;
+				_trainingCounter = 0;
                 Time.timeScale = 0;
                 QAIManager.RunCoroutine(PrioritySweeping ? RunPriotizedTraining(ts) : RunTraining(ts));
             }
