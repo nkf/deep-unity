@@ -1,66 +1,51 @@
 ﻿using System;
+using MathNet.Numerics.LinearAlgebra;
 using UnityEngine;
 
 namespace QAI.Utility {
     public class QGrid {
-        /// <summary>
-        /// Length of the X axis
-        /// </summary>
-        public int Width { get; private set; }
-        /// <summary>
-        /// Length of the Y axis
-        /// </summary>
-        public int Height { get; private set; }
-        /// <summary>
-        /// Length of the Z axis
-        /// </summary>
-        public int Depth { get; private set; }
-        public float ResolutionX { get; private set; }
-        public float ResolutionY { get; private set; }
-        public float ResolutionZ { get; private set; }
+        public int GridSize { get; private set; }
         public Transform Transform { get; private set; }
+        public readonly float ResolutionX, ResolutionY, ResolutionZ;
         public Vector3 Offset { get; private set; }
         public Vector3 Center { get { return Transform.position + Offset; } }
         public Vector3 Size { get; private set; }
-        public Bounds Bounds { get { return new Bounds(Center, Size);}}
-
-        public readonly double[] State;
-
-        public double this[int x, int y, int z] {
-            get { return State[x + Width * (y + Height * z)]; }
-            set { State[x + Width * (y + Height * z)] = value; }
+        public BoxBounds Bounds { get { return new BoxBounds(Center, Size, Transform.rotation); } }
+        public Axis NormalAxis { get; private set; }
+        private readonly Matrix<float> _matrix;
+        public Matrix<float> Matrix {
+            get { return _matrix.Clone(); }
         }
 
-        public double this[Coordinates c] {
-            get { return this[c.X, c.Y, c.Z]; }
-            set { this[c.X, c.Y, c.Z] = value; }
-        }
-
-        public QGrid(int width, int height, int depth, Transform transform, float resolution) {
-            Init(width, height, depth, transform, Vector3.zero, resolution, resolution, resolution);
-            State = new double[Width * Height * Depth];
-        }
-
-        public QGrid(int width, int height, int depth, Transform transform, Vector3 offset, float resolution) {
-            Init(width, height, depth, transform, offset, resolution, resolution, resolution);
-            State = new double[Width * Height * Depth];
-        }
-
-        public QGrid(int width, int height, int depth, Transform transform, Vector3 offset, float resolutionX, float resolutionY, float resolutionZ) {
-            Init(width, height, depth, transform, offset, resolutionX, resolutionY, resolutionZ);
-            State = new double[Width * Height * Depth];
-        }
-
-        private void Init(int width, int height, int depth, Transform transform, Vector3 offset, float resolutionX, float resolutionY, float resolutionZ) {
-            Width = width;
-            Height = height;
-            Depth = depth;
-            ResolutionX = resolutionX;
-            ResolutionY = resolutionY;
-            ResolutionZ = resolutionZ;
+        public QGrid(int size, Transform transform, GridSettings gs = null) {
+            if(gs == null) gs = new GridSettings();
+            _matrix = Matrix<float>.Build.Dense(size, size);
+            GridSize = size;
             Transform = transform;
-            Offset = offset;
-            Size = new Vector3(Width * ResolutionX, Height * ResolutionY, Depth * ResolutionZ);
+            Offset = gs.Offset;
+            Size = new Vector3(size * gs.ResolutionX, size * gs.ResolutionY, size * gs.ResolutionZ);
+            NormalAxis = gs.NormalAxis;
+            ResolutionX = gs.ResolutionX;
+            ResolutionY = gs.ResolutionY;
+            ResolutionZ = gs.ResolutionZ;
+        }
+
+        public float this[int x, int y] {
+            get { return _matrix[x, y]; }
+            set { _matrix[x, y] = value; }
+        }
+
+        public float this[Coordinates c] {
+            get { return _matrix[c.x, c.y]; }
+            set { _matrix[c.x, c.y] = value; }
+        }
+
+        public void Populate(Func<BoxBounds, float> populator) {
+            Iterate((c, b) => this[c] = populator(b));
+        }
+
+        public void Populate(Func<BoxBounds, Coordinates, float> populator) {
+            Iterate((c, b) => this[c] = populator(b,c));
         }
 
         /// <summary>
@@ -72,72 +57,76 @@ namespace QAI.Utility {
             var b = Bounds;
             //Since lower bound is exclusive we subtract a small amount to make the upper bound exclusive aswell. 
             b.size -= new Vector3(0.01f, 0.01f, 0.01f);
-            if (b.Contains(p)) {
+            if(b.Contains(p)) {
                 var d = p - Center;
-                d = new Vector3(d.x/ResolutionX, d.y/ResolutionY, d.z/ResolutionZ);
-                var c = new Vector3(((Width-1)/2f), ((Height-1)/2f), ((Depth-1)/2f));
+                d = new Vector3(d.x / ResolutionX, d.y / ResolutionY, d.z / ResolutionZ);
+                var halfSize = (GridSize - 1)/2f;
+                var c = new Vector3(halfSize,halfSize,halfSize);
                 var r = c + d;
-                return new Coordinates(Mathf.RoundToInt(r.x), Mathf.RoundToInt(r.y), Mathf.RoundToInt(r.z));
+                if(NormalAxis == Axis.Y) return new Coordinates(Mathf.RoundToInt(r.x), Mathf.RoundToInt(r.z));
+                if(NormalAxis == Axis.Z) return new Coordinates(Mathf.RoundToInt(r.x), Mathf.RoundToInt(r.y));
             }
             return null;
         }
 
-        public void Populate(Func<Bounds, double> populator) {
-            Iterate((c, b) => this[c] = populator(b));
+        public void SetAll(float value) {
+            for (int x = 0; x < _matrix.RowCount; x++) {
+                for (int y = 0; y < _matrix.ColumnCount; y++) {
+                    _matrix[x, y] = value;
+                }
+            }
         }
 
-        public void DebugDraw(Func<double, Color> colorFunc = null) {
+        public void DebugDraw(Func<float, Color> colorFunc = null) {
+            const float skin = 0.01f; //in order to avoid drawing over the previous cell wall
+            var rX = ResolutionX / 2 - skin;
+            var rY = ResolutionY / 2 - skin;
+            var rZ = ResolutionZ / 2 - skin;
             Iterate((coor, b) => {
-                var c = b.center;
-                const float skin = 0.02f; //in order to avoid drawing over the previous cell wall
-                var rX = ResolutionX/2 - skin; 
-                var rY = ResolutionY/2 - skin; 
-                var rZ = ResolutionZ/2 - skin;
-                var aaa = new Vector3(c.x - rX, c.y - rY, c.z - rZ);
-                var baa = new Vector3(c.x + rX, c.y - rY, c.z - rZ);
-                var aba = new Vector3(c.x - rX, c.y + rY, c.z - rZ);
-                var bba = new Vector3(c.x + rX, c.y + rY, c.z - rZ);
-                var aab = new Vector3(c.x - rX, c.y - rY, c.z + rZ);
-                var bab = new Vector3(c.x + rX, c.y - rY, c.z + rZ);
-                var abb = new Vector3(c.x - rX, c.y + rY, c.z + rZ);
-                var bbb = new Vector3(c.x + rX, c.y + rY, c.z + rZ);
                 var color = colorFunc == null ? Color.white : colorFunc(this[coor]);
-
-                //The first four
-                Debug.DrawLine(aaa, baa, color);
-                Debug.DrawLine(baa, bba, color);
-                Debug.DrawLine(bba, aba, color);
-                Debug.DrawLine(aba, aaa, color);
-
-                //The second four
-                Debug.DrawLine(aab, bab, color);
-                Debug.DrawLine(bab, bbb, color);
-                Debug.DrawLine(bbb, abb, color);
-                Debug.DrawLine(abb, aab, color);
-
-                //The connection between the two layers
-                Debug.DrawLine(aaa, aab, color);
-                Debug.DrawLine(baa, bab, color);
-                Debug.DrawLine(aba, abb, color);
-                Debug.DrawLine(bba, bbb, color);
+                if (NormalAxis == Axis.Z) {
+                    b.DebugDrawXY(color);
+                } else {
+                    b.DebugDrawXZ(color);
+                }
             });
         }
 
-
-        private void Iterate(Action<Coordinates,Bounds> f) {
-            var center = Center;
-            var left = center.x - ((Width/2f)*ResolutionX - ResolutionX/2);
-            var top = center.y - ((Height/2f)*ResolutionY - ResolutionY/2);
-            var front = center.z -((Depth/2f)*ResolutionZ - ResolutionZ/2);
+        private void Iterate(Action<Coordinates, BoxBounds> f) {
+            var left = Center.x -((GridSize/2f)*ResolutionX - ResolutionX/2);
+            var resolutionUp = NormalAxis == Axis.Z ? ResolutionY : ResolutionZ;
+            var center = NormalAxis == Axis.Z ? Center.y : Center.z;
+            var top = center - ((GridSize/2f)*resolutionUp - resolutionUp/2);
             var cellsize = new Vector3(ResolutionX, ResolutionY, ResolutionZ);
-            for (var x = 0; x < Width; x++) {
-                for (var y = 0; y < Height; y++) {
-                    for (var z = 0; z < Depth; z++) {
-                        var c = new Vector3(left + x * ResolutionX, top + y * ResolutionY, front + z * ResolutionZ);
-                        f(new Coordinates(x,y,z), new Bounds(c, cellsize));
-                    }
+            var c = Vector3.zero;
+            for(var x = 0; x < GridSize; x++) {
+                for(var y = 0; y < GridSize; y++) {
+                    if (NormalAxis == Axis.Z)
+                        c = new Vector3(left + x*ResolutionX, top + y*resolutionUp, 0);
+                    if (NormalAxis == Axis.Y)
+                        c = new Vector3(left + x*ResolutionX, 0, top + y*resolutionUp);
+                    c = c.RotatePoint(Transform.position, Transform.rotation);
+                    f(new Coordinates(x, y), new BoxBounds(c, cellsize, Transform.rotation));
                 }
             }
+        }
+    }
+
+    public enum Axis {
+        Z, Y
+    }
+
+    public class GridSettings {
+        public Vector3 Offset;
+        public Axis NormalAxis;
+        public float ResolutionX, ResolutionY, ResolutionZ;
+        public GridSettings() {
+            //Do not set the value for normal axis in the constructor (or at the declaration) because it bugs the object initializer, by always overriding it.
+            //By not setting the value it will default to the first declared value in the Axis enum.
+            Offset = Vector3.zero;
+            ResolutionX = 1;
+            ResolutionY = 1;
+            ResolutionZ = 1;
         }
     }
 }

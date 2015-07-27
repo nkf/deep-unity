@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using System.Collections;
 using QAI;
@@ -32,7 +32,7 @@ public class SlotCar : MonoBehaviour, QAgent {
 	protected float LapTime;
     protected bool OnTrack;
 
-    private Q2DGrid _grid;
+    private QGrid _grid;
 	private float lastReward;
     // Use this for initialization
 	void Start () {
@@ -40,7 +40,7 @@ public class SlotCar : MonoBehaviour, QAgent {
 	    OnTrack = true;
 		DistanceTravelled = StartPosition;
 		Track.GetPointAtDistance(DistanceTravelled);
-        _grid = new Q2DGrid(16, transform);
+        _grid = new QGrid(16, transform);
         
 		if(AiControlled)
 			QAIManager.InitAgent(this, new QOption { Discretize = false });

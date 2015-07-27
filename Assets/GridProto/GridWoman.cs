@@ -16,11 +16,11 @@ namespace GridProto {
 
         private bool _testModel = false;
     
-        private Q2DGrid _grid;
+        private QGrid _grid;
         private Vector<float> _linearState;
         private LinkedList<QState> _history;
         private void Start() {
-            _grid = new Q2DGrid(13, transform, new GridSettings { NormalAxis = Axis.Y });
+            _grid = new QGrid(13, transform, new GridSettings { NormalAxis = Axis.Y });
             _linearState = Vector<float>.Build.Dense(2);
             _history = new LinkedList<QState>();
             QAIManager.InitAgent(this);
@@ -105,7 +105,6 @@ namespace GridProto {
                 goal ? 1 : 0,
                 terminal
             );
-            ArchiveState(state);
             return state;
         }
 
@@ -131,7 +130,9 @@ namespace GridProto {
             }
             _grid.DebugDraw(value => value == 0 ? Color.red : value == 1 ? Color.gray : Color.yellow);
             if (QAIManager.CurrentMode != QAIMode.Imitating) {
-                QAIManager.GetAction(GetState())();
+                var state = GetState();
+                QAIManager.GetAction(state)();
+                ArchiveState(state);
             } else {
                 Action currentAction = null;
                 if (Key(KeyCode.UpArrow,    KeyCode.W)) currentAction = MoveUp;
