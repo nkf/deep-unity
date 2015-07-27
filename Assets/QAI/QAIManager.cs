@@ -91,7 +91,7 @@ namespace QAI {
 			Debug.Log ("Running " + BenchmarkSave.ModelPath);
 
             _stopwatch = Stopwatch.StartNew();
-            Tester.Init();
+            if(Tester != null) Tester.Init();
 
             DontDestroyOnLoad(gameObject);
             switch (Mode) {
