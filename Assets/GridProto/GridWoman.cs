@@ -16,11 +16,11 @@ namespace GridProto {
 
         private bool _testModel = false;
     
-        private Q2DGrid _grid;
+        private QGrid _grid;
         private Vector<float> _linearState;
         private LinkedList<QState> _history;
         private void Start() {
-            _grid = new Q2DGrid(13, transform, new GridSettings { NormalAxis = Axis.Y });
+            _grid = new QGrid(13, transform, new GridSettings { NormalAxis = Axis.Y });
             _linearState = Vector<float>.Build.Dense(2);
             _history = new LinkedList<QState>();
             QAIManager.InitAgent(this);

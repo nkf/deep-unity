@@ -3,7 +3,7 @@ using MathNet.Numerics.LinearAlgebra;
 using UnityEngine;
 
 namespace QAI.Utility {
-    public class Q2DGrid {
+    public class QGrid {
         public int GridSize { get; private set; }
         public Transform Transform { get; private set; }
         public readonly float ResolutionX, ResolutionY, ResolutionZ;
@@ -17,7 +17,7 @@ namespace QAI.Utility {
             get { return _matrix.Clone(); }
         }
 
-        public Q2DGrid(int size, Transform transform, GridSettings gs = null) {
+        public QGrid(int size, Transform transform, GridSettings gs = null) {
             if(gs == null) gs = new GridSettings();
             _matrix = Matrix<float>.Build.Dense(size, size);
             GridSize = size;
@@ -35,7 +35,7 @@ namespace QAI.Utility {
             set { _matrix[x, y] = value; }
         }
 
-        public float this[Coordinates2D c] {
+        public float this[Coordinates c] {
             get { return _matrix[c.x, c.y]; }
             set { _matrix[c.x, c.y] = value; }
         }
@@ -44,7 +44,7 @@ namespace QAI.Utility {
             Iterate((c, b) => this[c] = populator(b));
         }
 
-        public void Populate(Func<Bounds, Coordinates2D, float> populator) {
+        public void Populate(Func<Bounds, Coordinates, float> populator) {
             Iterate((c, b) => this[c] = populator(b,c));
         }
 
@@ -53,7 +53,7 @@ namespace QAI.Utility {
         /// </summary>
         /// <param name="p">The point, which position will be located in the grid</param>
         /// <returns>If the point is within the bounds of the grid the coordinates to the grid cell where in the point is located will be returned</returns>
-        public Coordinates2D? Locate(Vector3 p) {
+        public Coordinates? Locate(Vector3 p) {
             var b = Bounds;
             //Since lower bound is exclusive we subtract a small amount to make the upper bound exclusive aswell. 
             b.size -= new Vector3(0.01f, 0.01f, 0.01f);
@@ -63,8 +63,8 @@ namespace QAI.Utility {
                 var halfSize = (GridSize - 1)/2f;
                 var c = new Vector3(halfSize,halfSize,halfSize);
                 var r = c + d;
-                if(NormalAxis == Axis.Y) return new Coordinates2D(Mathf.RoundToInt(r.x), Mathf.RoundToInt(r.z));
-                if(NormalAxis == Axis.Z) return new Coordinates2D(Mathf.RoundToInt(r.x), Mathf.RoundToInt(r.y));
+                if(NormalAxis == Axis.Y) return new Coordinates(Mathf.RoundToInt(r.x), Mathf.RoundToInt(r.z));
+                if(NormalAxis == Axis.Z) return new Coordinates(Mathf.RoundToInt(r.x), Mathf.RoundToInt(r.y));
             }
             return null;
         }
@@ -110,7 +110,7 @@ namespace QAI.Utility {
             };
         }
 
-        private void Iterate(Action<Coordinates2D, Bounds> f) {
+        private void Iterate(Action<Coordinates, Bounds> f) {
             var left = Center.x -((GridSize/2f)*ResolutionX - ResolutionX/2);
             var resolutionUp = NormalAxis == Axis.Z ? ResolutionY : ResolutionZ;
             var center = NormalAxis == Axis.Z ? Center.y : Center.z;
@@ -123,27 +123,9 @@ namespace QAI.Utility {
                         c = new Vector3(left + x * ResolutionX, top + y * resolutionUp, 0);
                     if(NormalAxis == Axis.Y)
                         c = new Vector3(left + x * ResolutionX, 0, top + y * resolutionUp);
-                    f(new Coordinates2D(x, y), new Bounds(c, cellsize));
+                    f(new Coordinates(x, y), new Bounds(c, cellsize));
                 }
             }
-        }
-    }
-
-    public struct Coordinates2D {
-        public readonly int x, y;
-        public Coordinates2D(int x, int y) { this.x = x; this.y = y; }
-        public bool Equals(Coordinates2D other) {
-            return x == other.x && y == other.y;
-        }
-        public override bool Equals(object obj) {
-            if(ReferenceEquals(null, obj)) return false;
-            return obj is Coordinates2D && Equals((Coordinates2D)obj);
-        }
-        public override int GetHashCode() {
-            unchecked { return (x * 397) ^ y; }
-        }
-        public override string ToString() {
-            return string.Format("[{0},{1}]", x, y);
         }
     }
 

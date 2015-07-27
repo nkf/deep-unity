@@ -15,7 +15,7 @@ namespace Pong {
         PongGame _game;
         PongBall _ball;
 
-        Q2DGrid _grid;
+        QGrid _grid;
         Vector<float> _vect;
 
         public int Hits { get; set; } //Set by pongball
@@ -33,7 +33,7 @@ namespace Pong {
             _game = FindObjectOfType<PongGame>();
             _ball = FindObjectOfType<PongBall>();
             if (Side == Player.Player1) {
-                _grid = new Q2DGrid(16, transform,
+                _grid = new QGrid(16, transform,
                     new GridSettings {Offset = new Vector3(9.8f, 0, 0), ResolutionX = 1.28f, ResolutionY = 1.28f});
                 _vect = Vector<float>.Build.Dense(new[] { 1f });
                 QAIManager.InitAgent(this);
@@ -155,7 +155,7 @@ namespace Pong {
             return new AIID("PongAI");
         }
 
-        private void SetGridValues(Q2DGrid grid, IEnumerable<Coordinates2D?> coords, float value) {
+        private void SetGridValues(QGrid grid, IEnumerable<Coordinates2D?> coords, float value) {
             foreach (var coord in coords.Where(c => c.HasValue).Select(c => c.Value)) {
                 grid[coord] = value;
             }

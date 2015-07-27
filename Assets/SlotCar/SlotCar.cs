@@ -31,14 +31,14 @@ public class SlotCar : MonoBehaviour, QAgent {
 	protected float LapTime;
     protected bool OnTrack;
 
-    private Q2DGrid _grid;
+    private QGrid _grid;
     // Use this for initialization
 	void Start () {
 	    GetComponentInChildren<SpriteRenderer>().shadowCastingMode = ShadowCastingMode.On;
 	    OnTrack = true;
 		DistanceTravelled = StartPosition;
 		Track.GetPointAtDistance(DistanceTravelled);
-        _grid = new Q2DGrid(16, transform);
+        _grid = new QGrid(16, transform);
         
         QAIManager.InitAgent(this);
 	}

@@ -12,7 +12,7 @@ namespace QAI.Utility {
         private const float Resolution = 1.5f;
 
         private void Start() {
-            _grid = new QGrid(X, Y, 1, transform, Resolution);
+            //_grid = new QGrid(X, Y, 1, transform, Resolution);
             Time.timeScale = 10f;
             //StartCoroutine(TestBounds());
             //Test1(new Vector3(3.00f,3.65f));
@@ -38,7 +38,7 @@ namespace QAI.Utility {
                 while (test.MoveNext()) yield return test.Current;
             }
 
-            foreach (var d in _grid.State) {
+            foreach (var d in _grid.Matrix.EnumerateRows()) {
                 Debug.Log(d);
             }
             EditorApplication.isPlaying = false;
