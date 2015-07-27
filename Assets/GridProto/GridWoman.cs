@@ -105,7 +105,6 @@ namespace GridProto {
                 goal ? 1 : 0,
                 terminal
             );
-            ArchiveState(state);
             return state;
         }
 
@@ -131,7 +130,9 @@ namespace GridProto {
             }
             _grid.DebugDraw(value => value == 0 ? Color.red : value == 1 ? Color.gray : Color.yellow);
             if (QAIManager.CurrentMode != QAIMode.Imitating) {
-                QAIManager.GetAction(GetState())();
+                var state = GetState();
+                QAIManager.GetAction(state)();
+                ArchiveState(state);
             } else {
                 Action currentAction = null;
                 if (Key(KeyCode.UpArrow,    KeyCode.W)) currentAction = MoveUp;
