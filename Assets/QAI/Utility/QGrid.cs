@@ -54,6 +54,7 @@ namespace QAI.Utility {
         /// <param name="p">The point, which position will be located in the grid</param>
         /// <returns>If the point is within the bounds of the grid the coordinates to the grid cell where in the point is located will be returned</returns>
         public Coordinates? Locate(Vector3 p) {
+            p = p.RotatePoint(Transform.position, Quaternion.Inverse(Transform.rotation));
             var b = Bounds;
             //Since lower bound is exclusive we subtract a small amount to make the upper bound exclusive aswell. 
             b.size -= new Vector3(0.01f, 0.01f, 0.01f);
