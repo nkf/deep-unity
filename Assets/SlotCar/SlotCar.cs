@@ -9,6 +9,7 @@ using UnityEngine.Rendering;
 
 
 public class SlotCar : MonoBehaviour, QAgent {
+	public bool AiControlled;
 	public BezierCurve Track;
 	public AnimationCurve Acc;
 	public int StartPosition;
@@ -32,6 +33,7 @@ public class SlotCar : MonoBehaviour, QAgent {
     protected bool OnTrack;
 
     private Q2DGrid _grid;
+	private float lastReward;
     // Use this for initialization
 	void Start () {
 	    GetComponentInChildren<SpriteRenderer>().shadowCastingMode = ShadowCastingMode.On;
@@ -40,16 +42,18 @@ public class SlotCar : MonoBehaviour, QAgent {
 		Track.GetPointAtDistance(DistanceTravelled);
         _grid = new Q2DGrid(16, transform);
         
-        QAIManager.InitAgent(this);
+		if(AiControlled)
+			QAIManager.InitAgent(this, new QOption { Discretize = false });
 	}
 	
 	// Update is called once per frame
 	void FixedUpdate() {
-	    QAIManager.GetAction(GetState())();
+		if(AiControlled) QAIManager.GetAction(GetState())();
+
 	    if (OnTrack) {
 	        UpdatePosistion();
 	    }
-	    LapNumber = (int)(DistanceTravelled - StartPosition / Track.length);
+	    LapNumber = (int)((DistanceTravelled - StartPosition) / Track.length);
 		if(LapNumber != PrevLap && LapNumber != 0) {
 			PrevLap = LapNumber;
 			Debug.Log ("Time: " + LapTime);
@@ -84,12 +88,16 @@ public class SlotCar : MonoBehaviour, QAgent {
 
         Force = curvature * Velocity * ForceSensetivity * dirValue;
 
-        Debug.DrawRay(mid, (mid - Center.transform.position).normalized * Mathf.Abs(Force), Color.green);
+        Debug.DrawRay(mid, (mid - Center.transform.position).normalized * Mathf.Abs(Force), Color.green, 4);
 
         if (Mathf.Abs(Force) > 1f) {
             CarOffTrack(dirValue);
         }
     }
+
+	public void Update() {
+		_grid.DebugDraw();
+	}
 
 	void CarOffTrack(int dir) {
 	    OnTrack = false;
@@ -124,24 +132,34 @@ public class SlotCar : MonoBehaviour, QAgent {
     }
 
     [QBehavior]
-    private void CruiseControlOn() {
+    private void FullSpeed() {
         AutoDrive = true;
     }
     [QBehavior]
-    private void CruiseControlOff() {
+    private void Brake() {
         AutoDrive = false;
     }
 
     public QState GetState() {
         _grid.SetAll(0f);
         for (int i = -10; i < 10; i++) {
-            var point = Track.GetPointAtDistance(DistanceTravelled + i*0.1f);
+            var point = Track.GetPointAtDistance(DistanceTravelled + i*1f);
             var coordinates = _grid.Locate(point);
             if (coordinates.HasValue) {
                 _grid[coordinates.Value] = 1f;
             }
         }
-        return new QState(new []{_grid.Matrix}, 0, false);
+		var reward = DistanceTravelled / Track.length - lastReward > 0.001f ? 0.1f : 0;
+		reward += !OnTrack && Mathf.Abs(Force) > 1f ? -2 : 0;
+		reward +=  LapNumber > 0 ? Track.length / LapTime : 0;
+        var state = new QState(
+			new []{_grid.Matrix}, 
+			reward, 
+			!OnTrack || LapNumber > 0);
+		lastReward = state.Reward != 0 ? DistanceTravelled / Track.length : lastReward;
+		Debug.Log (state.Reward);
+
+		return state;
     }
 
     public AIID AI_ID() {
