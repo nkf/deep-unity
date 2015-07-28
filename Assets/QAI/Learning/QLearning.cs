@@ -14,17 +14,17 @@ namespace QAI.Learning {
 
         private const double TIE_BREAK = 1e-9;
 
-        public const float EpisilonStart = 0.5f;
-        public const float EpisilonEnd = 0.1f;
-        public readonly Param Epsilon = t => EpisilonStart + ((EpisilonEnd - EpisilonStart) / QAIManager.NumIterations()) * t;
-        public const float Discount = 0.95f;
+        public static float EpsilonStart;
+        public static float EpsilonEnd;
+        public readonly Param Epsilon = t => EpsilonStart + ((EpsilonEnd - EpsilonStart) / QAIManager.NumIterations()) * t;
+        public static float Discount;
 
         public bool PrioritySweeping = false;
 
         //Number of timesteps inbetween training sessions
-        public static int TrainInterval = 20;
+        public static int TrainingInterval = 20;
         //Number of batches being trained each session
-        public static int TraningCycles = 10;
+        public static int TrainingCycles = 10;
         //Number of sars being trained in each training cycle
         public static int BatchSize;
         //Maximum number of sars being kept
@@ -91,7 +91,7 @@ namespace QAI.Learning {
 			_stateCounter = 0;
             _isFirstTurn = false;
             _trainingCounter++;
-            if (_trainingCounter >= TrainInterval && Time.timeScale != 0) {
+            if (_trainingCounter >= TrainingInterval && Time.timeScale != 0) {
                 var ts = Time.timeScale;
 				_trainingCounter = 0;
                 Time.timeScale = 0;
@@ -101,7 +101,7 @@ namespace QAI.Learning {
         }
 
         private IEnumerator RunTraining(float timescale) {
-            var batches = SampleBatch(BatchSize).Partition(TraningCycles);
+            var batches = SampleBatch(BatchSize).Partition(TrainingCycles);
             foreach (var batch in batches) {
                 TrainModel(batch);
                 yield return new WaitForEndOfFrame();
@@ -110,7 +110,7 @@ namespace QAI.Learning {
         }
 
         private IEnumerator RunPriotizedTraining(float timescale) {
-            for (int i = 0; i < TraningCycles; i++) {
+            for (int i = 0; i < TrainingCycles; i++) {
                 PrioritizedSweeping();
                 yield return new WaitForEndOfFrame();
             }

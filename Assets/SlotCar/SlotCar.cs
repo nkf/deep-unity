@@ -45,7 +45,7 @@ public class SlotCar : MonoBehaviour, QAgent {
 	    OnTrack = true;
 		DistanceTravelled = StartPosition;
 		Track.GetPointAtDistance(DistanceTravelled);
-        _grid = new QGrid(15, transform, new GridSettings { Offset = Vector3.up * 3.2f });
+        _grid = new QGrid(15, transform, new GridSettings { Offset = Vector3.up * 5.2f });
 		_vector = Vector<float>.Build.Dense(10,0);
 		_velocityBin = new Bin(0.01f, 0.25f, 0.5f, 75f);
 		_forceBin = new Bin(0.01f, 0.25f, 0.5f, 75f);
@@ -53,9 +53,11 @@ public class SlotCar : MonoBehaviour, QAgent {
 		if(AiControlled)
 			QAIManager.InitAgent(this, new QOption { 
 				Discretize = false,
-				MaxPoolSize = 600,
-				BatchSize = 600,
-				TrainingInterval = 20}
+				MaxPoolSize = 20000,
+				BatchSize = 200,
+				EpsilonStart = 0.7f,
+				Discount = 0.8f
+				}
 			);
 	}
 	
@@ -169,12 +171,13 @@ public class SlotCar : MonoBehaviour, QAgent {
 //		_vector[0] = Velocity / 20f;
 //		_vector[1] = Mathf.Abs(Force);
 
-		var reward = Mathf.Abs(DistanceTravelled - StartPosition) - lastReward > 0.001f ? 0.05f : 0f;
-		reward = !OnTrack && Mathf.Abs(Force) > 1f ? -0.05f : reward;
-		reward +=  DistanceTravelled - StartPosition > 30 ? 30 / LapTime : 0;
+		var reward = Mathf.Abs(DistanceTravelled - StartPosition) - lastReward > 0.001f ? 0.5f : 0f;
+		reward += Mathf.Abs(Force) * -0.5f;
+		reward = !OnTrack && Mathf.Abs(Force) > 1f ? 0f : reward;
+//		reward +=  DistanceTravelled - StartPosition > 80 ? 80 / LapTime : 0;
 
-		var terminal = 
-			DistanceTravelled - StartPosition > 30;
+		var terminal = false &&
+			DistanceTravelled - StartPosition > 80;
 
         var state = new QState(
 			new []{_grid.Matrix},

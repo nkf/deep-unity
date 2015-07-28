@@ -21,8 +21,11 @@ namespace QAI.Learning {
 		public QLearningCNN(bool prioritizedSweeping, QOption option) {
 			PrioritySweeping = prioritizedSweeping;
 			Discretize = option.Discretize;
-			TrainInterval = option.TrainingInterval;
-			TraningCycles = option.TrainingCycle;
+			TrainingInterval = option.TrainingInterval;
+			TrainingCycles = option.TrainingCycle;
+			EpsilonStart = option.EpsilonStart;
+			EpsilonEnd = option.EpsilonEnd;
+			Discount = option.Discount;
 			BatchSize = PrioritySweeping ? 5 : option.BatchSize;
 			MaxStoreSize = PrioritySweeping ? 30 : option.MaxPoolSize;
 		}
