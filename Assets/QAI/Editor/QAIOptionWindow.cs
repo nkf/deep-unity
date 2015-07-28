@@ -68,6 +68,8 @@ namespace QAI {
             if(_manager == null || _manager != FindObjectOfType<QAIManager>())
                 _init = false;
 
+			_mode = _manager.ModeOverride;
+
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             EditorApplication.playmodeStateChanged -= PlayModeChange;
             EditorApplication.playmodeStateChanged += PlayModeChange;
@@ -141,15 +143,17 @@ namespace QAI {
 			   || _manager.VisualizeNetwork != _visualize) {
                 EditorApplication.MarkSceneDirty();
             }
+
             _manager.Remake = _remake;
             _manager.Benchmark = _benchmark;
             _manager.Terminator = _term;
             _manager.ActiveAgent = _agent;
             _manager.Tester = _tester;
 			_manager.VisualizeNetwork = _visualize;
-            _manager.Mode = _mode;
+			_manager.Mode = _mode;
+			_manager.ModeOverride = _mode;
 
-            _manager.OptionWindow = this;
+//            _manager.OptionWindow = this;
 
             if (_forceStart) {
                 _forceStart = false;
