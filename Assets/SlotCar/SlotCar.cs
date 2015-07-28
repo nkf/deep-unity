@@ -4,6 +4,7 @@ using System.Collections;
 using QAI;
 using QAI.Agent;
 using QAI.Utility;
+using QAI.Learning;
 using UnityEditor;
 using UnityEngine.Rendering;
 using MathNet.Numerics.LinearAlgebra;
@@ -57,8 +58,7 @@ public class SlotCar : MonoBehaviour, QAgent {
 				BatchSize = 200,
 				EpsilonStart = 0.7f,
 				Discount = 0.8f
-				}
-			);
+			});
 	}
 	
 	// Update is called once per frame
