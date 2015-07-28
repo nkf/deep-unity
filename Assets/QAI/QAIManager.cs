@@ -61,8 +61,6 @@ namespace QAI {
 
         private Stopwatch _stopwatch;
 
-		private QOption Option;
-
         public static int NumIterations() {
             return _instance == null ? 1 : _instance.Terminator;
         }
@@ -81,7 +79,6 @@ namespace QAI {
         }
 
 		private void Init(QAgent agent, QOption option) {
-			Option = option ?? new QOption();
 			if(Benchmark) {
 				BenchmarkSave.CurrentTestID = _instance.BenchmarkID;
 				BenchmarkSave.Runs = _instance.BenchmarkRuns;
@@ -104,7 +101,7 @@ namespace QAI {
                 }
                 default: {
 //                    Time.timeScale = 3f;
-                    _qlearning = new QLearningCNN(PrioritizedSweeping, Option.Discretize);
+                    _qlearning = new QLearningCNN(PrioritizedSweeping, option);
                     _qlearning.Reset(agent);
                     
                     if(Remake) _qlearning.RemakeModel(agent.GetState());

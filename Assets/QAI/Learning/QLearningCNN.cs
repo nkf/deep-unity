@@ -18,11 +18,13 @@ namespace QAI.Learning {
 
         private bool _remake;
 
-		public QLearningCNN(bool prioritizedSweeping, bool discretize) {
+		public QLearningCNN(bool prioritizedSweeping, QOption option) {
 			PrioritySweeping = prioritizedSweeping;
-			Discretize = discretize;
-			BatchSize = PrioritySweeping ? 5 : 2000;
-			MaxStoreSize = PrioritySweeping ? 30 : 2000;
+			Discretize = option.Discretize;
+			TrainInterval = option.TrainingInterval;
+			TraningCycles = option.TrainingCycle;
+			BatchSize = PrioritySweeping ? 5 : option.BatchSize;
+			MaxStoreSize = PrioritySweeping ? 30 : option.MaxPoolSize;
 		}
 
         public override void Initialize(int gridSize, int vectorSize) {
@@ -35,7 +37,7 @@ namespace QAI.Learning {
             if (_remake) {
                 _net = new ConvolutionalNetwork(gridSize, vectorSize, _amap.Count,
                     //new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2 },
-                    new CNNArgs { FilterSize = 4, FilterCount = 1, PoolLayerSize = 2, Stride = 2 });
+                    new CNNArgs { FilterSize = 4, FilterCount = 1, PoolLayerSize = 3, Stride = 1 });
             } else {
                 _net = ConvolutionalNetwork.Load(BenchmarkSave.ModelPath);
             }

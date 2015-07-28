@@ -10,7 +10,7 @@ namespace QAI.Utility {
         public Vector3 Offset { get; private set; }
         public Vector3 Center { get { return Transform.position + Offset; } }
         public Vector3 Size { get; private set; }
-        public BoxBounds Bounds { get { return new BoxBounds(Center, Size, Transform.rotation); } }
+        public BoxBounds Bounds { get { return new BoxBounds(Center, Size, Transform.rotation, Transform.position); } }
         public Axis NormalAxis { get; private set; }
         private readonly Matrix<float> _matrix;
         public Matrix<float> Matrix {
@@ -55,6 +55,7 @@ namespace QAI.Utility {
         /// <returns>If the point is within the bounds of the grid the coordinates to the grid cell where in the point is located will be returned</returns>
         public Coordinates? Locate(Vector3 p) {
             var b = Bounds;
+
             //Since lower bound is exclusive we subtract a small amount to make the upper bound exclusive aswell. 
             b.size -= new Vector3(0.01f, 0.01f, 0.01f);
             if(b.Contains(p)) {

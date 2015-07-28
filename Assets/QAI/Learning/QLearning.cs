@@ -22,9 +22,9 @@ namespace QAI.Learning {
         public bool PrioritySweeping = false;
 
         //Number of timesteps inbetween training sessions
-        public const int TrainInterval = 20;
+        public static int TrainInterval = 20;
         //Number of batches being trained each session
-        public const int TraningCycles = 10;
+        public static int TraningCycles = 10;
         //Number of sars being trained in each training cycle
         public static int BatchSize;
         //Maximum number of sars being kept
@@ -57,6 +57,7 @@ namespace QAI.Learning {
         private int _trainingCounter;
         private bool _isFirstTurn = true;
         private QState _prevState;
+		private int _stateCounter;
         private QAction _prevAction;
 
         protected readonly QExperience _qexp = new QExperience();
@@ -78,7 +79,8 @@ namespace QAI.Learning {
                     _isFirstTurn = true;
                     return null;
                 }
-                if (state.Equals(_prevState) && Discretize) {
+                if (state.Equals(_prevState) && (Discretize || _stateCounter <= 10)) {
+					_stateCounter++;
                     return _prevAction.Action;
                 }
                 StoreSARS(new SARS(_prevState, _prevAction, state));
@@ -86,6 +88,7 @@ namespace QAI.Learning {
             var a = EpsilonGreedy(Epsilon(Iteration), state);
             _prevAction = a;
             _prevState = state;
+			_stateCounter = 0;
             _isFirstTurn = false;
             _trainingCounter++;
             if (_trainingCounter >= TrainInterval && Time.timeScale != 0) {
@@ -144,8 +147,8 @@ namespace QAI.Learning {
 
         private QAction EpsilonPolicy(double eps, Func<QState, QAction> policy, QState state) {
             if(Random.value < eps) {
-                var valid = ValidActions();
-                return valid[Random.Range(0, valid.Count)];
+				var valid = ValidActions();
+				return valid[Random.Range(0, valid.Count)];
             }
             return policy(state);
         }
@@ -162,8 +165,7 @@ namespace QAI.Learning {
         }
 
         protected void LoadExperienceDatabase() {
-            var exps = QStory.LoadAll("QData/Story")
-                .Where(qs => qs.ScenePath == EditorApplication.currentScene)
+			var exps = QStory.LoadForScene("QData/Story", EditorApplication.currentScene)
                 .SelectMany(qs => qs.ImitationExperiences.Select(qi => qi.Experience))
                 .SelectMany(e => e).ToList();
             Debug.Log("Loading " + exps.Count + " imitation experiences");
