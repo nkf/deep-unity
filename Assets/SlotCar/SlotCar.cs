@@ -6,6 +6,7 @@ using QAI.Agent;
 using QAI.Utility;
 using UnityEditor;
 using UnityEngine.Rendering;
+using MathNet.Numerics.LinearAlgebra;
 
 
 public class SlotCar : MonoBehaviour, QAgent {
@@ -21,7 +22,7 @@ public class SlotCar : MonoBehaviour, QAgent {
 	public GameObject CtrlPoint2;
 	public GameObject Center;
 
-	protected float Velocity;
+	public float Velocity;
 	protected float Force;
 	protected float ForceSensetivity = 0.12f;
 	protected float Position = 1;
@@ -33,24 +34,33 @@ public class SlotCar : MonoBehaviour, QAgent {
     protected bool OnTrack;
 
     private QGrid _grid;
+//	private Vector<float> _vector;
+	private Bin _velocityBin;
 	private float lastReward;
     // Use this for initialization
 	void Start () {
+		Time.timeScale = 1.0f;
 	    GetComponentInChildren<SpriteRenderer>().shadowCastingMode = ShadowCastingMode.On;
 	    OnTrack = true;
 		DistanceTravelled = StartPosition;
 		Track.GetPointAtDistance(DistanceTravelled);
-        _grid = new QGrid(16, transform);
+        _grid = new QGrid(15, transform, new GridSettings { Offset = Vector3.up * 3.2f });
+//		_vector = Vector<float>.Build.Dense(2,0);
+		_velocityBin = new Bin(0.01f, 0.25f, 0.5f, 75f);
         
 		if(AiControlled)
-			QAIManager.InitAgent(this, new QOption { Discretize = false });
+			QAIManager.InitAgent(this, new QOption { 
+				Discretize = false,
+				MaxPoolSize = 600,
+				BatchSize = 600,
+				TrainingInterval = 20}
+			);
 	}
 	
 	// Update is called once per frame
 	void FixedUpdate() {
-		if(AiControlled) QAIManager.GetAction(GetState())();
-
 	    if (OnTrack) {
+			if(AiControlled) QAIManager.GetAction(GetState())();
 	        UpdatePosistion();
 	    }
 	    LapNumber = (int)((DistanceTravelled - StartPosition) / Track.length);
@@ -97,10 +107,12 @@ public class SlotCar : MonoBehaviour, QAgent {
 
 	public void Update() {
 		_grid.DebugDraw(f => f > 0 ? Color.white : Color.black);
+		_grid.Bounds.DebugDrawXY(Color.red);
 	}
 
 	void CarOffTrack(int dir) {
 	    OnTrack = false;
+		QAIManager.GetAction(GetState())();
 	    StartCoroutine(DerailAnimation(dir));
 	}
 
@@ -143,20 +155,40 @@ public class SlotCar : MonoBehaviour, QAgent {
     public QState GetState() {
         _grid.SetAll(0f);
         for (int i = -10; i < 10; i++) {
-            var point = Track.GetPointAtDistance(DistanceTravelled + i*1f);
+            var point = Track.GetPointAtDistance(DistanceTravelled + i);
             var coordinates = _grid.Locate(point);
             if (coordinates.HasValue) {
                 _grid[coordinates.Value] = 1f;
             }
         }
-		var reward = DistanceTravelled / Track.length - lastReward > 0.001f ? 0.1f : 0;
-		reward += !OnTrack && Mathf.Abs(Force) > 1f ? -2 : 0;
-		reward +=  LapNumber > 0 ? Track.length / LapTime : 0;
+
+		var vector = _velocityBin.Get(Velocity/20f);
+//		_vector[0] = Velocity / 20f;
+//		_vector[1] = Mathf.Abs(Force);
+
+		var reward = Mathf.Abs(DistanceTravelled - StartPosition) - lastReward > 0.001f ? 0.05f : 0f;
+		reward = !OnTrack && Mathf.Abs(Force) > 1f ? -0.05f : reward;
+		reward +=  DistanceTravelled - StartPosition > 30 ? 30 / LapTime : 0;
+
+		var terminal = 
+			DistanceTravelled - StartPosition > 30;
+
         var state = new QState(
-			new []{_grid.Matrix}, 
-			reward, 
-			!OnTrack || LapNumber > 0);
-		lastReward = state.Reward != 0 ? DistanceTravelled / Track.length : lastReward;
+			new []{_grid.Matrix},
+			vector,
+//			!terminal ? 0 : (DistanceTravelled - StartPosition) / (Track.length/2), 
+			reward,
+			terminal);
+
+//		var state = new QState(
+//			new []{_grid.Matrix},
+//			_vector.Clone(),
+//			Mathf.Abs(DistanceTravelled - StartPosition) - lastReward > 0.001f ? Velocity / 20f : 0,
+//			terminal
+//		);
+
+		lastReward = Mathf.Abs(DistanceTravelled - StartPosition);
+
 		Debug.Log (state.Reward);
 
 		return state;

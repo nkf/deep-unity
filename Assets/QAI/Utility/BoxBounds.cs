@@ -5,12 +5,19 @@ public struct BoxBounds {
     private Bounds _bounds;
     public readonly Quaternion Rotation;
     private readonly Quaternion _inverseRotation;
+	private readonly Vector3 _pivot;
 
     public BoxBounds(Vector3 center, Vector3 size, Quaternion rotation) {
         _bounds = new Bounds(center, size);
         Rotation = rotation;
         _inverseRotation = Quaternion.Inverse(Rotation);
+		_pivot = _bounds.center;
     }
+
+	public BoxBounds(Vector3 center, Vector3 size, Quaternion rotation, Vector3 pivot) : this(center, size, rotation) {
+		_pivot = pivot;
+	}
+
 
     public Vector3 center { get { return _bounds.center; } set { _bounds.center = value; } }
 
@@ -56,10 +63,10 @@ public struct BoxBounds {
     }
 
     private Vector3 Rotate(Vector3 point) {
-        return point.RotatePoint(_bounds.center, Rotation);
+        return point.RotatePoint(_pivot, Rotation);
     }
     private Vector3 RotateInverse(Vector3 point) {
-        return point.RotatePoint(_bounds.center, _inverseRotation);
+        return point.RotatePoint(_pivot, _inverseRotation);
     }
 
 }

@@ -18,6 +18,7 @@ namespace QAI.Visualizer {
         private readonly GameObject _spatialVisuals;
         private readonly GameObject _outputVisuals;
         private readonly string[] _actionIndex;
+		private NodeVectorVisualizer _nodeVector;
 
         public DenseLayerVisualizer(SpatialLayer spatialLayer,TreeLayer combinationLayer, DenseLayer denseLayer, string[] actionIndex) {
             _actionIndex = actionIndex;
@@ -31,11 +32,15 @@ namespace QAI.Visualizer {
         private void InitInput(Matrix<float>[] input) {
             _nodeMatrices = new List<NodeMatrixVisualizer>();
             var p = _spatialVisuals.GetComponentInChildren<GridLayoutGroup>();
+			// Matrix visuals
             foreach (var matrix in input) {
                 var nmv = new NodeMatrixVisualizer(matrix.RowCount);
                 nmv.GetUI().transform.SetParent(p.transform, false);
                 _nodeMatrices.Add(nmv);
-            }
+			}
+			// Vector visuals
+			_nodeVector = new NodeVectorVisualizer(_combinationLayer.RightSize);
+			_nodeVector.GetUI().transform.SetParent(p.transform, false);
         }
 
         private void InitOutput(Vector<float> output) {
@@ -66,6 +71,8 @@ namespace QAI.Visualizer {
             for(var i = 0; i < input.Length; i++) {
                 _nodeMatrices[i].Update(input[i]);
             }
+
+			_nodeVector.Update(_combinationLayer.Output().SubVector(_combinationLayer.LeftSize, _combinationLayer.RightSize));
             
             var output = _denseLayer.Output();
             if(output == null || output.Count == 0) return;
@@ -85,12 +92,14 @@ namespace QAI.Visualizer {
             var maxValue = Mathf.Abs(connections[0].Weight);
             int n = 0;
             var from = Vector3.zero;
-            while (maxValue - Mathf.Abs(connections[n].Weight) < 1f && n < 25) {
+            while (maxValue - Mathf.Abs(connections[n].Weight) < 1f && n < maxN && n < 25) {
                 var connection = connections[n++];
                 if (connection.FromIndex < _combinationLayer.LeftSize) {
                     var nodeIndex = CalculateNodeIndex(connection.FromIndex, matrixSize, matrixCount);
                     from = _nodeMatrices[nodeIndex.Item1].GetNodePosition(nodeIndex.Item2, nodeIndex.Item3);
-                }
+                } else {
+					from = _nodeVector.GetNodePosition(connection.FromIndex - _combinationLayer.LeftSize);
+				}
                 var to = _outputNodes[connection.ToIndex].Position;
                 Draw2D.DrawLine(from, to, ConnectionColor(connection.Weight), 2, false);
             }
