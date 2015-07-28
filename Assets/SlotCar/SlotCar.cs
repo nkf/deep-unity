@@ -34,8 +34,9 @@ public class SlotCar : MonoBehaviour, QAgent {
     protected bool OnTrack;
 
     private QGrid _grid;
-//	private Vector<float> _vector;
+	private Vector<float> _vector;
 	private Bin _velocityBin;
+	private Bin _forceBin;
 	private float lastReward;
     // Use this for initialization
 	void Start () {
@@ -45,8 +46,9 @@ public class SlotCar : MonoBehaviour, QAgent {
 		DistanceTravelled = StartPosition;
 		Track.GetPointAtDistance(DistanceTravelled);
         _grid = new QGrid(15, transform, new GridSettings { Offset = Vector3.up * 3.2f });
-//		_vector = Vector<float>.Build.Dense(2,0);
+		_vector = Vector<float>.Build.Dense(10,0);
 		_velocityBin = new Bin(0.01f, 0.25f, 0.5f, 75f);
+		_forceBin = new Bin(0.01f, 0.25f, 0.5f, 75f);
         
 		if(AiControlled)
 			QAIManager.InitAgent(this, new QOption { 
@@ -162,7 +164,8 @@ public class SlotCar : MonoBehaviour, QAgent {
             }
         }
 
-		var vector = _velocityBin.Get(Velocity/20f);
+		_vector.SetSubVector(0, 5, _velocityBin.Get(Velocity/20f));
+		_vector.SetSubVector(5,5, _forceBin.Get(Mathf.Abs(Force)));
 //		_vector[0] = Velocity / 20f;
 //		_vector[1] = Mathf.Abs(Force);
 
@@ -175,7 +178,7 @@ public class SlotCar : MonoBehaviour, QAgent {
 
         var state = new QState(
 			new []{_grid.Matrix},
-			vector,
+			_vector,
 //			!terminal ? 0 : (DistanceTravelled - StartPosition) / (Track.length/2), 
 			reward,
 			terminal);
