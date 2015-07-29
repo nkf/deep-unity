@@ -35,6 +35,8 @@ namespace Pong {
             _game = FindObjectOfType<PongGame>();
             _ball = FindObjectOfType<PongBall>();
             if (Side == Player.Player1) {
+                if (QAIManager.CurrentMode == QAIMode.Learning || QAIManager.CurrentMode == QAIMode.Testing)
+                    Time.timeScale = 5f;
                 _grid = new QGrid(16, transform,
                     new GridSettings {Offset = new Vector3(9.8f, 0, 0), ResolutionX = 1.28f, ResolutionY = 1.28f});
                 _vect = Vector<float>.Build.Dense(new[] { 1f });

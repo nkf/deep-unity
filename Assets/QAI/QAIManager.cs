@@ -45,7 +45,7 @@ namespace QAI {
 	
         public GameObject ActiveAgent;
         public static int Iteration { get { return _instance == null || _instance._qlearning == null ? 0 : _instance._qlearning.Iteration; }}
-        public static QAIMode CurrentMode { get { return _instance == null ? QAIMode.Runnning : _instance.Mode; } }
+        public static QAIMode CurrentMode { get { return _instance.Mode; } }
 
         public QTester Tester;
 
@@ -103,7 +103,6 @@ namespace QAI {
                     break;
                 }
                 default: {
-//                    Time.timeScale = 3f;
                     _qlearning = new QLearningCNN(PrioritizedSweeping, option);
                     _qlearning.Reset(agent);
                     

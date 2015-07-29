@@ -2,7 +2,7 @@
 
 namespace QAI.Learning {
     public class QOption {
-        public bool Discretize;
+        public bool Discretize = true;
         public int TrainingInterval = 20;
         public int TrainingCycle = 10;
         public int BatchSize = 2000;

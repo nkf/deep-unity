@@ -17,6 +17,7 @@ namespace QAI.Learning {
         private Vector<float> _output;
 
         private bool _remake;
+        private CNNArgs[] _networkArgs;
 
 		public QLearningCNN(bool prioritizedSweeping, QOption option) {
 			PrioritySweeping = prioritizedSweeping;
@@ -29,7 +30,8 @@ namespace QAI.Learning {
 			BatchSize = PrioritySweeping ? 5 : option.BatchSize;
 			MaxStoreSize = PrioritySweeping ? 30 : option.MaxPoolSize;
             LearningParams = new BackpropParams { LearningRate = option.LearningRate, Momentum = 0.9f, Decay = 0.0f };
-        }
+		    _networkArgs = option.NetworkArgs;
+		}
 
         public override void Initialize(int gridSize, int vectorSize) {
             // Action-index mapping.
@@ -39,9 +41,7 @@ namespace QAI.Learning {
                 _amap[a.ActionId] = ix++;
             // Model.
             if (_remake) {
-                _net = new ConvolutionalNetwork(gridSize, vectorSize, _amap.Count,
-                    //new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2 },
-                    new CNNArgs { FilterSize = 4, FilterCount = 1, PoolLayerSize = 3, Stride = 1 });
+                _net = new ConvolutionalNetwork(gridSize, vectorSize, _amap.Count, _networkArgs);
             } else {
                 _net = ConvolutionalNetwork.Load(BenchmarkSave.ModelPath);
             }
