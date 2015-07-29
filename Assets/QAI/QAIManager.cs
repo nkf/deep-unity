@@ -18,6 +18,7 @@ namespace QAI {
 
         public const float TimeStep = 0.3f;
         [HideInInspector]
+		private QAIMode _mode;
         public QAIMode Mode;
         [HideInInspector]
         public bool Remake;
@@ -31,7 +32,8 @@ namespace QAI {
         [HideInInspector]
         public List<QStory> Stories;
         [HideInInspector]
-        public QAIOptionWindow OptionWindow;
+		public QAIMode ModeOverride;
+//        public QAIOptionWindow OptionWindow;
 
 		[HideInInspector]
 		public string BenchmarkID = "TEST_ID_GOES_HERE";
@@ -66,6 +68,7 @@ namespace QAI {
         }
 
         public static void InitAgent(QAgent agent, QOption option = null) {
+			option = option ?? new QOption();
             if (_instance == null) {
                 _instance = FindObjectOfType<QAIManager>();
                 _instance.Init(agent, option);
@@ -88,7 +91,7 @@ namespace QAI {
 				BenchmarkSave.CurrentTestID = agent.AI_ID().ID;
 				BenchmarkSave.Runs = 1;
 			}
-			Debug.Log ("Running " + BenchmarkSave.ModelPath);
+			Debug.Log ("Running " + BenchmarkSave.ModelPath + " in mode " + Mode);
 
             _stopwatch = Stopwatch.StartNew();
             if(Tester != null) Tester.Init();
@@ -140,7 +143,8 @@ namespace QAI {
                 Debug.Log("Learning over after "+_stopwatch.Elapsed.TotalSeconds +" secounds");
                 if (Benchmark) {
                     Debug.Log("Running Tester");
-                    OptionWindow.SetMode(QAIMode.Testing);
+//                    OptionWindow.SetMode(QAIMode.Testing);
+					ModeOverride = QAIMode.Testing;
                     Application.LoadLevel(Application.loadedLevel);
                 } else {
                     EditorApplication.isPlaying = false;
@@ -183,7 +187,8 @@ namespace QAI {
                 _testIsOver = true;
                 if (Benchmark && BenchmarkSave.HaveRunsLeft) {
                     RemakeManager();
-                    OptionWindow.SetMode(QAIMode.Learning);
+//                    OptionWindow.SetMode(QAIMode.Learning);
+					ModeOverride = QAIMode.Learning;
                     Mode = QAIMode.Learning;
                     BenchmarkSave.NextRun();
                     Application.LoadLevel(Application.loadedLevel);
@@ -225,7 +230,7 @@ namespace QAI {
             _instance.StartCoroutine(routine);
         }
 
-        internal static QImitationStorage SaveImitation(string name) {
+        public static QImitationStorage SaveImitation(string name) {
             return _instance._imitation.CreateStorageItem(name);
         }
 

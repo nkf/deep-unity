@@ -160,8 +160,8 @@ public class SlotCar : MonoBehaviour, QAgent {
 
     public QState GetState() {
         _grid.SetAll(0f);
-        for (int i = -10; i < 10; i++) {
-            var point = Track.GetPointAtDistance(DistanceTravelled + i);
+        for (int i = -2; i < 20; i++) {
+            var point = Track.GetPointAtDistance(DistanceTravelled + i * 0.8f);
             var coordinates = _grid.Locate(point);
             if (coordinates.HasValue) {
                 _grid[coordinates.Value] = 1f;
@@ -178,8 +178,8 @@ public class SlotCar : MonoBehaviour, QAgent {
 		reward = !OnTrack && Mathf.Abs(Force) > 1f ? 0f : reward;
 //		reward +=  DistanceTravelled - StartPosition > 80 ? 80 / LapTime : 0;
 
-		var terminal = false &&
-			DistanceTravelled - StartPosition > 80;
+		var terminal = 
+			DistanceTravelled - StartPosition > Track.length;
 
         var state = new QState(
 			new []{_grid.Matrix},
