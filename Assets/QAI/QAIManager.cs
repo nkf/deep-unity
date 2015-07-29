@@ -11,6 +11,8 @@ using QAI.Visualizer;
 using UnityEditor;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
+using QNetwork.CNN;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace QAI {
     public class QAIManager : MonoBehaviour {
@@ -46,6 +48,7 @@ namespace QAI {
         public GameObject ActiveAgent;
         public static int Iteration { get { return _instance == null || _instance._qlearning == null ? 0 : _instance._qlearning.Iteration; }}
         public static QAIMode CurrentMode { get { return _instance == null ? QAIMode.Runnning : _instance.Mode; } }
+		public static Action<Vector<float>, bool> NetworkValuesUpdated;
 
         public QTester Tester;
 
@@ -103,8 +106,8 @@ namespace QAI {
                     break;
                 }
                 default: {
-//                    Time.timeScale = 3f;
-                    _qlearning = new QLearningCNN(PrioritizedSweeping, option);
+					var qlCNN = new QLearningCNN(PrioritizedSweeping, option);
+                    _qlearning = qlCNN;
                     _qlearning.Reset(agent);
                     
                     if(Remake) _qlearning.RemakeModel(agent.GetState());
@@ -112,6 +115,8 @@ namespace QAI {
 
                     if(VisualizeNetwork) 
                         _visualizer = _qlearning.CreateVisualizer();
+
+					qlCNN.CNN.ValuesComputed += (data, isTraining) => { if(NetworkValuesUpdated != null) NetworkValuesUpdated(data, isTraining); };
                     break;
                 }
             }

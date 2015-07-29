@@ -9,6 +9,8 @@ using QNetwork.MLP;
 
 namespace QNetwork.CNN {
     public class ConvolutionalNetwork : Unit<StatePair, Vector<float>> {
+		public Action<Vector<float>, bool> ValuesComputed;
+
         // Forward propagation.
         public SpatialLayer InputLayer { get; private set; }
         public ConvolutionalLayer[] ConvolutionalLayers { get; private set; }
@@ -56,7 +58,9 @@ namespace QNetwork.CNN {
             return ConvolutionalLayers.Length + SubSampleLayers.Length + 3;
         }
 
-        public Vector<float> Compute(StatePair input) {
+		public Vector<float> Compute(StatePair input) { return Compute(input, false); }
+
+        public Vector<float> Compute(StatePair input, bool training) {
             // Forward propagate.
             var img = InputLayer.Compute(input.Spatial);
             for (int i = 0; i < ConvolutionalLayers.Length; i++)
@@ -64,7 +68,9 @@ namespace QNetwork.CNN {
             _vecp.left = FlattenLayer.Compute(img);
             _vecp.right = input.Linear;
             IsOutputFromTraining = false;
-            return OutputLayer.Compute(CombinationLayer.Compute(_vecp));
+			var res = OutputLayer.Compute(CombinationLayer.Compute(_vecp));
+			if(ValuesComputed != null) ValuesComputed(res, training);
+            return res;
         }
 
         public Vector<float> Output() {
@@ -85,7 +91,7 @@ namespace QNetwork.CNN {
         }
 
         public void SGD(StatePair input, Vector<float> labels) {
-            Compute(input);
+            Compute(input, true);
             labels.CopyTo(_loss);
             _loss.Subtract(Output(), _loss);
             var img = _split.Visit(_outback.Visit(_loss, _params), _params).left;
@@ -95,7 +101,7 @@ namespace QNetwork.CNN {
 
         public void SGD(StatePair input, TargetIndexPair p) {
             _loss.Clear();
-            _loss.At(p.Index, p.Target - Compute(input)[p.Index]);
+            _loss.At(p.Index, p.Target - Compute(input, true)[p.Index]);
             var img = _split.Visit(_outback.Visit(_loss, _params), _params).left;
             _backprop.BackPropagation(_unflatten.Visit(img, _params), _params);
             IsOutputFromTraining = true;
