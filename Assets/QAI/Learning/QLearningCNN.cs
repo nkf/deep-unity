@@ -10,7 +10,7 @@ using QNetwork.CNN;
 namespace QAI.Learning {
     public class QLearningCNN : QLearning {
 
-        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.005f, Momentum = 0.9f, Decay = 0.0f };
+        private readonly BackpropParams LearningParams;
 
         private ConvolutionalNetwork _net;
         private Dictionary<string, int> _amap;
@@ -28,7 +28,8 @@ namespace QAI.Learning {
 			Discount = option.Discount;
 			BatchSize = PrioritySweeping ? 5 : option.BatchSize;
 			MaxStoreSize = PrioritySweeping ? 30 : option.MaxPoolSize;
-		}
+            LearningParams = new BackpropParams { LearningRate = option.LearningRate, Momentum = 0.9f, Decay = 0.0f };
+        }
 
         public override void Initialize(int gridSize, int vectorSize) {
             // Action-index mapping.

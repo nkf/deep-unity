@@ -8,6 +8,7 @@ using QAI.Learning;
 using UnityEditor;
 using UnityEngine.Rendering;
 using MathNet.Numerics.LinearAlgebra;
+using QNetwork.CNN;
 
 
 public class SlotCar : MonoBehaviour, QAgent {
@@ -57,7 +58,8 @@ public class SlotCar : MonoBehaviour, QAgent {
 				MaxPoolSize = 20000,
 				BatchSize = 200,
 				EpsilonStart = 0.7f,
-				Discount = 0.8f
+				Discount = 0.8f,
+                NetworkArgs = new []{ new CNNArgs { FilterSize = 4, FilterCount = 1, PoolLayerSize = 3, Stride = 1 } }
 			});
 	}
 	
