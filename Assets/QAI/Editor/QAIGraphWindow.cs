@@ -13,7 +13,7 @@ public class QAIGraphWindow : EditorWindow {
 	private LineChart actionChart;
 
 	private List<Vector<float>> actionData = new List<Vector<float>>();
-	private int maxActionData = 500;
+	private int maxActionData = 100;
 
 	[MenuItem("QAI/Data")]
 	private static void OpenWindow() {
@@ -33,8 +33,8 @@ public class QAIGraphWindow : EditorWindow {
 			if(actionChart == null) {
 				actionChart = new LineChart(this, 200f);
 				actionChart.formatString = "{0:F}";
-				actionChart.gridLines = 2;
-				actionChart.axisRounding = 2f;
+				actionChart.gridLines = 5;
+				actionChart.axisRounding = 1f;
 			}
 
 			List<List<float>> l = null;
@@ -58,6 +58,7 @@ public class QAIGraphWindow : EditorWindow {
 	private void StoreValues(Vector<float> data, bool trainingData) {
 		if(trainingData) return;
 		if(actionData.Count > maxActionData) actionData.Remove(actionData.First());
+		if(actionData.Count != 0 && actionData[actionData.Count-1].Equals(data)) return;
 		actionData.Add(data.Clone());
 		Repaint();
 	}
