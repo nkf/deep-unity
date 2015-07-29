@@ -79,8 +79,8 @@ namespace QAI.Learning {
                     _isFirstTurn = true;
                     return null;
                 }
-                if (state.Equals(_prevState) && (Discretize || _stateCounter <= 10)) {
-					_stateCounter++;
+                if (state.Equals(_prevState) && (Discretize || (!Discretize && _stateCounter <= 10))) {
+                    _stateCounter++;
                     return _prevAction.Action;
                 }
                 StoreSARS(new SARS(_prevState, _prevAction, state));

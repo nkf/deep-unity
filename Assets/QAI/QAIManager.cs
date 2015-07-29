@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -47,8 +47,8 @@ namespace QAI {
 	
         public GameObject ActiveAgent;
         public static int Iteration { get { return _instance == null || _instance._qlearning == null ? 0 : _instance._qlearning.Iteration; }}
-        public static QAIMode CurrentMode { get { return _instance == null ? QAIMode.Runnning : _instance.Mode; } }
-		public static Action<Vector<float>, bool> NetworkValuesUpdated;
+        public static QAIMode CurrentMode { get { return _instance.Mode; } }
+        public static Action<Vector<float>, bool> NetworkValuesUpdated;
 
         public QTester Tester;
 

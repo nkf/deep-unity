@@ -9,15 +9,15 @@ namespace Pong {
         private PongController Player1;
         private PongController Player2;
 
-        private static readonly float[] pos = { 0.6f, 0.4f, 0.2f, -0.2f, -0.4f, -0.6f };
+        private static readonly float[] angles = { 0.6f, 0.4f, 0.2f, -0.2f, -0.4f, -0.6f };
 
         void Awake() {
             _game = FindObjectOfType<PongGame>();
             _speed = 5f;
-            //_velocity = new Vector3(-1, Random.Range(-1f, 1f)).normalized * _speed;
-            //_velocity = new Vector3(-1, -.6f).normalized * _speed;
-            _velocity = new Vector3(-1, pos.Random().First()).normalized * _speed;
-            transform.position += new Vector3(9, Random.Range(-6f,6f));
+            //_velocity = new Vector3(-1, Random.Range(-1f, 1f)).normalized * _speed; //random angle
+            _velocity = new Vector3(-1, angles.Random().First()).normalized * _speed; //random angle from set
+            transform.position += new Vector3(9, Random.Range(-6f,6f)); //random posistion
+            //transform.position += new Vector3(9, 0);  //fixed posistion - use when using fixed angles sequence?
             var pcs = FindObjectsOfType<PongController>();
             Player1 = pcs.First(pc => pc.Side == Player.Player1);
             Player2 = pcs.First(pc => pc.Side == Player.Player2);
