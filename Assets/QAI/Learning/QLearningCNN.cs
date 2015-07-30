@@ -13,6 +13,7 @@ namespace QAI.Learning {
         private readonly BackpropParams LearningParams;
 
         private ConvolutionalNetwork _net;
+		public ConvolutionalNetwork CNN { get { return _net; }}
         private Dictionary<string, int> _amap;
         private Vector<float> _output;
 
@@ -75,7 +76,7 @@ namespace QAI.Learning {
         }
 
         public override float QMax(QState s) {
-            return _net.Compute(s.Features).Max();
+            return _net.Compute(s.Features, true).Max();
         }
 
         public override void TrainModel(List<SARS> batch) {

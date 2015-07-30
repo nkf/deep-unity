@@ -7,7 +7,6 @@ public class BenchmarkDialog : EditorWindow {
 	QAIOptionWindow _optionWindow;
 	QAIManager _manager;
 
-	[MenuItem("QAI/Test")]
 	public static void OpenWindow(QAIOptionWindow owner, QAIManager manager) {
 		var w = (BenchmarkDialog) GetWindow(typeof (BenchmarkDialog), true, "Benchmark");
 		var p = w.position;
