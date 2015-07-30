@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using MathNet.Numerics.LinearAlgebra;
 using QAI.Agent;
 using QAI.Learning;
 using QAI.Training;
@@ -11,8 +12,6 @@ using QAI.Visualizer;
 using UnityEditor;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
-using QNetwork.CNN;
-using MathNet.Numerics.LinearAlgebra;
 
 namespace QAI {
     public class QAIManager : MonoBehaviour {
@@ -148,8 +147,8 @@ namespace QAI {
                 Debug.Log("Learning over after "+_stopwatch.Elapsed.TotalSeconds +" secounds");
                 if (Benchmark) {
                     Debug.Log("Running Tester");
-//                    OptionWindow.SetMode(QAIMode.Testing);
 					ModeOverride = QAIMode.Testing;
+                    _qlearning.LoadModel();
                     Application.LoadLevel(Application.loadedLevel);
                 } else {
                     EditorApplication.isPlaying = false;
@@ -192,7 +191,6 @@ namespace QAI {
                 _testIsOver = true;
                 if (Benchmark && BenchmarkSave.HaveRunsLeft) {
                     RemakeManager();
-//                    OptionWindow.SetMode(QAIMode.Learning);
 					ModeOverride = QAIMode.Learning;
                     Mode = QAIMode.Learning;
                     BenchmarkSave.NextRun();
