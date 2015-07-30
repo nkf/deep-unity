@@ -11,7 +11,6 @@ namespace QAI {
     public class QAIOptionWindow : EditorWindow {
         private const string STORY_PATH = "QData/Story";
         [NonSerialized] private bool _init = false;
-        private bool _initNext = false;
         private bool _remake;
         private bool _benchmark;
         private int _term;
@@ -24,7 +23,6 @@ namespace QAI {
 		private bool _showAdvanced = false;
 
         private List<QStory> _stories;
-        private string[] _sceneList;
         private QStory _currentStory;
         private bool _learnAllStories;
         private int _learningStory;
@@ -56,7 +54,6 @@ namespace QAI {
             _mode = _manager.Mode;
             _remake = _manager.Remake;
             _term = _manager.Terminator;
-            _sceneList = GetScenes().ToArray();
             Directory.CreateDirectory(STORY_PATH);
             _stories = QStory.LoadForScene(STORY_PATH, EditorApplication.currentScene); // Should read this when serialization works
             _currentStory = _currentStory == null ? null : _stories.Find(s => s.Id == _currentStory.Id);
@@ -103,7 +100,7 @@ namespace QAI {
             EditorGUILayout.LabelField("Training data");
 
             //Imitation training
-            var r = EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginHorizontal();
             GUILayout.Space(17);
             GUILayout.Label("Imitation learning");
             if (GUILayout.Button("Record")) {
@@ -113,7 +110,7 @@ namespace QAI {
             }
             EditorGUILayout.EndHorizontal();
             foreach (var exp in story.ImitationExperiences) {
-                r = EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.BeginHorizontal();
                 GUILayout.Space(35);
                 GUILayout.Label(exp.Name);
                 if (GUILayout.Button("Delete")) {
@@ -213,9 +210,9 @@ namespace QAI {
 						var path = EditorUtility.OpenFilePanel("Open brain", BenchmarkSave.TestFolder, "xml");
 						if(path.Equals("")) Reset();
 	                    else {
-							var fullFile = path.Substring(path.LastIndexOf(Path.DirectorySeparatorChar)+1);
-							var fileEnd = fullFile.LastIndexOf('-');
-							var filename = fullFile.Substring(0, fileEnd);
+//							var fullFile = path.Substring(path.LastIndexOf(Path.DirectorySeparatorChar)+1);
+//							var fileEnd = fullFile.LastIndexOf('-');
+//							var filename = fullFile.Substring(0, fileEnd);
 							_manager.BenchmarkID = path;
 							ChangePlayMode();
 						}
@@ -243,15 +240,11 @@ namespace QAI {
             if (!EditorApplication.isPlaying) {
                 _starting = true;
             }
-            if (_learnAllStories) {
-                LoadNextStory();
-            }
             EditorApplication.isPlaying = !EditorApplication.isPlaying;
         }
 
 		public void Reset() {
 			Debug.Log ("Resetting");
-			_initNext = true;
 			_remake = false;
 			_learnAllStories = false;
 			_benchmark = false;
@@ -279,13 +272,12 @@ namespace QAI {
                 Init();
 
                 _mode = QAIMode.Runnning;
+				_manager.ModeOverride = _mode;
                 _currentStory = null;
-                _initNext = true;
 
                 _learningStory++;
                 if (_learnAllStories && _learningStory < _stories.Count) {
                     Debug.Log("Starting next learning story");
-                    LoadNextStory();
                     _remake = false;
                     _forceStart = true;
                     _mode = QAIMode.Learning;
@@ -308,11 +300,6 @@ namespace QAI {
 
         public void SetMode(QAIMode mode) {
             _mode = mode;
-        }
-
-        private void LoadNextStory() {
-            Debug.Log("Continuing on to next story");
-            var story = _stories[_learningStory];
         }
 
         private QAIManager CreateManager() {

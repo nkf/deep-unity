@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using MathNet.Numerics.LinearAlgebra;
 using QAI.Agent;
 using QAI.Learning;
 using QAI.Training;
@@ -45,7 +46,8 @@ namespace QAI {
 	
         public GameObject ActiveAgent;
         public static int Iteration { get { return _instance == null || _instance._qlearning == null ? 0 : _instance._qlearning.Iteration; }}
-        public static QAIMode CurrentMode { get { return _instance == null ? QAIMode.Runnning : _instance.Mode; } }
+        public static QAIMode CurrentMode { get { return _instance.Mode; } }
+        public static Action<Vector<float>, bool> NetworkValuesUpdated;
 
         public QTester Tester;
 
@@ -103,8 +105,8 @@ namespace QAI {
                     break;
                 }
                 default: {
-//                    Time.timeScale = 3f;
-                    _qlearning = new QLearningCNN(PrioritizedSweeping, option);
+					var qlCNN = new QLearningCNN(PrioritizedSweeping, option);
+                    _qlearning = qlCNN;
                     _qlearning.Reset(agent);
                     
                     if(Remake) _qlearning.RemakeModel(agent.GetState());
@@ -112,6 +114,8 @@ namespace QAI {
 
                     if(VisualizeNetwork) 
                         _visualizer = _qlearning.CreateVisualizer();
+
+					qlCNN.CNN.ValuesComputed += (data, isTraining) => { if(NetworkValuesUpdated != null) NetworkValuesUpdated(data, isTraining); };
                     break;
                 }
             }
@@ -143,8 +147,8 @@ namespace QAI {
                 Debug.Log("Learning over after "+_stopwatch.Elapsed.TotalSeconds +" secounds");
                 if (Benchmark) {
                     Debug.Log("Running Tester");
-//                    OptionWindow.SetMode(QAIMode.Testing);
 					ModeOverride = QAIMode.Testing;
+                    _qlearning.LoadModel();
                     Application.LoadLevel(Application.loadedLevel);
                 } else {
                     EditorApplication.isPlaying = false;
@@ -187,7 +191,6 @@ namespace QAI {
                 _testIsOver = true;
                 if (Benchmark && BenchmarkSave.HaveRunsLeft) {
                     RemakeManager();
-//                    OptionWindow.SetMode(QAIMode.Learning);
 					ModeOverride = QAIMode.Learning;
                     Mode = QAIMode.Learning;
                     BenchmarkSave.NextRun();

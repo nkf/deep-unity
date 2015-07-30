@@ -197,7 +197,7 @@ public class SlotCar : MonoBehaviour, QAgent {
 
 		lastReward = Mathf.Abs(DistanceTravelled - StartPosition);
 
-		Debug.Log (state.Reward);
+//		Debug.Log (state.Reward);
 
 		return state;
     }

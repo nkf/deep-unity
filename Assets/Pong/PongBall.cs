@@ -79,8 +79,6 @@ namespace Pong {
         }
 
         public void Reset(Vector2 direction) {
-            Player1.Hits = 0;
-            Player2.Hits = 0;
             transform.position = Vector3.zero;
             _speed = 5f;
             _velocity = direction.normalized * _speed;

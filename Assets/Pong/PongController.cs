@@ -49,6 +49,9 @@ namespace Pong {
                     TrainingInterval = 20,
                     TrainingCycle = 10,
                 });
+
+				if (QAIManager.CurrentMode == QAIMode.Learning || QAIManager.CurrentMode == QAIMode.Testing)
+					Time.timeScale = 5f;
             }
         }
 

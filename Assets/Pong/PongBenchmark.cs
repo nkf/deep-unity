@@ -30,13 +30,7 @@ namespace Pong {
             return y <= 1;
         }
 
-        public override void OnActionTaken(QAgent agent, SARS sars) {
-            if (sars.Reward == 1f) {
-                if (DistanceToBall() < 5f) {
-                    _scores[_iteration].Hits++;
-                }
-            }
-        }
+        public override void OnActionTaken(QAgent agent, SARS sars) {}
 
         
         public override void OnTestComplete(double reward) {
@@ -45,6 +39,8 @@ namespace Pong {
                 if (winner.Value == Player.Player1) _scores[_iteration].GameWon = true;
                 else _scores[_iteration].BallDistance = DistanceToBall();
             }
+            var pad = FindObjectsOfType<PongController>().First(pc => pc.Side == Player.Player1);
+            _scores[_iteration].Hits = pad.Hits;
         }
 
         public override void OnRunComplete() {
@@ -53,7 +49,7 @@ namespace Pong {
             var wins = _scores.Select(ts => ts.GameWon ? 1 : 0).Sum();
             var avgDist = _scores.Select(ts => ts.BallDistance).Average();
             BenchmarkSave.WritePongResult(hits, wins, avgDist);
-            Debug.Log(string.Format("Hits:{0:D} AvgDist:{1:F} Wins:{2:D}",hits, avgDist, wins));
+            Debug.Log(string.Format("Hits:{0:D} AvgDist:{1:F3} Wins:{2:D}",hits, avgDist, wins));
         }
 
         private float DistanceToBall() {
