@@ -19,11 +19,11 @@ namespace GridProto {
         private List<double> _distScores;
 
         private Vector3 RunPosistion;
-
         public override void Init() {
+			Time.timeScale = 8f;
             _results = new SerializableDictionary<Vector3, ResultPair>();
             _distScores = new List<double>();
-            _positions = new List<Vector3>(Positions);
+			_positions = Goal.AllValidPositions ();
         }
 
         public override bool SetupNextTest(QAgent agent) {
