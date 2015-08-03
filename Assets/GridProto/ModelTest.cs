@@ -10,19 +10,21 @@ namespace GridProto {
 
         // Use this for initialization
         void Start () {
-            var positions = Goal.AllValidPositions();
+            IEnumerable<Vector3> positions = Goal.AllValidPositions();
             var seeker = FindObjectOfType<GridWoman>();
             var objMap = new Dictionary<Vector3, GameObject>();
             var dirMap = new Dictionary<Vector3, Vector3>();
+			positions = positions.Where (p => !p.Equals (Goal.Position));
             foreach (var position in positions) {
-                seeker.transform.position = position;
+				var pos = position + new Vector3(0,1,0);
+                seeker.transform.position = pos;
                 var state = seeker.GetState();
                 var query = QAIManager.Query(state);
                 var max = query.MaxBy(kv => kv.Value);
                 var rotation = ActionToRotation(max.Key.ActionId);
-                var arrow = CreateArrow(position, rotation, max.Value);
-                objMap.Add(position, arrow);
-                dirMap.Add(position, FollowAction(position, max.Key.ActionId));
+                var arrow = CreateArrow(pos, rotation, max.Value);
+                objMap.Add(pos, arrow);
+                dirMap.Add(pos, FollowAction(pos, max.Key.ActionId));
             }
             //Find cycles
             foreach (var cyclePos in dirMap.Where(kv => dirMap.ContainsKey(kv.Value) && kv.Key == dirMap[kv.Value])) {

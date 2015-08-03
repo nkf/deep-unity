@@ -44,7 +44,7 @@ public class Goal : MonoBehaviour {
         }
 
         Instance = this;
-        Position = transform.position;
+        Position = new Vector3(transform.position.x,0,transform.position.z);
     }
 
     private void SelectSpawn(Transform transform, Target target, SpawnTechnique technique) {
@@ -75,7 +75,9 @@ public class Goal : MonoBehaviour {
         for (var x = MinX; x < MaxX; x++) {
             for (var y = MinY; y < MaxY; y++) {
                 var position = new Vector3(x, 1, y);
-                if(Physics.Raycast(position, Vector3.down, 2f)) positions.Add(position);
+                if(Physics.Raycast(position, Vector3.down, 2f)) {
+					positions.Add(new Vector3(x,0,y));
+				}
             }
         }
         return positions;
