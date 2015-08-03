@@ -15,7 +15,9 @@ namespace QNetwork.CNN {
         public SpatialLayer InputLayer { get; private set; }
         public ConvolutionalLayer[] ConvolutionalLayers { get; private set; }
         public MeanPoolLayer[] SubSampleLayers { get; private set; }
-        public FlattenLayer FlattenLayer { get; private set; }
+		public FlattenLayer FlattenLayer { get; private set; }
+		public InputLayer VectorInput { get; private set; }
+		public DenseLayer LinearHiddenLayer { get; private set; }
         public TreeLayer CombinationLayer { get; private set; }
         public DenseLayer OutputLayer { get; private set; }
 
@@ -28,6 +30,7 @@ namespace QNetwork.CNN {
         private Vector<float> _loss;
         private List<Backprop<Matrix<float>[], Matrix<float>[]>> _backprop;
         private FlattenLayerBackprop _unflatten;
+		private DenseLayerBackprop _hiddenBackprop;
         private TreeLayerBackprop _split;
         private DenseLayerBackprop _outback;
 
@@ -50,6 +53,8 @@ namespace QNetwork.CNN {
                 SubSampleLayers[i] = new MeanPoolLayer(args[i].PoolLayerSize, ConvolutionalLayers[i]);
             }
             FlattenLayer = new FlattenLayer(SubSampleLayers[SubSampleLayers.Length - 1]);
+			VectorInput = new InputLayer (vecsize);
+			LinearHiddenLayer = new DenseLayer (vecsize, VectorInput, Functions.Sigmoid);
             CombinationLayer = new TreeLayer(FlattenLayer.Size(), vecsize);
             OutputLayer = new DenseLayer(labels, CombinationLayer, Functions.Identity);
         }
@@ -66,7 +71,7 @@ namespace QNetwork.CNN {
             for (int i = 0; i < ConvolutionalLayers.Length; i++)
                 img = SubSampleLayers[i].Compute(ConvolutionalLayers[i].Compute(img));
             _vecp.left = FlattenLayer.Compute(img);
-            _vecp.right = input.Linear;
+            _vecp.right = LinearHiddenLayer.Compute(VectorInput.Compute(input.Linear));
             IsOutputFromTraining = false;
 			var res = OutputLayer.Compute(CombinationLayer.Compute(_vecp));
 			if(ValuesComputed != null) ValuesComputed(res, training);
@@ -86,6 +91,7 @@ namespace QNetwork.CNN {
                 _backprop.Add(new ConvolutionalLayerBackprop(ConvolutionalLayers[i]));
             }
             _unflatten = new FlattenLayerBackprop(FlattenLayer);
+			_hiddenBackprop = new DenseLayerBackprop (LinearHiddenLayer);
             _split = new TreeLayerBackprop(CombinationLayer);
             _outback = new DenseLayerBackprop(OutputLayer);
         }
@@ -94,16 +100,18 @@ namespace QNetwork.CNN {
             Compute(input, true);
             labels.CopyTo(_loss);
             _loss.Subtract(Output(), _loss);
-            var img = _split.Visit(_outback.Visit(_loss, _params), _params).left;
-            _backprop.BackPropagation(_unflatten.Visit(img, _params), _params);
+			var split = _split.Visit (_outback.Visit (_loss, _params), _params);
+			_backprop.BackPropagation(_unflatten.Visit(split.left, _params), _params);
+			_hiddenBackprop.Visit (split.right, _params);
             IsOutputFromTraining = true;
         }
 
         public void SGD(StatePair input, TargetIndexPair p) {
             _loss.Clear();
             _loss.At(p.Index, p.Target - Compute(input, true)[p.Index]);
-            var img = _split.Visit(_outback.Visit(_loss, _params), _params).left;
-            _backprop.BackPropagation(_unflatten.Visit(img, _params), _params);
+			var split = _split.Visit (_outback.Visit (_loss, _params), _params);
+			_backprop.BackPropagation(_unflatten.Visit(split.left, _params), _params);
+			_hiddenBackprop.Visit (split.right, _params);
             IsOutputFromTraining = true;
         }
 
@@ -127,6 +135,7 @@ namespace QNetwork.CNN {
                 //Layers
                 foreach (var conv in ConvolutionalLayers)
                     conv.Serialize(writer);
+				LinearHiddenLayer.Serialize(writer);
 	            OutputLayer.Serialize(writer);
                 writer.WriteEndElement();
 	        }
@@ -143,6 +152,7 @@ namespace QNetwork.CNN {
 	            var network = new ConvolutionalNetwork(matsize, vecsize, labels, convl);
                 for (int i = 0; i < network.ConvolutionalLayers.Length; i++)
                     network.ConvolutionalLayers[i].Deserialize(reader);
+				network.LinearHiddenLayer.Deserialize(reader);
                 network.OutputLayer.Deserialize(reader);
                 reader.ReadEndElement();
 	            return network;
