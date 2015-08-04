@@ -10,19 +10,28 @@ using QNetwork.CNN;
 namespace QAI.Learning {
     public class QLearningCNN : QLearning {
 
-        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.001f, Momentum = 0.9f, Decay = 0.0f };
+        private readonly BackpropParams LearningParams;
 
         private ConvolutionalNetwork _net;
+		public ConvolutionalNetwork CNN { get { return _net; }}
         private Dictionary<string, int> _amap;
         private Vector<float> _output;
 
         private bool _remake;
+        private CNNArgs[] _networkArgs;
 
-		public QLearningCNN(bool PrioritizedSweeping) {
-            if (PrioritySweeping = PrioritizedSweeping) {
-                BatchSize = 5;
-                MaxStoreSize = 30;
-            }
+		public QLearningCNN(bool prioritizedSweeping, QOption option) {
+			PrioritySweeping = prioritizedSweeping;
+			Discretize = option.Discretize;
+			TrainingInterval = option.TrainingInterval;
+			TrainingCycles = option.TrainingCycle;
+			EpsilonStart = option.EpsilonStart;
+			EpsilonEnd = option.EpsilonEnd;
+			Discount = option.Discount;
+			BatchSize = PrioritySweeping ? 5 : option.BatchSize;
+			MaxStoreSize = PrioritySweeping ? 30 : option.MaxPoolSize;
+            LearningParams = new BackpropParams { LearningRate = option.LearningRate, Momentum = 0.9f, Decay = 0.0f };
+		    _networkArgs = option.NetworkArgs;
 		}
 
         public override void Initialize(int gridSize, int vectorSize, int depth) {
@@ -33,9 +42,7 @@ namespace QAI.Learning {
                 _amap[a.ActionId] = ix++;
             // Model.
             if (_remake) {
-                _net = new ConvolutionalNetwork(gridSize, vectorSize, depth, _amap.Count,
-                    //new CNNArgs { FilterSize = 4, FilterCount = 3, PoolLayerSize = 2, Stride = 1 },
-                    new CNNArgs { FilterSize = 4, FilterCount = 1, PoolLayerSize = 2, Stride = 1 });
+                _net = new ConvolutionalNetwork(gridSize, vectorSize, depth, _amap.Count, _networkArgs);
             } else {
                 _net = ConvolutionalNetwork.Load(BenchmarkSave.ModelPath);
             }
@@ -68,7 +75,7 @@ namespace QAI.Learning {
         }
 
         public override float QMax(QState s) {
-            return _net.Compute(s.Features).Max();
+            return _net.Compute(s.Features, true).Max();
         }
 
         public override void TrainModel(List<SARS> batch) {

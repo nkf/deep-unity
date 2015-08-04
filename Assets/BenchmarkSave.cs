@@ -16,7 +16,7 @@ public class BenchmarkSave {
     //Number of runs (learn -> test -> reset = 1 run)
     public static int Runs;
     //The Game
-    public const Game CurrentGame = Game.Grid;
+    public static Game CurrentGame = Game.Pong;
     //-----------------------------------------------------------------------
 
     public static bool SaveBenchmarks = false;
@@ -83,9 +83,9 @@ public class BenchmarkSave {
         if(!SaveBenchmarks) return;
         if(CurrentGame != Game.Doll) throw new Exception("Current Test game was set to <" + CurrentGame + "> but we are running Doll");
         throw new NotImplementedException();
-        using(var writer = GetSaveFile()) {
+        /*using(var writer = GetSaveFile()) {
             var line = string.Format("") + Environment.NewLine;
             writer.Write(line);
-        }
+        }*/
     }
 }

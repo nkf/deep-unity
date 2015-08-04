@@ -4,8 +4,8 @@ using UnityEngine.UI;
 
 namespace QAI.Visualizer {
     public class NodeMatrixVisualizer {
-        private readonly GameObject _nodeMatrix;
-        private readonly NodeVisualizer[,] _nodes;
+        protected readonly GameObject _nodeMatrix;
+        protected readonly NodeVisualizer[,] _nodes;
         public int Size { get { return _nodes.GetLength(0); } }
 
         public NodeMatrixVisualizer(int size) {

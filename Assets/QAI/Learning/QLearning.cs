@@ -14,17 +14,17 @@ namespace QAI.Learning {
 
         private const double TIE_BREAK = 1e-9;
 
-        public const float EpisilonStart = 0.5f;
-        public const float EpisilonEnd = 0.1f;
-        public readonly Param Epsilon = t => EpisilonStart + ((EpisilonEnd - EpisilonStart) / QAIManager.NumIterations()) * t;
-        public const float Discount = 0.95f;
+        public static float EpsilonStart;
+        public static float EpsilonEnd;
+        public readonly Param Epsilon = t => EpsilonStart + ((EpsilonEnd - EpsilonStart) / QAIManager.NumIterations()) * t;
+        public static float Discount;
 
         public bool PrioritySweeping = false;
 
         //Number of timesteps inbetween training sessions
-        public const int TrainInterval = 20;
+        public static int TrainingInterval = 20;
         //Number of batches being trained each session
-        public const int TraningCycles = 10;
+        public static int TrainingCycles = 10;
         //Number of sars being trained in each training cycle
         public static int BatchSize = 50;
         //Maximum number of sars being kept
@@ -32,7 +32,9 @@ namespace QAI.Learning {
         //TODO: write what this is
         public const int PredecessorCap = 6;
         //TODO: write what this is
-        public const float PriorityThreshold = 0.005f;
+        public const float PriorityThreshold = 0.001f;
+
+		protected bool Discretize;
 
         public ReadOnlyCollection<QAction> Actions { get; private set; }
         public int Iteration { get; set; }
@@ -47,7 +49,7 @@ namespace QAI.Learning {
         public abstract void RemakeModel(QState exampleState);
         public abstract void TrainModel(List<SARS> batch);
         public abstract bool ModelReady();
-        public abstract QAI.Visualizer.NetworkVisualizer CreateVisualizer();
+        public abstract Visualizer.NetworkVisualizer CreateVisualizer();
 
         public abstract ActionValueFunction Q(QState s);
         public abstract float QMax(QState s);
@@ -55,11 +57,12 @@ namespace QAI.Learning {
         private int _trainingCounter;
         private bool _isFirstTurn = true;
         private QState _prevState;
+		private int _stateCounter;
         private QAction _prevAction;
 
-        protected readonly QExperience _qexp = new QExperience();
-        protected readonly Dictionary<QState, List<SARS>> _preds = new Dictionary<QState, List<SARS>>(1000);
-        protected readonly C5.IntervalHeap<SARS> _pq = new C5.IntervalHeap<SARS>(200, new SARSPrioritizer());
+        protected QExperience Qexp = new QExperience();
+        protected readonly Dictionary<QState, List<SARS>> Preds = new Dictionary<QState, List<SARS>>(1000);
+        protected readonly C5.IntervalHeap<SARS> Pq = new C5.IntervalHeap<SARS>(200, new SARSPrioritizer());
 
         public void Reset(QAgent agent) {
             Actions = agent.GetQActions().AsReadOnly();
@@ -76,7 +79,8 @@ namespace QAI.Learning {
                     _isFirstTurn = true;
                     return null;
                 }
-                if (state.Equals(_prevState)) {
+                if (state.Equals(_prevState) && (Discretize || (!Discretize && _stateCounter <= 10))) {
+                    _stateCounter++;
                     return _prevAction.Action;
                 }
                 StoreSARS(new SARS(_prevState, _prevAction, state));
@@ -84,11 +88,12 @@ namespace QAI.Learning {
             var a = EpsilonGreedy(Epsilon(Iteration), state);
             _prevAction = a;
             _prevState = state;
+			_stateCounter = 0;
             _isFirstTurn = false;
             _trainingCounter++;
-            if (_trainingCounter >= TrainInterval) {
-                _trainingCounter = 0;
+            if (_trainingCounter >= TrainingInterval && Time.timeScale != 0) {
                 var ts = Time.timeScale;
+				_trainingCounter = 0;
                 Time.timeScale = 0;
                 QAIManager.RunCoroutine(PrioritySweeping ? RunPriotizedTraining(ts) : RunTraining(ts));
             }
@@ -96,7 +101,7 @@ namespace QAI.Learning {
         }
 
         private IEnumerator RunTraining(float timescale) {
-            var batches = SampleBatch(BatchSize).Partition(TraningCycles);
+            var batches = SampleBatch(BatchSize).Partition(TrainingCycles);
             foreach (var batch in batches) {
                 TrainModel(batch);
                 yield return new WaitForEndOfFrame();
@@ -105,7 +110,7 @@ namespace QAI.Learning {
         }
 
         private IEnumerator RunPriotizedTraining(float timescale) {
-            for (int i = 0; i < TraningCycles; i++) {
+            for (int i = 0; i < TrainingCycles; i++) {
                 PrioritizedSweeping();
                 yield return new WaitForEndOfFrame();
             }
@@ -142,8 +147,8 @@ namespace QAI.Learning {
 
         private QAction EpsilonPolicy(double eps, Func<QState, QAction> policy, QState state) {
             if(Random.value < eps) {
-                var valid = ValidActions();
-                return valid[Random.Range(0, valid.Count)];
+				var valid = ValidActions();
+				return valid[Random.Range(0, valid.Count)];
             }
             return policy(state);
         }
@@ -160,8 +165,8 @@ namespace QAI.Learning {
         }
 
         protected void LoadExperienceDatabase() {
-            var exps = QStory.LoadAll("QData/Story")
-                .Where(qs => qs.ScenePath == EditorApplication.currentScene)
+            Qexp = new QExperience();
+			var exps = QStory.LoadForScene("QData/Story", EditorApplication.currentScene)
                 .SelectMany(qs => qs.ImitationExperiences.Select(qi => qi.Experience))
                 .SelectMany(e => e).ToList();
             Debug.Log("Loading " + exps.Count + " imitation experiences");
@@ -170,33 +175,33 @@ namespace QAI.Learning {
         }
 
         protected List<SARS> SampleBatch(int size) {
-            return _qexp.Shuffle().Take(size).ToList();
+            return Qexp.Shuffle().Take(size).ToList();
         }
 
         protected List<SARS> FullBatch() {
-            return _qexp.Shuffle().ToList();
+            return Qexp.Shuffle().ToList();
         }
 
         protected void StoreSARS(SARS sars) {
             if (PrioritySweeping) {
                 PutPredecessor(sars);
                 EnqueueSARS(sars);
-                while (_pq.Count > MaxStoreSize)
-                    _pq.DeleteMin();
+                while (Pq.Count > MaxStoreSize)
+                    Pq.DeleteMin();
             } else {
-                _qexp.Store(sars, MaxStoreSize);
+                Qexp.Store(sars, MaxStoreSize);
             }
         }
 
         private void PrioritizedSweeping() {
-            int N = Mathf.Min(BatchSize, _pq.Count);
+            int N = Mathf.Min(BatchSize, Pq.Count);
             /*if(_pq.Count > 0)
                 Debug.Log("LEARNING " + _pq.Count);*/
-            var batch = Enumerable.Range(0, N).Select(i => _pq.DeleteMax()).ToList();
+            var batch = Enumerable.Range(0, N).Select(i => Pq.DeleteMax()).ToList();
             TrainModel(batch);
             foreach (var sars in batch)
-                if (_preds.ContainsKey(sars.State))
-                    foreach (var pred in _preds[sars.State].Shuffle().Take(PredecessorCap))
+                if (Preds.ContainsKey(sars.State))
+                    foreach (var pred in Preds[sars.State].Shuffle().Take(PredecessorCap))
                         EnqueueSARS(pred);
         }
 
@@ -209,19 +214,19 @@ namespace QAI.Learning {
                 s.Priority = Mathf.Abs(s.Reward - q);
             }
             if (s.Priority > PriorityThreshold)
-                _pq.Add(s);
+                Pq.Add(s);
         }
 
         private void PutPredecessor(SARS sars) {
-            if (!_preds.ContainsKey(sars.NextState))
-                _preds[sars.NextState] = new List<SARS>();
+            if (!Preds.ContainsKey(sars.NextState))
+                Preds[sars.NextState] = new List<SARS>();
             if (sars.NextState.Equals(sars.State)) {
                 Debug.Log("SELF REFERENCE. IS TERM : " + sars.State.IsTerminal + " - " + sars.NextState.IsTerminal
                            + " ;r " + sars.State.Reward + " - " + sars.NextState.Reward
                            + " ;h " + sars.State.GetHashCode() + " - " + sars.NextState.GetHashCode());
                 return;
             }
-            var p = _preds[sars.NextState];
+            var p = Preds[sars.NextState];
             if (!p.Contains(sars))
                 p.Add(sars);
         }

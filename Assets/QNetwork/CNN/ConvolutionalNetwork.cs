@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using MathNet.Numerics.LinearAlgebra;
@@ -8,11 +9,15 @@ using QNetwork.MLP;
 
 namespace QNetwork.CNN {
     public class ConvolutionalNetwork : Unit<StatePair, Vector<float>> {
+		public Action<Vector<float>, bool> ValuesComputed;
+
         // Forward propagation.
         public SpatialLayer InputLayer { get; private set; }
         public ConvolutionalLayer[] ConvolutionalLayers { get; private set; }
-        public MaxPoolLayer[] SubSampleLayers { get; private set; }
-        public FlattenLayer FlattenLayer { get; private set; }
+        public MeanPoolLayer[] SubSampleLayers { get; private set; }
+		public FlattenLayer FlattenLayer { get; private set; }
+		public InputLayer VectorInput { get; private set; }
+		public DenseLayer LinearHiddenLayer { get; private set; }
         public TreeLayer CombinationLayer { get; private set; }
         public DenseLayer OutputLayer { get; private set; }
 
@@ -25,6 +30,7 @@ namespace QNetwork.CNN {
         private Vector<float> _loss;
         private List<Backprop<Matrix<float>[], Matrix<float>[]>> _backprop;
         private FlattenLayerBackprop _unflatten;
+		private DenseLayerBackprop _hiddenBackprop;
         private TreeLayerBackprop _split;
         private DenseLayerBackprop _outback;
 
@@ -40,14 +46,16 @@ namespace QNetwork.CNN {
             _args = args;
             InputLayer = new SpatialLayer(matsize, depth);
             ConvolutionalLayers = new ConvolutionalLayer[args.Length];
-            SubSampleLayers = new MaxPoolLayer[args.Length];
+            SubSampleLayers = new MeanPoolLayer[args.Length];
             ConvolutionalLayers[0] = new ConvolutionalLayer(args[0].FilterSize, args[0].FilterCount, args[0].Stride, InputLayer, Functions.Rectifier2D);
-            SubSampleLayers[0] = new MaxPoolLayer(args[0].PoolLayerSize, ConvolutionalLayers[0]);
+            SubSampleLayers[0] = new MeanPoolLayer(args[0].PoolLayerSize, ConvolutionalLayers[0]);
             for (int i = 1; i < args.Length; i++) {
                 ConvolutionalLayers[i] = new ConvolutionalLayer(args[i].FilterSize, args[i].FilterCount, args[i].Stride, SubSampleLayers[i - 1], Functions.Rectifier2D);
-                SubSampleLayers[i] = new MaxPoolLayer(args[i].PoolLayerSize, ConvolutionalLayers[i]);
+                SubSampleLayers[i] = new MeanPoolLayer(args[i].PoolLayerSize, ConvolutionalLayers[i]);
             }
             FlattenLayer = new FlattenLayer(SubSampleLayers[SubSampleLayers.Length - 1]);
+			VectorInput = new InputLayer (vecsize);
+			LinearHiddenLayer = new DenseLayer (vecsize, VectorInput, Functions.Sigmoid);
             CombinationLayer = new TreeLayer(FlattenLayer.Size(), vecsize);
             OutputLayer = new DenseLayer(labels, CombinationLayer, Functions.Identity);
         }
@@ -56,15 +64,19 @@ namespace QNetwork.CNN {
             return ConvolutionalLayers.Length + SubSampleLayers.Length + 3;
         }
 
-        public Vector<float> Compute(StatePair input) {
+		public Vector<float> Compute(StatePair input) { return Compute(input, false); }
+
+        public Vector<float> Compute(StatePair input, bool training) {
             // Forward propagate.
             var img = InputLayer.Compute(input.Spatial);
             for (int i = 0; i < ConvolutionalLayers.Length; i++)
                 img = SubSampleLayers[i].Compute(ConvolutionalLayers[i].Compute(img));
             _vecp.left = FlattenLayer.Compute(img);
-            _vecp.right = input.Linear;
+            _vecp.right = LinearHiddenLayer.Compute(VectorInput.Compute(input.Linear));
             IsOutputFromTraining = false;
-            return OutputLayer.Compute(CombinationLayer.Compute(_vecp));
+			var res = OutputLayer.Compute(CombinationLayer.Compute(_vecp));
+			if(ValuesComputed != null) ValuesComputed(res, training);
+            return res;
         }
 
         public Vector<float> Output() {
@@ -76,28 +88,31 @@ namespace QNetwork.CNN {
             _loss = Vector<float>.Build.Dense(OutputLayer.Size());
             _backprop = new List<Backprop<Matrix<float>[], Matrix<float>[]>>();
             for (int i = ConvolutionalLayers.Length - 1; i >= 0; i--) {
-                _backprop.Add(new MaxPoolLayerBackprop(SubSampleLayers[i]));
+                _backprop.Add(new MeanPoolLayerBackprop(SubSampleLayers[i]));
                 _backprop.Add(new ConvolutionalLayerBackprop(ConvolutionalLayers[i]));
             }
             _unflatten = new FlattenLayerBackprop(FlattenLayer);
+			_hiddenBackprop = new DenseLayerBackprop (LinearHiddenLayer);
             _split = new TreeLayerBackprop(CombinationLayer);
             _outback = new DenseLayerBackprop(OutputLayer);
         }
 
         public void SGD(StatePair input, Vector<float> labels) {
-            Compute(input);
+            Compute(input, true);
             labels.CopyTo(_loss);
             _loss.Subtract(Output(), _loss);
-            var img = _split.Visit(_outback.Visit(_loss, _params), _params).left;
-            _backprop.BackPropagation(_unflatten.Visit(img, _params), _params);
+			var split = _split.Visit (_outback.Visit (_loss, _params), _params);
+			_backprop.BackPropagation(_unflatten.Visit(split.left, _params), _params);
+			_hiddenBackprop.Visit (split.right, _params);
             IsOutputFromTraining = true;
         }
 
         public void SGD(StatePair input, TargetIndexPair p) {
             _loss.Clear();
-            _loss.At(p.Index, p.Target - Compute(input)[p.Index]);
-            var img = _split.Visit(_outback.Visit(_loss, _params), _params).left;
-            _backprop.BackPropagation(_unflatten.Visit(img, _params), _params);
+            _loss.At(p.Index, p.Target - Compute(input, true)[p.Index]);
+			var split = _split.Visit (_outback.Visit (_loss, _params), _params);
+			_backprop.BackPropagation(_unflatten.Visit(split.left, _params), _params);
+			_hiddenBackprop.Visit (split.right, _params);
             IsOutputFromTraining = true;
         }
 
@@ -122,6 +137,7 @@ namespace QNetwork.CNN {
                 //Layers
                 foreach (var conv in ConvolutionalLayers)
                     conv.Serialize(writer);
+				LinearHiddenLayer.Serialize(writer);
 	            OutputLayer.Serialize(writer);
                 writer.WriteEndElement();
 	        }
@@ -150,6 +166,7 @@ namespace QNetwork.CNN {
                 var network = new ConvolutionalNetwork(matsize, vecsize, depth, labels, convl);
                 for (int i = 0; i < network.ConvolutionalLayers.Length; i++)
                     network.ConvolutionalLayers[i].Deserialize(reader);
+				network.LinearHiddenLayer.Deserialize(reader);
                 network.OutputLayer.Deserialize(reader);
                 reader.ReadEndElement();
                 file.Close();

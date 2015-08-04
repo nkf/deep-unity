@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using MathNet.Numerics.LinearAlgebra;
 using QAI.Agent;
 using QAI.Learning;
 using QAI.Training;
@@ -16,6 +18,7 @@ namespace QAI {
 
         public const float TimeStep = 0.3f;
         [HideInInspector]
+		private QAIMode _mode;
         public QAIMode Mode;
         [HideInInspector]
         public bool Remake;
@@ -29,7 +32,8 @@ namespace QAI {
         [HideInInspector]
         public List<QStory> Stories;
         [HideInInspector]
-        public QAIOptionWindow OptionWindow;
+		public QAIMode ModeOverride;
+//        public QAIOptionWindow OptionWindow;
 
 		[HideInInspector]
 		public string BenchmarkID = "TEST_ID_GOES_HERE";
@@ -41,7 +45,8 @@ namespace QAI {
 	
         public GameObject ActiveAgent;
         public static int Iteration { get { return _instance == null || _instance._qlearning == null ? 0 : _instance._qlearning.Iteration; }}
-        public static QAIMode CurrentMode { get { return _instance == null ? QAIMode.Runnning : _instance.Mode; } }
+        public static QAIMode CurrentMode { get { return _instance.Mode; } }
+        public static Action<Vector<float>, bool> NetworkValuesUpdated;
 
         public QTester Tester;
 
@@ -63,10 +68,11 @@ namespace QAI {
             return _instance == null ? 1 : _instance.Terminator;
         }
 
-        public static void InitAgent(QAgent agent) {
+        public static void InitAgent(QAgent agent, QOption option = null) {
+			option = option ?? new QOption();
             if (_instance == null) {
                 _instance = FindObjectOfType<QAIManager>();
-                _instance.Init(agent);
+                _instance.Init(agent, option);
             }
             BenchmarkSave.SaveBenchmarks = _instance.Benchmark;
             _instance._sceneIsOver = false;
@@ -76,7 +82,7 @@ namespace QAI {
                 _instance._qlearning.Reset(agent);
         }
 
-		private void Init(QAgent agent) {
+		private void Init(QAgent agent, QOption option) {
 			if(Benchmark) {
 				BenchmarkSave.CurrentTestID = _instance.BenchmarkID;
 				BenchmarkSave.Runs = _instance.BenchmarkRuns;
@@ -86,10 +92,10 @@ namespace QAI {
 				BenchmarkSave.CurrentTestID = agent.AI_ID().ID;
 				BenchmarkSave.Runs = 1;
 			}
-			Debug.Log ("Running " + BenchmarkSave.ModelPath);
+			Debug.Log ("Running " + BenchmarkSave.ModelPath + " in mode " + Mode);
 
             _stopwatch = Stopwatch.StartNew();
-            Tester.Init();
+            if(Tester != null) Tester.Init();
 
             DontDestroyOnLoad(gameObject);
             switch (Mode) {
@@ -98,8 +104,8 @@ namespace QAI {
                     break;
                 }
                 default: {
-                    Time.timeScale = 3f;
-                    _qlearning = new QLearningCNN(PrioritizedSweeping);
+					var qlCNN = new QLearningCNN(PrioritizedSweeping, option);
+                    _qlearning = qlCNN;
                     _qlearning.Reset(agent);
                     
                     if(Remake) _qlearning.RemakeModel(agent.GetState());
@@ -107,6 +113,8 @@ namespace QAI {
 
                     if(VisualizeNetwork) 
                         _visualizer = _qlearning.CreateVisualizer();
+
+					qlCNN.CNN.ValuesComputed += (data, isTraining) => { if(NetworkValuesUpdated != null) NetworkValuesUpdated(data, isTraining); };
                     break;
                 }
             }
@@ -138,7 +146,8 @@ namespace QAI {
                 Debug.Log("Learning over after "+_stopwatch.Elapsed.TotalSeconds +" secounds");
                 if (Benchmark) {
                     Debug.Log("Running Tester");
-                    OptionWindow.SetMode(QAIMode.Testing);
+					ModeOverride = QAIMode.Testing;
+                    _qlearning.LoadModel();
                     Application.LoadLevel(Application.loadedLevel);
                 } else {
                     EditorApplication.isPlaying = false;
@@ -181,7 +190,7 @@ namespace QAI {
                 _testIsOver = true;
                 if (Benchmark && BenchmarkSave.HaveRunsLeft) {
                     RemakeManager();
-                    OptionWindow.SetMode(QAIMode.Learning);
+					ModeOverride = QAIMode.Learning;
                     Mode = QAIMode.Learning;
                     BenchmarkSave.NextRun();
                     Application.LoadLevel(Application.loadedLevel);
@@ -202,6 +211,13 @@ namespace QAI {
             _stopwatch.Start();
             Tester.Init();
         }
+        
+        public static Dictionary<QAction, float> Query(QState state) {
+            var q = _instance._qlearning.Q(state);
+            return _instance._qlearning.Actions
+                .Select(a => new { A = a, Q = q(a)})
+                .ToDictionary(qa => qa.A, qa => qa.Q);
+        }
 
         public static void Imitate(QAgent agent, Action a) {
             if (_instance == null || _instance.Mode != QAIMode.Imitating) return;
@@ -216,7 +232,7 @@ namespace QAI {
             _instance.StartCoroutine(routine);
         }
 
-        internal static QImitationStorage SaveImitation(string name) {
+        public static QImitationStorage SaveImitation(string name) {
             return _instance._imitation.CreateStorageItem(name);
         }
 

@@ -6,47 +6,67 @@ using UnityEngine;
 
 public class Goal : MonoBehaviour {
     public enum SpawnTechnique {
-        UseGoalPosistions, RandomAllValid, RandomAllValidAlsoWoman, None
+        None, UsePosistions, RandomAllValid
     }
-    public SpawnTechnique Technique;
-    
-    //Goal Positions
-    private static int _index = 0;
+    public SpawnTechnique GoalSpawn;
+    public SpawnTechnique SeekerSpawn;
     public List<Vector3> GoalPositions;
+    public List<Vector3> SeekerPositions;
 
-    //Random All Valid
-    private static List<Vector3> _randomGoalPositions = null;
+    private enum Target {
+        Goal, Seeker
+    }
 
-    //Random All Valid Also Woman
-    private static List<Vector3> _randomWomanPositions = null; 
+    private static Dictionary<Target, int> _targetIndex;
+    private static Dictionary<Target, List<Vector3>> _targetPosistions;
     
     public static Goal Instance;
     public static Vector3 Position;
 
     void Awake() {
-        if(FindObjectOfType<QAIManager>().Mode == QAIMode.Testing) 
-            Technique = SpawnTechnique.None;
-        if (Technique == SpawnTechnique.UseGoalPosistions && GoalPositions.Count > 0) {
-            transform.position = GoalPositions[_index];
-            _index++;
-            if (_index >= GoalPositions.Count) _index = 0;
-        } else if (Technique == SpawnTechnique.RandomAllValid || Technique == SpawnTechnique.RandomAllValidAlsoWoman) {
-            if (_randomGoalPositions == null || _randomGoalPositions.Count == 0) _randomGoalPositions = AllValidPositions();
-            PickPlaceRemove(_randomGoalPositions,transform, new Vector3(0,-0.5f,0));
-            if (Technique == SpawnTechnique.RandomAllValidAlsoWoman) {
-                if (_randomWomanPositions == null || _randomWomanPositions.Count == 0) _randomWomanPositions = AllValidPositions();
-                PickPlaceRemove(_randomWomanPositions, FindObjectOfType<GridWoman>().transform, Vector3.zero);
-            }
+        var seeker = FindObjectOfType<GridWoman>();
+        if (_targetIndex == null) {
+            _targetIndex = new Dictionary<Target, int> {
+                {Target.Goal, 0},
+                {Target.Seeker, 0}
+            };
+        }
+        if (_targetPosistions == null) {
+            _targetPosistions = new Dictionary<Target, List<Vector3>> {
+                {Target.Goal, GoalSpawn == SpawnTechnique.RandomAllValid ? AllValidPositions().Shuffle().ToList() : GoalPositions },
+                {Target.Seeker, SeekerSpawn == SpawnTechnique.RandomAllValid ? AllValidPositions().Shuffle().ToList() : SeekerPositions }
+            };
+        }
+
+        if (FindObjectOfType<QAIManager>().Mode != QAIMode.Testing) {
+            SelectSpawn(transform, Target.Goal, GoalSpawn);
+            SelectSpawn(seeker.transform, Target.Seeker, SeekerSpawn);
         }
 
         Instance = this;
-        Position = transform.position;
+        Position = new Vector3(transform.position.x,0,transform.position.z);
     }
 
-    private void PickPlaceRemove(List<Vector3> list, Transform target, Vector3 offset) {
-        var pos = list.Random().First();
-        target.position = pos + offset;
-        list.Remove(pos);
+    private void SelectSpawn(Transform transform, Target target, SpawnTechnique technique) {
+        if (technique == SpawnTechnique.None) return;
+        Spawn(transform, target);
+    }
+
+
+    private void Spawn(Transform targetTransform, Target target) {
+        var positions = _targetPosistions[target];
+        var index = _targetIndex[target];
+        var pos = FixY(positions[index], target);
+        targetTransform.position = pos;
+        index++;
+        if(index >= positions.Count) index = 0;
+        _targetIndex[target] = index;
+    }
+
+    private Vector3 FixY(Vector3 v, Target target) {
+        if(target == Target.Goal) return new Vector3(v.x,0.6f,v.z);
+        if(target == Target.Seeker) return new Vector3(v.x, 1f, v.z);
+        return v;
     }
 
     const int MinX = -20, MinY = -20, MaxX = 20, MaxY = 20;
@@ -55,7 +75,9 @@ public class Goal : MonoBehaviour {
         for (var x = MinX; x < MaxX; x++) {
             for (var y = MinY; y < MaxY; y++) {
                 var position = new Vector3(x, 1, y);
-                if(Physics.Raycast(position, Vector3.down, 2f)) positions.Add(position);
+                if(Physics.Raycast(position, Vector3.down, 2f)) {
+					positions.Add(new Vector3(x,0,y));
+				}
             }
         }
         return positions;

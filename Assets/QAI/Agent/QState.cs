@@ -6,6 +6,8 @@ using MathNet.Numerics.LinearAlgebra;
 namespace QAI.Agent {
     [Serializable]
     public struct QState {
+        private static readonly Vector<float> V1 = Vector<float>.Build.Dense(1, 1f);
+
         public readonly StatePair Features;
         public readonly float Reward;
         public readonly bool IsTerminal;
@@ -17,6 +19,13 @@ namespace QAI.Agent {
             Reward = reward;
             IsTerminal = isTerminal;
         }
+
+        public QState(Matrix<float>[] image, float reward, bool isTerminal) : this() {
+            Features = new StatePair(image, V1);
+            Reward = reward;
+            IsTerminal = isTerminal;
+        }
+
 
         public bool Equals(QState other) {
             var img = Features.Spatial;
