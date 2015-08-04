@@ -11,7 +11,7 @@ namespace QNetwork.CNN {
         // Forward propagation.
         public SpatialLayer InputLayer { get; private set; }
         public ConvolutionalLayer[] ConvolutionalLayers { get; private set; }
-        public MeanPoolLayer[] SubSampleLayers { get; private set; }
+        public MaxPoolLayer[] SubSampleLayers { get; private set; }
         public FlattenLayer FlattenLayer { get; private set; }
         public TreeLayer CombinationLayer { get; private set; }
         public DenseLayer OutputLayer { get; private set; }
@@ -40,12 +40,12 @@ namespace QNetwork.CNN {
             _args = args;
             InputLayer = new SpatialLayer(matsize, depth);
             ConvolutionalLayers = new ConvolutionalLayer[args.Length];
-            SubSampleLayers = new MeanPoolLayer[args.Length];
+            SubSampleLayers = new MaxPoolLayer[args.Length];
             ConvolutionalLayers[0] = new ConvolutionalLayer(args[0].FilterSize, args[0].FilterCount, args[0].Stride, InputLayer, Functions.Rectifier2D);
-            SubSampleLayers[0] = new MeanPoolLayer(args[0].PoolLayerSize, ConvolutionalLayers[0]);
+            SubSampleLayers[0] = new MaxPoolLayer(args[0].PoolLayerSize, ConvolutionalLayers[0]);
             for (int i = 1; i < args.Length; i++) {
                 ConvolutionalLayers[i] = new ConvolutionalLayer(args[i].FilterSize, args[i].FilterCount, args[i].Stride, SubSampleLayers[i - 1], Functions.Rectifier2D);
-                SubSampleLayers[i] = new MeanPoolLayer(args[i].PoolLayerSize, ConvolutionalLayers[i]);
+                SubSampleLayers[i] = new MaxPoolLayer(args[i].PoolLayerSize, ConvolutionalLayers[i]);
             }
             FlattenLayer = new FlattenLayer(SubSampleLayers[SubSampleLayers.Length - 1]);
             CombinationLayer = new TreeLayer(FlattenLayer.Size(), vecsize);
@@ -76,7 +76,7 @@ namespace QNetwork.CNN {
             _loss = Vector<float>.Build.Dense(OutputLayer.Size());
             _backprop = new List<Backprop<Matrix<float>[], Matrix<float>[]>>();
             for (int i = ConvolutionalLayers.Length - 1; i >= 0; i--) {
-                _backprop.Add(new MeanPoolLayerBackprop(SubSampleLayers[i]));
+                _backprop.Add(new MaxPoolLayerBackprop(SubSampleLayers[i]));
                 _backprop.Add(new ConvolutionalLayerBackprop(ConvolutionalLayers[i]));
             }
             _unflatten = new FlattenLayerBackprop(FlattenLayer);

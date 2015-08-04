@@ -18,7 +18,7 @@ namespace GridProto {
         private Vector<float> _linearState;
         private LinkedList<QState> _history;
         private void Start() {
-            _grid = new Q2DGrid(13, transform, new GridSettings { NormalAxis = Axis.Y });
+            _grid = new Q2DGrid(12, transform, new GridSettings { NormalAxis = Axis.Y });
             _linearState = Vector<float>.Build.Dense(2);
             _history = new LinkedList<QState>();
             QAIManager.InitAgent(this);
@@ -92,7 +92,8 @@ namespace GridProto {
             });
             var dead = !IsAboveGround();
             var goal = p.SequenceEqual(g);
-            var v = VectorToGoal(transform.position, Goal.Position).normalized;
+            var line = VectorToGoal(transform.position, Goal.Position);
+            var v = line.normalized;
             _linearState.At(0, v.x);
             _linearState.At(1, v.z);
 

@@ -10,7 +10,7 @@ using QNetwork.CNN;
 namespace QAI.Learning {
     public class QLearningCNN : QLearning {
 
-        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.005f, Momentum = 0.9f, Decay = 0.0f };
+        private readonly BackpropParams LearningParams = new BackpropParams { LearningRate = 0.001f, Momentum = 0.9f, Decay = 0.0f };
 
         private ConvolutionalNetwork _net;
         private Dictionary<string, int> _amap;
@@ -19,9 +19,10 @@ namespace QAI.Learning {
         private bool _remake;
 
 		public QLearningCNN(bool PrioritizedSweeping) {
-			PrioritySweeping = PrioritizedSweeping;
-			BatchSize = PrioritySweeping ? 5 : 100;
-			MaxStoreSize = PrioritySweeping ? 30 : 2000;
+            if (PrioritySweeping = PrioritizedSweeping) {
+                BatchSize = 5;
+                MaxStoreSize = 30;
+            }
 		}
 
         public override void Initialize(int gridSize, int vectorSize, int depth) {
@@ -33,7 +34,7 @@ namespace QAI.Learning {
             // Model.
             if (_remake) {
                 _net = new ConvolutionalNetwork(gridSize, vectorSize, depth, _amap.Count,
-                    //new CNNArgs { FilterSize = 3, FilterCount = 3, PoolLayerSize = 2, Stride = 2 },
+                    //new CNNArgs { FilterSize = 4, FilterCount = 3, PoolLayerSize = 2, Stride = 1 },
                     new CNNArgs { FilterSize = 4, FilterCount = 1, PoolLayerSize = 2, Stride = 1 });
             } else {
                 _net = ConvolutionalNetwork.Load(BenchmarkSave.ModelPath);

@@ -26,9 +26,9 @@ namespace QAI.Learning {
         //Number of batches being trained each session
         public const int TraningCycles = 10;
         //Number of sars being trained in each training cycle
-        public static int BatchSize;
+        public static int BatchSize = 50;
         //Maximum number of sars being kept
-        public static int MaxStoreSize;
+        public static int MaxStoreSize = 50;
         //TODO: write what this is
         public const int PredecessorCap = 6;
         //TODO: write what this is
