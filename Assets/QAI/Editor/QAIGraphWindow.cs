@@ -29,7 +29,6 @@ public class QAIGraphWindow : EditorWindow {
 		Init ();
 
 		if(foldoutActions = EditorGUILayout.Foldout(foldoutActions, "Action taken")) {
-			Debug.Log ("Action count " + actionData.Count);
 			if(actionChart == null) {
 				actionChart = new LineChart(this, 200f);
 				actionChart.formatString = "{0:F}";

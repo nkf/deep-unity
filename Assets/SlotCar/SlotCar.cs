@@ -42,25 +42,30 @@ public class SlotCar : MonoBehaviour, QAgent {
 	private float lastReward;
     // Use this for initialization
 	void Start () {
-		Time.timeScale = 1.0f;
 	    GetComponentInChildren<SpriteRenderer>().shadowCastingMode = ShadowCastingMode.On;
 	    OnTrack = true;
 		DistanceTravelled = StartPosition;
 		Track.GetPointAtDistance(DistanceTravelled);
-        _grid = new QGrid(15, transform, new GridSettings { Offset = Vector3.up * 5.2f });
-		_vector = Vector<float>.Build.Dense(10,0);
+        _grid = new QGrid(16, transform, new GridSettings { Offset = Vector3.up * 5.2f });
+		_vector = Vector<float>.Build.Dense(2,0);
 		_velocityBin = new Bin(0.01f, 0.25f, 0.5f, 75f);
 		_forceBin = new Bin(0.01f, 0.25f, 0.5f, 75f);
         
-		if(AiControlled)
-			QAIManager.InitAgent(this, new QOption { 
-				Discretize = false,
-				MaxPoolSize = 20000,
-				BatchSize = 200,
-				EpsilonStart = 0.7f,
-				Discount = 0.8f,
-                NetworkArgs = new []{ new CNNArgs { FilterSize = 4, FilterCount = 1, PoolLayerSize = 3, Stride = 1 } }
-			});
+		var options = new QOption { 
+			Discretize = false,
+			MaxPoolSize = 20000,
+			BatchSize = 200,
+			EpsilonStart = 0.7f,
+			Discount = 0.8f,
+			NetworkArgs = new []{ new CNNArgs { FilterSize = 4, FilterCount = 1, PoolLayerSize = 2, Stride = 2 } }
+		};
+		options.Discretize = false;
+
+		if(AiControlled) {
+			QAIManager.InitAgent(this, options);
+			if(QAIManager.CurrentMode == QAIMode.Learning)
+				Time.timeScale = 7.0f;
+		}
 	}
 	
 	// Update is called once per frame
@@ -159,23 +164,24 @@ public class SlotCar : MonoBehaviour, QAgent {
     }
 
     public QState GetState() {
-        _grid.SetAll(0f);
+        _grid.SetAll(1f);
         for (int i = -2; i < 20; i++) {
             var point = Track.GetPointAtDistance(DistanceTravelled + i * 0.8f);
             var coordinates = _grid.Locate(point);
             if (coordinates.HasValue) {
-                _grid[coordinates.Value] = 1f;
+                _grid[coordinates.Value] = 0f;
             }
         }
 
-		_vector.SetSubVector(0, 5, _velocityBin.Get(Velocity/20f));
-		_vector.SetSubVector(5,5, _forceBin.Get(Mathf.Abs(Force)));
-//		_vector[0] = Velocity / 20f;
-//		_vector[1] = Mathf.Abs(Force);
+//		_vector.SetSubVector(0, 5, _velocityBin.Get(Velocity/20f));
+//		_vector.SetSubVector(5,5, _forceBin.Get(Mathf.Abs(Force)));
+		_vector[0] = Velocity / 20f;
+		_vector[1] = Mathf.Abs(Force);
 
-		var reward = Mathf.Abs(DistanceTravelled - StartPosition) - lastReward > 0.001f ? 0.5f : 0f;
+//		var reward = Mathf.Abs(DistanceTravelled - StartPosition) - lastReward > 0.001f ? 0.5f : 0f;
+		var reward = Velocity / 20f;
 		reward += Mathf.Abs(Force) * -0.5f;
-		reward = !OnTrack && Mathf.Abs(Force) > 1f ? 0f : reward;
+//		reward = !OnTrack && Mathf.Abs(Force) > 1f ? 0f : reward;
 //		reward +=  DistanceTravelled - StartPosition > 80 ? 80 / LapTime : 0;
 
 		var terminal = 
