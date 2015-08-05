@@ -16,13 +16,15 @@ public class BenchmarkSave {
     //Number of runs (learn -> test -> reset = 1 run)
     public static int Runs;
     //The Game
-    public static Game CurrentGame = Game.Pong;
+    public static Game CurrentGame = Game.Grid;
     //-----------------------------------------------------------------------
 
     public static bool SaveBenchmarks = false;
     public static int TestN = 1;
 	private static string _modelPath = null;
-    public static string ModelPath { get { return _modelPath != null && !_modelPath.Equals("") ? _modelPath : Path.Combine(TestFolder, CurrentTestID+"-"+TestN) + ".xml"; }
+    public static string ModelPath { get { return _modelPath != null && !_modelPath.Equals("") ? 
+										   		  _modelPath : 
+												  Path.Combine(TestFolder, Path.Combine(CurrentTestID, CurrentTestID+"-"+TestN)) + ".xml"; }
 									 set { _modelPath = value; }}
 
     public static Dictionary<Game, string[]> Header = new Dictionary<Game, string[]> {

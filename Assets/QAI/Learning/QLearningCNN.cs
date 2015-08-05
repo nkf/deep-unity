@@ -6,6 +6,7 @@ using QAI.Training;
 using QAI.Visualizer;
 using QNetwork;
 using QNetwork.CNN;
+using System.IO;
 
 namespace QAI.Learning {
     public class QLearningCNN : QLearning {
@@ -57,7 +58,9 @@ namespace QAI.Learning {
         }
 
         public override void SaveModel() {
-            _net.Save(BenchmarkSave.ModelPath);
+			var filename = BenchmarkSave.ModelPath;
+			Directory.CreateDirectory(Path.GetDirectoryName(filename));
+            _net.Save(filename);
         }
 
         public override void RemakeModel(QState exampleState) {
