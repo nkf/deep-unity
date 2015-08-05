@@ -22,7 +22,7 @@ namespace QAI.Utility {
                     return _values;
                 }
             }
-//            _values[_values.Length - 1] = 1;
+            _values[_values.Count - 1] = 1;
             return _values.Clone ();
         }
 
