@@ -5,7 +5,7 @@ using UnityEditor;
 
 public class BenchmarkSave {
     public enum Game {
-        Pong, Grid, Slot
+        Pong, Grid, Doll
     }
 
     public const string TestFolder = "Benchmarks";
@@ -16,19 +16,21 @@ public class BenchmarkSave {
     //Number of runs (learn -> test -> reset = 1 run)
     public static int Runs;
     //The Game
-    public static Game CurrentGame = Game.Slot;
+    public static Game CurrentGame = Game.Grid;
     //-----------------------------------------------------------------------
 
     public static bool SaveBenchmarks = false;
     public static int TestN = 1;
 	private static string _modelPath = null;
-    public static string ModelPath { get { return _modelPath != null && !_modelPath.Equals("") ? _modelPath : Path.Combine(TestFolder, CurrentTestID+"-"+TestN) + ".xml"; }
+    public static string ModelPath { get { return _modelPath != null && !_modelPath.Equals("") ? 
+										   		  _modelPath : 
+												  Path.Combine(TestFolder, Path.Combine(CurrentTestID, CurrentTestID+"-"+TestN)) + ".xml"; }
 									 set { _modelPath = value; }}
 
     public static Dictionary<Game, string[]> Header = new Dictionary<Game, string[]> {
         {Game.Pong, new []{"Runtime", "Paddle Hits", "Victories", "Avg. miss distance"}},
         {Game.Grid, new []{"Runtime", "Accuracy", "Avg. Distance Score"}},
-        {Game.Slot, new []{"Runtime", "LapTime", "Crashes", "Distance"}},
+        {Game.Doll, new []{"Runtime", "!!!!!!!!!!!!!!!!!!   TODO   !!!!!!!!!!!!!!!!!!"}},
     };
 
     public static bool HaveRunsLeft {
@@ -79,12 +81,13 @@ public class BenchmarkSave {
     }
 
     //Must be called second
-    public static void WriteSlotResult(float time, int crashes, float distance) {
+    public static void WriteDollResult(int jewsdidnineeleven) {
         if(!SaveBenchmarks) return;
-        if(CurrentGame != Game.Slot) throw new Exception("Current Test game was set to <" + CurrentGame + "> but we are running Doll");
-        using(var writer = GetSaveFile()) {
-			var line = string.Format("{0:F};{1:D};{2:F}", time, crashes, distance) + Environment.NewLine;
+        if(CurrentGame != Game.Doll) throw new Exception("Current Test game was set to <" + CurrentGame + "> but we are running Doll");
+        throw new NotImplementedException();
+        /*using(var writer = GetSaveFile()) {
+            var line = string.Format("") + Environment.NewLine;
             writer.Write(line);
-        }
+        }*/
     }
 }
