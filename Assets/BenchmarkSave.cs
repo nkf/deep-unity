@@ -16,7 +16,7 @@ public class BenchmarkSave {
     //Number of runs (learn -> test -> reset = 1 run)
     public static int Runs;
     //The Game
-    public static Game CurrentGame = Game.Grid;
+    public static Game CurrentGame = Game.Slot;
     //-----------------------------------------------------------------------
 
     public static bool SaveBenchmarks = false;
