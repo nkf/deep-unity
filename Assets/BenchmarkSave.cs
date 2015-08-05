@@ -5,7 +5,7 @@ using UnityEditor;
 
 public class BenchmarkSave {
     public enum Game {
-        Pong, Grid, Doll
+        Pong, Grid, Slot
     }
 
     public const string TestFolder = "Benchmarks";
@@ -30,7 +30,7 @@ public class BenchmarkSave {
     public static Dictionary<Game, string[]> Header = new Dictionary<Game, string[]> {
         {Game.Pong, new []{"Runtime", "Paddle Hits", "Victories", "Avg. miss distance"}},
         {Game.Grid, new []{"Runtime", "Accuracy", "Avg. Distance Score"}},
-        {Game.Doll, new []{"Runtime", "!!!!!!!!!!!!!!!!!!   TODO   !!!!!!!!!!!!!!!!!!"}},
+        {Game.Slot, new []{"Runtime", "LapTime", "Crashes", "Distance"}},
     };
 
     public static bool HaveRunsLeft {
@@ -81,13 +81,12 @@ public class BenchmarkSave {
     }
 
     //Must be called second
-    public static void WriteDollResult(int jewsdidnineeleven) {
+    public static void WriteSlotResult(float time, int crashes, float distance) {
         if(!SaveBenchmarks) return;
-        if(CurrentGame != Game.Doll) throw new Exception("Current Test game was set to <" + CurrentGame + "> but we are running Doll");
-        throw new NotImplementedException();
-        /*using(var writer = GetSaveFile()) {
-            var line = string.Format("") + Environment.NewLine;
+        if(CurrentGame != Game.Slot) throw new Exception("Current Test game was set to <" + CurrentGame + "> but we are running Doll");
+        using(var writer = GetSaveFile()) {
+			var line = string.Format("{0:F};{1:D};{2:F}", time, crashes, distance) + Environment.NewLine;
             writer.Write(line);
-        }*/
+        }
     }
 }
