@@ -8,7 +8,7 @@ namespace QAI.Utility {
 
         public abstract bool SetupNextTest(QAgent agent);
 
-        public abstract void OnActionTaken(QAgent agent, SARS sars);
+        public abstract void OnActionTaken(QAgent agent, QAction action, QState state);
 
         public abstract void OnTestComplete(double reward);
 

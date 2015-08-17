@@ -30,7 +30,7 @@ namespace Pong {
             return y <= 1;
         }
 
-        public override void OnActionTaken(QAgent agent, SARS sars) {}
+        public override void OnActionTaken(QAgent agent, QAction action, QState state) {}
 
         
         public override void OnTestComplete(double reward) {

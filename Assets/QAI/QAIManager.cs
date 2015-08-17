@@ -121,10 +121,7 @@ namespace QAI {
         }
 
         public static Action GetAction(QState state) {
-            if (_instance == null) {
-                Debug.Log("no instance");
-                return () => {};
-            }
+            if(_instance == null) throw new InvalidOperationException("Manager in invalid state, call InitAgent first");
             switch (_instance.Mode) {
                 case QAIMode.Learning:
                     if (_instance._sceneIsOver) return () => {};
@@ -174,8 +171,9 @@ namespace QAI {
                 Application.LoadLevel(Application.loadedLevel);
             //Take "best" action if test is running
             } else {
-                var sars = _agent.MakeSARS(_qlearning.GreedyPolicy(state));
-                Tester.OnActionTaken(_agent, sars);
+                var action = _qlearning.GreedyPolicy(state);
+                action.Invoke();
+                Tester.OnActionTaken(_agent, action, state);
             }
         }
 
@@ -215,8 +213,7 @@ namespace QAI {
         public static Dictionary<QAction, float> Query(QState state) {
             var q = _instance._qlearning.Q(state);
             return _instance._qlearning.Actions
-                .Select(a => new { A = a, Q = q(a)})
-                .ToDictionary(qa => qa.A, qa => qa.Q);
+                .ToDictionary(a => a, a => q(a));
         }
 
         public static void Imitate(QAgent agent, Action a) {

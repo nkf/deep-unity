@@ -39,7 +39,7 @@ namespace GridProto {
             return true;
         }
 
-        public override void OnActionTaken(QAgent agent, SARS sars) {
+        public override void OnActionTaken(QAgent agent, QAction action, QState state) {
             var distToGoal = (((GridWoman) agent).transform.position - Goal.Position).magnitude;
             _distScores.Add( 1/(distToGoal+1) );
         }
