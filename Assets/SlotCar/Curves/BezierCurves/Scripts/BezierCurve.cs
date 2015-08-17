@@ -100,10 +100,10 @@ public class BezierCurve : MonoBehaviour {
 			{
 				_length = 0;
 				for(int i = 0; i < points.Length - 1; i++){
-					_length += ApproximateLength(points[i], points[i + 1], resolution);
+					_length += GetLength(points[i], points[i + 1]);
 				}
 				
-				if(close) _length += ApproximateLength(points[points.Length - 1], points[0], resolution);
+				if(close) _length += GetLength(points[points.Length - 1], points[0]);
 				
 				dirty = false;
 			}
@@ -121,7 +121,8 @@ public class BezierCurve : MonoBehaviour {
 	///		- Populated through editor
 	/// </summary>
 	[SerializeField] private BezierPoint[] points = new BezierPoint[0];
-	
+	[SerializeField] private Dictionary<BezierPoint, float> lengths = new Dictionary<BezierPoint, float>();
+
 	#endregion
 	
 	#region UnityFunctions
@@ -229,7 +230,7 @@ public class BezierCurve : MonoBehaviour {
 		
 		for(int i = 0; i < points.Length - 1; i++)
 		{
-			curvePercent = ApproximateLength(points[i], points[i + 1], 10) / length;
+			curvePercent = GetLength(points[i], points[i + 1]) / length;
 			if(totalPercent + curvePercent > t)
 			{
 				p1 = points[i];
@@ -470,6 +471,15 @@ public class BezierCurve : MonoBehaviour {
 	/// <param name='resolution'>
 	/// 	- The number of points along the curve used to create measurable segments
 	/// </param>
+	public float GetLength(BezierPoint p1, BezierPoint p2)
+	{
+		if(!lengths.ContainsKey(p1) || dirty) {
+			lengths[p1] = ApproximateLength(p1, p2);
+		}
+		
+		return lengths[p1];
+	}
+	
 	public static float ApproximateLength(BezierPoint p1, BezierPoint p2, int resolution = 10)
 	{
 		float _res = resolution;
@@ -533,7 +543,7 @@ public class BezierCurve : MonoBehaviour {
 		
 		for(int i = 0; i < points.Length - 1; i++)
 		{
-			curveLength = ApproximateLength(points[i], points[i + 1], resolution);
+			curveLength = GetLength(points[i], points[i + 1]);
 			if(totalLength + curveLength >= distance)
 			{
 				firstPoint = points[i];
@@ -547,7 +557,7 @@ public class BezierCurve : MonoBehaviour {
 		{
 			firstPoint = points[points.Length - 1];
 			secondPoint = points[0];
-			curveLength = ApproximateLength(firstPoint, secondPoint, resolution);
+			curveLength = GetLength(firstPoint, secondPoint);
 		}
 		
 		distance -= totalLength;
