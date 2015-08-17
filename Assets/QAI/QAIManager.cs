@@ -174,8 +174,9 @@ namespace QAI {
                 Application.LoadLevel(Application.loadedLevel);
             //Take "best" action if test is running
             } else {
-                var sars = _agent.MakeSARS(_qlearning.GreedyPolicy(state));
-                Tester.OnActionTaken(_agent, sars);
+                var action = _qlearning.GreedyPolicy(state);
+                action.Invoke();
+                Tester.OnActionTaken(_agent, action, state);
             }
         }
 
