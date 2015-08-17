@@ -92,10 +92,6 @@ namespace QAI.Utility {
         }
 
         public void DebugDraw(Func<float, Color> colorFunc = null) {
-            const float skin = 0.01f; //in order to avoid drawing over the previous cell wall
-            var rX = ResolutionX / 2 - skin;
-            var rY = ResolutionY / 2 - skin;
-            var rZ = ResolutionZ / 2 - skin;
             Iterate((coor, b) => {
                 var color = colorFunc == null ? Color.white : colorFunc(this[coor]);
                 if (NormalAxis == Axis.Z) {

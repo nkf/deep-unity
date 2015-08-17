@@ -155,7 +155,7 @@ namespace QNetwork.CNN {
                 if (!oldnetwork) {
                     try {
                         depth = int.Parse(reader.ReadElementString());
-                    } catch (XmlException e) {
+                    } catch (XmlException) {
                         // For backwards compatibility with depth-1 networks.
                         file.Close();
                         reader.Close();
