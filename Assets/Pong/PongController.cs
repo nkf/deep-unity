@@ -17,7 +17,7 @@ namespace Pong {
         PongGame _game;
         PongBall _ball;
 
-        QGrid _grid, _past1, _past2;
+        QGrid _grid;
         Vector<float> _vect;
 
         public int Hits { get; set; } //Set by pongball
@@ -37,8 +37,6 @@ namespace Pong {
             if (Side == Player.Player1) {
                 _grid = new QGrid(16, transform,
                     new GridSettings {Offset = new Vector3(9.8f, 0, 0), ResolutionX = 1.28f, ResolutionY = 1.28f});
-                _past1 = new QGrid(_grid);
-                _past2 = new QGrid(_grid);
                 _vect = Vector<float>.Build.Dense(new[] { 1f });
                 QAIManager.InitAgent(this, new QOption {
                     LearningRate = 0.005f,
@@ -102,12 +100,6 @@ namespace Pong {
 
         private List<Coordinates?> _prevPositions = new List<Coordinates?>(); 
         public QState GetState() {
-            // Frame stacking.
-            /*var tmp = _grid;
-            _grid = _past2;
-            _past2 = _past1;
-            _past1 = tmp;*/
-
             var winner = _ball.IsTerminal();
             float reward;
             bool terminal;
@@ -125,17 +117,10 @@ namespace Pong {
                 terminal = winner.HasValue;
                 reward = terminal ? (winner.Value == Side ? 1 : 0) : 0;
             }
-        
-
-            //Calculate distance to top and bottom
-            var topDist = _game.Border.max.y - controller.max.y;
-            var botDist = controller.min.y - _game.Border.min.y;
-        
+                
             var bp = _ball.transform.position;
             var rbp = bp - transform.position;
 
-            var gridmid = _grid.GridSize/2f;
-            var top = bp.y >= _grid.Center.y;
             var gbp = _grid.Locate(bp);
             var bpy = gbp.HasValue ? gbp.Value.y : -1;
             _grid.Populate((bo, c) => {
@@ -150,9 +135,6 @@ namespace Pong {
 
             var state = _grid.Matrix;
             return new QState(new[] { state }, _vect.Clone(), reward, terminal);
-
-            // Frame stacking.
-            //return new QState(new[] { _grid.Matrix, _past1.Matrix, _past2.Matrix }, _vect.Clone(), reward, terminal);
         }
 
         public AIID AI_ID() {

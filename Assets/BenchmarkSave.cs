@@ -16,7 +16,7 @@ public class BenchmarkSave {
     //Number of runs (learn -> test -> reset = 1 run)
     public static int Runs;
     //The Game
-    public static Game CurrentGame = Game.Slot;
+    public static Game CurrentGame = Game.Grid;
     //-----------------------------------------------------------------------
 
     public static bool SaveBenchmarks = false;
@@ -83,7 +83,7 @@ public class BenchmarkSave {
     //Must be called second
     public static void WriteSlotResult(float time, int crashes, float distance) {
         if(!SaveBenchmarks) return;
-        if(CurrentGame != Game.Slot) throw new Exception("Current Test game was set to <" + CurrentGame + "> but we are running Doll");
+        if(CurrentGame != Game.Slot) throw new Exception("Current Test game was set to <" + CurrentGame + "> but we are running Slotcar");
         using(var writer = GetSaveFile()) {
 			var line = string.Format("{0:F};{1:D};{2:F}", time, crashes, distance) + Environment.NewLine;
             writer.Write(line);

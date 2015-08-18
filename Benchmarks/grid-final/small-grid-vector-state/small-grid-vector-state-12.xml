@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ConvolutionalNetwork>
+  <matsize>5</matsize>
+  <vecsize>2</vecsize>
+  <labels>4</labels>
+  <depth>1</depth>
+  <ArrayOfCNNArgs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <CNNArgs>
+      <FilterSize>4</FilterSize>
+      <FilterCount>1</FilterCount>
+      <Stride>2</Stride>
+      <PoolLayerSize>2</PoolLayerSize>
+    </CNNArgs>
+  </ArrayOfCNNArgs>
+  <ConvolutionalLayer>
+    <ArrayOfArrayOfFloat xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <ArrayOfFloat>
+        <float>-0.00818138</float>
+        <float>0.243304938</float>
+        <float>0.0675779954</float>
+        <float>0.2207055</float>
+      </ArrayOfFloat>
+      <ArrayOfFloat>
+        <float>-0.115715735</float>
+        <float>0.07301247</float>
+        <float>0.114725783</float>
+        <float>0.642481565</float>
+      </ArrayOfFloat>
+      <ArrayOfFloat>
+        <float>1.23638809</float>
+        <float>0.664058864</float>
+        <float>-0.3419641</float>
+        <float>0.539407432</float>
+      </ArrayOfFloat>
+      <ArrayOfFloat>
+        <float>-0.458187819</float>
+        <float>-0.07887425</float>
+        <float>1.67265451</float>
+        <float>1.1046921</float>
+      </ArrayOfFloat>
+    </ArrayOfArrayOfFloat>
+    <ArrayOfFloat xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <float>0.5723415</float>
+    </ArrayOfFloat>
+  </ConvolutionalLayer>
+  <DenseLayer>
+    <ArrayOfArrayOfFloat xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <ArrayOfFloat>
+        <float>-1.31729531</float>
+        <float>-0.9356672</float>
+      </ArrayOfFloat>
+      <ArrayOfFloat>
+        <float>-0.979399741</float>
+        <float>-0.0267755929</float>
+      </ArrayOfFloat>
+    </ArrayOfArrayOfFloat>
+    <ArrayOfFloat xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <float>0.005685347</float>
+      <float>-0.0445407666</float>
+    </ArrayOfFloat>
+  </DenseLayer>
+  <DenseLayer>
+    <ArrayOfArrayOfFloat xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <ArrayOfFloat>
+        <float>0.896751046</float>
+        <float>0.434459925</float>
+        <float>0.731310964</float>
+        <float>0.8403824</float>
+      </ArrayOfFloat>
+      <ArrayOfFloat>
+        <float>0.438125551</float>
+        <float>0.2216394</float>
+        <float>0.123842627</float>
+        <float>0.6472096</float>
+      </ArrayOfFloat>
+      <ArrayOfFloat>
+        <float>-1.0655005</float>
+        <float>0.5412079</float>
+        <float>0.463404566</float>
+        <float>-0.658198059</float>
+      </ArrayOfFloat>
+    </ArrayOfArrayOfFloat>
+    <ArrayOfFloat xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <float>0.03693499</float>
+      <float>-0.0987198055</float>
+      <float>-0.3067943</float>
+      <float>-0.137793362</float>
+    </ArrayOfFloat>
+  </DenseLayer>
+</ConvolutionalNetwork>

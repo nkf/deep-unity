@@ -28,7 +28,7 @@ public class SlotBenchmark : QTester {
 		return true;
 	}
 
-	public override void OnActionTaken (QAgent agent, SARS sars) {
+	public override void OnActionTaken (QAgent agent, QAction action, QState state) {
 		var car = (SlotCar)agent;
 		if (!car.OnTrack && !_isCrashing) {
 			_isCrashing = true;

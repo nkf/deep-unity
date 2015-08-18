@@ -41,8 +41,7 @@ public class SlotCar : MonoBehaviour, QAgent {
 	private Vector<float> _vector;
 	private Bin _velocityBin;
 	private Bin _forceBin;
-	private float lastReward;
-	private int standStillTicks = 0;
+    private int _standStillTicks = 0;
 
 
     // Use this for initialization
@@ -190,7 +189,6 @@ public class SlotCar : MonoBehaviour, QAgent {
                 _grid[coordinates.Value] = 0f;
             }
         }
-
 		_vector.SetSubVector(0, 5, _velocityBin.Get(Velocity/20f));
 		_vector.SetSubVector(5,5, _forceBin.Get(Mathf.Abs(Force)));
 //		_vector[0] = Velocity / 20f;
@@ -202,17 +200,17 @@ public class SlotCar : MonoBehaviour, QAgent {
 //		reward = !OnTrack && Mathf.Abs(Force) > 1f ? 0f : reward;
 //		reward +=  DistanceTravelled - StartPosition > 80 ? 80 / LapTime : 0;
 
-		if (standStillTicks > 20)
+		if (_standStillTicks > 20)
 			reward = 0;
 
 		var terminal = 
 			_distanceTravelled - StartPosition > Track.length 
 			|| !_onTrack
-			|| standStillTicks > 200;
+			|| _standStillTicks > 200;
 
 		if (QAIManager.CurrentMode == QAIMode.Testing)
 			terminal = _distanceTravelled - StartPosition > Track.length
-				|| standStillTicks > 200;
+				|| _standStillTicks > 200;
 
         var state = new QState(
 			new []{_grid.Matrix},
@@ -222,20 +220,9 @@ public class SlotCar : MonoBehaviour, QAgent {
 			terminal);
 
 		if (Velocity < 1f)
-			standStillTicks ++;
+			_standStillTicks ++;
 		else
-			standStillTicks = 0;
-
-//		var state = new QState(
-//			new []{_grid.Matrix},
-//			_vector.Clone(),
-//			Mathf.Abs(DistanceTravelled - StartPosition) - lastReward > 0.001f ? Velocity / 20f : 0,
-//			terminal
-//		);
-
-		lastReward = Mathf.Abs(_distanceTravelled - StartPosition);
-
-//		Debug.Log (state.Reward);
+			_standStillTicks = 0;
 
 		return state;
     }
