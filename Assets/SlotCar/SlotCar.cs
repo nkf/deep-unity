@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 using System.Collections;
 using QAI;
@@ -189,8 +190,10 @@ public class SlotCar : MonoBehaviour, QAgent {
                 _grid[coordinates.Value] = 0f;
             }
         }
-		_vector.SetSubVector(0, 5, _velocityBin.Get(Velocity/20f));
-		_vector.SetSubVector(5,5, _forceBin.Get(Mathf.Abs(Force)));
+        var linear = Vector<float>.Build.Dense(
+                _velocityBin.Get(Velocity/20f)
+                .Concat(_forceBin.Get(Mathf.Abs(Force))).ToArray()
+        );
 //		_vector[0] = Velocity / 20f;
 //		_vector[1] = Mathf.Abs(Force);
 
