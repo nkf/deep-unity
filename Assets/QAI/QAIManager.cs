@@ -219,9 +219,9 @@ namespace QAI {
                 .ToDictionary(qa => qa.A, qa => qa.Q);
         }
 
-        public static void Imitate(QAgent agent, Action a) {
+        public static void Imitate(QAgent agent, QState state, Action a) {
             if (_instance == null || _instance.Mode != QAIMode.Imitating) return;
-            var terminal = _instance._imitation.Imitate(agent, agent.ToQAction(a));
+            var terminal = _instance._imitation.Imitate(state, agent.ToQAction(a));
             if (terminal) {
 //	        _instance._imitation.Save(); // Saving is now done in the Option Window, where the learning is started.
                 EditorApplication.isPlaying = false;

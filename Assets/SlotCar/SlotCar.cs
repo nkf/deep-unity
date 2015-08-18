@@ -67,10 +67,21 @@ public class SlotCar : MonoBehaviour, QAgent {
 		};
 		options.Discretize = false;
 
-		if(AiControlled) {
+//		if(AiControlled || QAIManager.CurrentMode == QAIMode.Imitating) {
 			QAIManager.InitAgent(this, options);
 			if(QAIManager.CurrentMode == QAIMode.Learning)
 				Time.timeScale = 2.0f;
+//		}
+		StartCoroutine(Spas());
+	}
+
+	IEnumerator Spas() {
+		while(true) {
+			Action a = Brake;
+			if(Input.GetKey(SpeederKey)) a = FullSpeed;
+			QAIManager.Imitate(this, GetState(), a);
+
+			yield return new WaitForFixedUpdate();
 		}
 	}
 	
@@ -78,6 +89,7 @@ public class SlotCar : MonoBehaviour, QAgent {
 	void FixedUpdate() {
 	    if (_onTrack) {
 			if(AiControlled) QAIManager.GetAction(GetState())();
+
 	        UpdatePosistion();
 	    }
 	    LapNumber = (int)((_distanceTravelled - StartPosition) / Track.length);
@@ -92,7 +104,7 @@ public class SlotCar : MonoBehaviour, QAgent {
 	}
 
     void UpdatePosistion() {
-        SpeederPosition = Mathf.Clamp01(SpeederPosition + (Input.GetKey(SpeederKey) || AutoDrive ? 1f : -1.5f) * Time.fixedDeltaTime);
+        SpeederPosition = Mathf.Clamp01(SpeederPosition + (AutoDrive ? 1f : -1.5f) * Time.fixedDeltaTime);
         if(Math.Abs(SpeederPosition) < 0.001f) return;
         Velocity = Acc.Evaluate(SpeederPosition)*Speed;
 
@@ -204,7 +216,7 @@ public class SlotCar : MonoBehaviour, QAgent {
 
         var state = new QState(
 			new []{_grid.Matrix},
-			_vector,
+			_vector.Clone(),
 //			!terminal ? 0 : (DistanceTravelled - StartPosition) / (Track.length/2), 
 			reward,
 			terminal);

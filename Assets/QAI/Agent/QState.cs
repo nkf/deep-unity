@@ -30,13 +30,15 @@ namespace QAI.Agent {
         public bool Equals(QState other) {
             var img = Features.Spatial;
             var oimg = other.Features.Spatial;
-            return (IsTerminal == other.IsTerminal 
+            return IsTerminal == other.IsTerminal 
 				&& Reward == other.Reward 
 				&& ((img == oimg)
 				|| (img != null 
 					    && oimg != null 
-					    && img.SequenceEqual(oimg))))
-                && Features.Linear.Equals(other.Features.Linear);
+					    && img.SequenceEqual(oimg)))
+                && (Features.Linear != null 
+					    && other.Features.Linear != null
+					    && Features.Linear.Equals(other.Features.Linear));
         }
 
         public override bool Equals(object obj) {

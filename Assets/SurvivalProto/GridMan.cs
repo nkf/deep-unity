@@ -162,7 +162,7 @@ namespace SurvivalProto {
                 if(Input.GetKey(KeyCode.RightArrow) && NoWallRight())   _action = MoveRight;
                 if(Input.GetKey(KeyCode.LeftArrow)  && NoWallLeft())    _action = MoveLeft;
                 if (_action != null) {
-                    QAIManager.Imitate(this, _action);
+                    QAIManager.Imitate(this, GetState(), _action);
                     yield return new WaitForSeconds(0.10f);
                 }
                 yield return new WaitForEndOfFrame();

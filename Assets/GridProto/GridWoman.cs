@@ -141,7 +141,7 @@ namespace GridProto {
                 if (Key(KeyCode.RightArrow, KeyCode.D)) currentAction = MoveRight;
                 if (Key(KeyCode.LeftArrow,  KeyCode.A)) currentAction = MoveLeft;
                 if (currentAction != null)
-                    QAIManager.Imitate(this, currentAction);
+                    QAIManager.Imitate(this, GetState(), currentAction);
             }
         }
 

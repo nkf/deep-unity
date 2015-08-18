@@ -8,12 +8,21 @@ namespace QAI.Training {
     public class QImitation {
         public const string ImitationDataPath = "QData/Imitation";
         private readonly QExperience _experience = new QExperience();
-        public bool Imitate(QAgent agent, QAction a) {
-            var sars = agent.MakeSARS(a);
-            ModLastExp(sars.State);
-            if(!sars.State.Equals(sars.NextState))
-                _experience.Store(sars);
-            return sars.NextState.IsTerminal;
+		private QState _prevState;
+		private QAction _prevAction;
+        public bool Imitate(QState state, QAction a) {
+			if(_prevState.Features.Spatial != null) {
+				var sars = new SARS (_prevState, _prevAction, state);
+	            if(!sars.State.Equals(sars.NextState))
+	                _experience.Store(sars);
+			}
+
+			a.Invoke();
+			_prevState = state;
+			_prevAction = a;
+
+			UnityEngine.Debug.Log(_experience.Count);
+            return state.IsTerminal;
         }
         //Take the current state and set it as the last's state "next state"
         private void ModLastExp(QState state) {
