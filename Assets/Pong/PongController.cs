@@ -30,7 +30,6 @@ namespace Pong {
         };
 
         void Start() {
-            StartCoroutine(Movement());
             StartPosistion = transform.position;
             _game = FindObjectOfType<PongGame>();
             _ball = FindObjectOfType<PongBall>();
@@ -53,6 +52,7 @@ namespace Pong {
 				if (QAIManager.CurrentMode == QAIMode.Learning || QAIManager.CurrentMode == QAIMode.Testing)
 					Time.timeScale = 5f;
             }
+            StartCoroutine(Movement());
         }
 
         void FixedUpdate() {
