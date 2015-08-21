@@ -1,0 +1,4 @@
+game;Control;Human assistance;Low iteration;Human assistance low iteration;Control.stdev;Human assistance.stdev;Low iteration.stdev;Human assistance low iteration.stdev
+Treasure Hunt;1;1.5;0.44214876;0.349862259;0.532989379;0.646153961;0.412156082;0.257356434
+Pong;1;0.785454545;0.112727273;0.147272727;0.927056922;0.817928722;0.121409727;0.140823403
+Slot Car;1;2.159284895;1.814306863;1.980797089;1.190277012;1.664657876;0.94622193;1.530242901

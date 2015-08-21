@@ -1,0 +1,2 @@
+game;Hamming distance 1, 1 filter (control);Hamming distance 0;Hamming distance 3;3 filters;Walls, 3 filters;Paddle, 3 filters;Absolute, 3 filters;Absolute, paddle, 3 filters;Hamming distance 1, 1 filter (control).stdev;Hamming distance 0.stdev;Hamming distance 3.stdev;3 filters.stdev;Walls, 3 filters.stdev;Paddle, 3 filters.stdev;Absolute, 3 filters.stdev;Absolute, paddle, 3 filters.stdev
+Pong;1;0.449090909;1.021818182;0.983636364;0.581818182;0.558181818;0.129090909;0.043636364;0.927056922;0.618494151;0.777491085;0.911459116;0.55525486;0.798543694;0.061840694;0.048068387
