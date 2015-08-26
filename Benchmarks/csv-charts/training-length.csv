@@ -1,4 +1,4 @@
-game;Control;High iteration;Very high iteration;300 batchsize;300 batchsize very high iteration;Control.stdev;High iteration.stdev;Very high iteration.stdev;300 batchsize.stdev;300 batchsize very high iteration.stdev
-Treasure Hunt;1;1.570247934;1.013774105;0.46969697;1.056473829;0.532989379;0.609281384;0.358249385;0.407967643;0.532777631
-Pong;1;1.672727273;1.923636364;0.083636364;1.383636364;0.927056922;0.825180065;0.978793853;0.072822904;0.756123904
-Slot Car;1;1.03098313;0.976073176;1.035179631;1.488937111;1.190277012;1.121457262;0.883844702;1.213552203;1.362432933
+game;Control;High iteration;Very high iteration;300 batchsize;300 batchsize very high iteration;Control.stdev;High iteration.stdev;Very high iteration.stdev;300 batchsize.stdev;300 batchsize very high iteration.stdev;Control.ttest;High iteration.ttest;Very high iteration.ttest;300 batchsize.ttest;300 batchsize very high iteration.ttest
+Treasure Hunt;1;1.570247934;1.013774105;0.46969697;1.056473829;0.532989379;0.609281384;0.358249385;0.407967643;0.532777631;;*;;*;
+Pong;1;1.672727273;1.923636364;0.083636364;1.383636364;0.927056922;0.825180065;0.978793853;0.072822904;0.756123904;;*;*;*;
+Slot Car;1;1.03098313;0.976073176;1.035179631;1.488937111;1.190277012;1.121457262;0.883844702;1.213552203;1.362432933;;;;;

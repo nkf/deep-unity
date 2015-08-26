@@ -1,4 +1,4 @@
-game;Spatial state;Spatial and linear state;Spatial and binned linear;Linear state;Binned linear state;Spatial state.stdev;Spatial and linear state.stdev;Spatial and binned linear.stdev;Linear state.stdev;Binned linear state.stdev
-Treasure Hunt;0.41046832;1;1.20661157;0.600550964;0.524793388;0.409865046;0.532989379;0.575126278;0.631025237;0.280720814
-Pong;1.00;0.747272727;1.572727273;2.149090909;1.776363636;0.927056922;0.773324284;0.762211019;2.155951936;1.839994516
-Slot Car;0.693909272;0.994489241;1;2.933052799;2.874233333;1.07000847;1.052700128;1.190277012;0.81100515;1.062420223
+game;Spatial state;Spatial and linear state;Spatial and binned linear;Linear state;Binned linear state;Spatial state.stdev;Spatial and linear state.stdev;Spatial and binned linear.stdev;Linear state.stdev;Binned linear state.stdev;Spatial state.ttest;Spatial and linear state.ttest;Spatial and binned linear.ttest;Linear state.ttest;Binned linear state.ttest
+Treasure Hunt;0.41046832;1;1.20661157;0.600550964;0.524793388;0.409865046;0.532989379;0.575126278;0.631025237;0.280720814;*;;;*;*
+Pong;1;0.747272727;1.572727273;2.149090909;1.776363636;0.927056922;0.773324284;0.762211019;2.155951936;1.839994516;;;*;*;
+Slot Car;0.693909272;0.994489241;1;2.933052799;2.874233333;1.07000847;1.052700128;1.190277012;0.81100515;1.062420223;;;;*;*
