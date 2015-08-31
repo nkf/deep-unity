@@ -45,7 +45,7 @@ namespace GridProto {
         }
 
         public override void OnTestComplete(double reward) {
-            if (reward == 0) reward = 0.5;
+            if (FindObjectOfType<GridWoman>().DetectCycle()) reward = 0.5;
             _results[RunPosistion] = new ResultPair{ Reward = reward, DistScore = _distScores.DefaultIfEmpty().Max() };
             _distScores.Clear();
             //WriteResults();

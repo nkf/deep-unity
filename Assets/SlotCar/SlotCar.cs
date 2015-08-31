@@ -216,8 +216,8 @@ public class SlotCar : MonoBehaviour, QAgent {
 				|| _standStillTicks > 200;
 
         var state = new QState(
-			new []{_grid.Matrix},
-			_vector.Clone(),
+			new []{ _grid.Matrix },
+			linear.Clone(),
 //			!terminal ? 0 : (DistanceTravelled - StartPosition) / (Track.length/2), 
 			reward,
 			terminal);

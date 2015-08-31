@@ -4,7 +4,9 @@ using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
 using QAI;
 using QAI.Agent;
+using QAI.Learning;
 using QAI.Utility;
+using QNetwork.CNN;
 using UnityEngine;
 
 namespace GridProto {
@@ -23,7 +25,9 @@ namespace GridProto {
             _grid = new QGrid(13, transform, new GridSettings { NormalAxis = Axis.Y });
             _linearState = Vector<float>.Build.Dense(2);
             _history = new LinkedList<QState>();
-            QAIManager.InitAgent(this);
+            QAIManager.InitAgent(this, new QOption {
+                NetworkArgs = new []{ new CNNArgs {FilterCount = 1, FilterSize = 1, PoolLayerSize = 1, Stride = 1}}
+            });
         }
 
         public bool IsAboveGround() {
@@ -100,8 +104,9 @@ namespace GridProto {
             _linearState.At(1, v.z);
 
             var terminal = dead || goal || DetectCycle();
+            var spatial = Matrix<float>.Build.Dense(1, 1, 1f);
             var state = new QState(
-                new []{ _grid.Matrix },
+                new []{ spatial },
                 _linearState.Clone(),
                 goal ? 1 : 0,
                 terminal
@@ -114,7 +119,7 @@ namespace GridProto {
             _history.AddFirst(state);
         }
 
-        private bool DetectCycle() {
+        public bool DetectCycle() {
             if (_history.Count < MaxHistorySize) return false;
             return _history.Distinct().Count() <= CycleSize;
         }

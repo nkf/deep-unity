@@ -5,8 +5,9 @@ using UnityEngine;
 
 namespace GridProto {
     public class GridResultsVisualizer : MonoBehaviour {
-        private readonly Color _win =  new Color(0,1,1,0.2f); //cyan
-        private readonly Color _lose = new Color(1,0,0,0.2f); //red
+        private readonly Color _win =  new Color(0.176f, 0.533f, 0.176f, 1f); 
+        private readonly Color _lose = new Color(0.667f, 0.224f, 0.224f, 1f);
+        private readonly Color _cycle = new Color(0.133f, 0.40f, 0.40f, 1f);
 
         void Start () {
             /*
@@ -37,7 +38,9 @@ namespace GridProto {
             var gobj = Instantiate(Resources.Load<GameObject>("ResultMarker"));
             gobj.transform.parent = layer.transform;
             gobj.transform.localPosition = pos;
-            var c = Color.Lerp(_lose, _win, value);
+            var c = _cycle;
+            if (value > 0.9) c = _win;
+            if (value < 0.1) c = _lose;
             gobj.GetComponent<Renderer>().material.color = c;
         }
     }

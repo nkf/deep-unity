@@ -47,6 +47,7 @@ namespace QAI {
         public static int Iteration { get { return _instance == null || _instance._qlearning == null ? 0 : _instance._qlearning.Iteration; }}
         public static QAIMode CurrentMode { get { return _instance.Mode; } }
         public static Action<Vector<float>, bool> NetworkValuesUpdated;
+        public static QAgent Agent { get; private set; }
 
         public QTester Tester;
 
@@ -56,7 +57,6 @@ namespace QAI {
 
         private NetworkVisualizer _visualizer;
 
-        private QAgent _agent;
         private bool _testIsRunning;
         private bool _testIsOver = false;
 
@@ -77,7 +77,7 @@ namespace QAI {
             BenchmarkSave.SaveBenchmarks = _instance.Benchmark;
             _instance._sceneIsOver = false;
             _instance._testIsOver = false;
-            _instance._agent = agent;
+            _instance.Agent = agent;
             if (_instance.Mode != QAIMode.Imitating)
                 _instance._qlearning.Reset(agent);
         }
@@ -173,12 +173,12 @@ namespace QAI {
             } else {
                 var action = _qlearning.GreedyPolicy(state);
                 action.Invoke();
-                Tester.OnActionTaken(_agent, action, state);
+                Tester.OnActionTaken(Agent, action, state);
             }
         }
 
         private void SetupTest() {
-            var sceneSetup = Tester.SetupNextTest(_agent);
+            var sceneSetup = Tester.SetupNextTest(Agent);
             //Run Test if tester have set up scene
             if(sceneSetup) {
                 _testIsRunning = true;
@@ -193,14 +193,15 @@ namespace QAI {
                     BenchmarkSave.NextRun();
                     Application.LoadLevel(Application.loadedLevel);
                 } else {
-                    EditorApplication.isPlaying = false;
+                    EditorApplication.isPaused = true;
+                    //EditorApplication.isPlaying = false;
                 }
             }
         }
 
         private void RemakeManager() {
             _qlearning.Iteration = 1;
-            _qlearning.RemakeModel(_agent.GetState());
+            _qlearning.RemakeModel(Agent.GetState());
             if (_visualizer != null) {
                 Destroy(_visualizer.gameObject);
                 _visualizer = _qlearning.CreateVisualizer();

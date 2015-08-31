@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
 using QAI.Agent;
@@ -6,7 +7,7 @@ using QAI.Training;
 using QAI.Visualizer;
 using QNetwork;
 using QNetwork.CNN;
-using System.IO;
+using UnityEngine;
 
 namespace QAI.Learning {
     public class QLearningCNN : QLearning {

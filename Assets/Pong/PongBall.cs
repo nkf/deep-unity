@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using UnityEngine;
+using UnityEditor;
 
 namespace Pong {
     class PongBall : MonoBehaviour {
@@ -43,8 +44,9 @@ namespace Pong {
                 _velocity = Vector3.Reflect(_velocity, Vector3.right).normalized * ++_speed;
                 SetTransformX(p1.max.x + ball.size.x / 2);
                 Player1.Hits++;
+                Debug.Log(Player1.Hits);
             } else if(ball.min.x < _game.Border.min.x) { //Player 1 Goal
-                _game.Score(Player.Player1);
+                _game.Score(Player.Player2);
                 //Reset(1);
             }
             
@@ -53,7 +55,7 @@ namespace Pong {
                 SetTransformX(p2.min.x - ball.size.x / 2);
                 Player2.Hits++;
             } else if(ball.max.x > _game.Border.max.x) { //Player 2 Goal
-                _game.Score(Player.Player2);
+                _game.Score(Player.Player1);
                 //Reset(-1);
             }
 
