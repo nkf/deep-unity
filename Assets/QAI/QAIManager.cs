@@ -77,7 +77,7 @@ namespace QAI {
             BenchmarkSave.SaveBenchmarks = _instance.Benchmark;
             _instance._sceneIsOver = false;
             _instance._testIsOver = false;
-            _instance.Agent = agent;
+            Agent = agent;
             if (_instance.Mode != QAIMode.Imitating)
                 _instance._qlearning.Reset(agent);
         }
@@ -193,8 +193,7 @@ namespace QAI {
                     BenchmarkSave.NextRun();
                     Application.LoadLevel(Application.loadedLevel);
                 } else {
-                    EditorApplication.isPaused = true;
-                    //EditorApplication.isPlaying = false;
+                    EditorApplication.isPlaying = false;
                 }
             }
         }
