@@ -1,64 +1,93 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Collections;
-using UnityEditor;
-using System.Collections.Generic;
-using QNetwork.CNN;
-using QAI;
 using MathNet.Numerics.LinearAlgebra;
+using UnityEditor;
+using UnityEngine;
 
-public class QAIGraphWindow : EditorWindow {
-	private bool foldoutActions = false;
+namespace QAI.Editor {
+    public class QAIGraphWindow : EditorWindow {
 
-	private LineChart actionChart;
+        private bool _foldoutActions;
+        private bool _foldoutIterations;
 
-	private List<Vector<float>> actionData = new List<Vector<float>>();
-	private int maxActionData = 100;
+        private LineChart _actionChart;
+        private readonly List<Vector<float>> _actionData = new List<Vector<float>>();
+        private const int MaxActionData = 100;
 
-	[MenuItem("QAI/Data")]
-	private static void OpenWindow() {
-		var window = (QAIGraphWindow) GetWindow(typeof (QAIGraphWindow));
-		window.Show();
-	}
+        private LineChart _iterationChart;
+        private readonly List<float>[] _iterationData = { new List<float>() };
+        private readonly List<float> _currentIterationData = new List<float>(); 
+        private int _currentIteration = 0;
 
-	private void Init() {
-		QAIManager.NetworkValuesUpdated += StoreValues;
-	}
 
-	private void OnGUI() {
-		Init ();
 
-		if(foldoutActions = EditorGUILayout.Foldout(foldoutActions, "Action taken")) {
-			if(actionChart == null) {
-				actionChart = new LineChart(this, 200f);
-				actionChart.formatString = "{0:F}";
-				actionChart.gridLines = 5;
-				actionChart.axisRounding = 1f;
-			}
+        [MenuItem("QAI/Data")]
+        private static void OpenWindow() {
+            var window = (QAIGraphWindow) GetWindow(typeof (QAIGraphWindow));
+            window.Show();
+        }
 
-			List<List<float>> l = null;
-			foreach(var v in actionData) {
-				if(l == null) {
-					l = new List<List<float>>();
-					foreach(var e in v) l.Add(new List<float>());
-				}
-				for(var i = 0; i < v.Count; i++) {
-					l[i].Add(v[i]);
-				}
-			}
-			if(l == null) return;
+        private void Init() {
+            QAIManager.NetworkValuesUpdated += StoreValues;
+        }
 
-			actionChart.data = l.ToArray();
-//			actionChart.dataLabels = new List<string>{"Hest", "Ko"};
-			actionChart.DrawChart();
-		}
-	}
+        private void OnGUI() {
+            Init ();
 
-	private void StoreValues(Vector<float> data, bool trainingData) {
-		if(trainingData) return;
-		if(actionData.Count > maxActionData) actionData.Remove(actionData.First());
-		if(actionData.Count != 0 && actionData[actionData.Count-1].Equals(data)) return;
-		actionData.Add(data.Clone());
-		Repaint();
-	}
+            if(_foldoutActions = EditorGUILayout.Foldout(_foldoutActions, "Action taken")) {
+                if(_actionChart == null) {
+                    _actionChart = new LineChart(this, 200f) {
+                        formatString = "{0:F}", 
+                        gridLines = 5, 
+                        axisRounding = 1f
+                    };
+                }
+
+                List<List<float>> l = null;
+                foreach(var v in _actionData) {
+                    if(l == null) {
+                        l = v.Select(e => new List<float>()).ToList();
+                    }
+                    for(var i = 0; i < v.Count; i++) {
+                        l[i].Add(v[i]);
+                    }
+                }
+                if(l == null) return;
+
+                _actionChart.data = l.ToArray();
+                _actionChart.DrawChart();
+            }
+            if (_foldoutIterations = EditorGUILayout.Foldout(_foldoutIterations, "Avg. predicted reward over iterations")) {
+                if (_iterationChart == null) {
+                    _iterationChart = new LineChart(this, 200f) {
+                        formatString = "{0:F}",
+                        gridLines = 5,
+                        axisRounding = 1f,
+                        pipRadius = 1.5f,                        
+                        colors = new List<Color> { Color.blue }
+                    };
+                }
+                _iterationChart.data = _iterationData;
+                _iterationChart.DrawChart();
+            }
+        }
+
+        private void StoreValues(Vector<float> data, bool trainingData) {
+            if(trainingData) return;
+            
+            if(_actionData.Count > MaxActionData) _actionData.Remove(_actionData.First());
+            if(_actionData.Count != 0 && _actionData[_actionData.Count-1].Equals(data)) return;
+            _actionData.Add(data.Clone());
+
+            if (_currentIteration != QAIManager.Iteration) {
+                _currentIteration = QAIManager.Iteration;
+                if(_currentIterationData.Count > 0)
+                    _iterationData[0].Add( _currentIterationData.Average() );
+                _currentIterationData.Clear();
+            }
+            _currentIterationData.Add(data.Maximum());
+
+            Repaint();
+        }
+    }
 }
